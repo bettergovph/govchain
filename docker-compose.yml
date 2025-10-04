@@ -6,7 +6,7 @@ services:
     image: chromadb/chroma:latest
     container_name: govchain-chroma
     ports:
-      - "8000:8000"
+      - "9001:8000"
     volumes:
       - ./chroma_storage:/chroma/chroma
     environment:
@@ -23,7 +23,7 @@ services:
       dockerfile: Dockerfile
     container_name: govchain-indexer
     ports:
-      - "3000:3000"
+      - "9002:3000"
     environment:
       - CHROMA_URL=http://chroma:8000
       - BLOCKCHAIN_API=http://host.docker.internal:1317
@@ -43,7 +43,7 @@ services:
     image: nginx:alpine
     container_name: govchain-web
     ports:
-      - "8080:80"
+      - "9003:80"
     volumes:
       - ./web:/usr/share/nginx/html:ro
     networks:
