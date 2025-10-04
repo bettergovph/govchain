@@ -1,74 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createHash } from 'crypto';
-import { uploadToIPFS, getIPFSUrl } from '@/lib/ipfs';
 import { getBlockchainConfig, executeCommand, extractTransactionHash } from '@/lib/blockchain';
-
-interface UploadRequest {
-  title: string;
-  description: string;
-  agency: string;
-  category: string;
-  fallbackUrl?: string;
-}
-
-async function calculateChecksum(file: File): Promise<string> {
-  const buffer = await file.arrayBuffer();
-  return createHash('sha256').update(Buffer.from(buffer)).digest('hex');
-}
-
-async function submitToBlockchain(data: any): Promise<{ txhash: string }> {
-  const {
-    title,
-    description,
-    ipfsCid,
-    mimeType,
-    fileName,
-    fileUrl,
-    fallbackUrl,
-    fileSize,
-    checksumSha256,
-    agency,
-    category
-  } = data;
-
-  const config = getBlockchainConfig();
-  
-  const args = [
-    'tx', 'datasets', 'create-dataset',
-    title,
-    description,
-    ipfsCid,
-    mimeType,
-    fileName,
-    fileUrl,
-    fallbackUrl || '',
-    fileSize.toString(),
-    checksumSha256,
-    agency,
-    category,
-    '--from', config.submitter,
-    '--chain-id', config.chainId,
-    '--node', config.nodeUrl,
-    '--keyring-backend', config.keyringBackend,
-    '--yes',
-    '--output', 'json'
-  ];
-
-  const output = await executeCommand(config.binary, args, 60000); // 60 second timeout
-  const txhash = extractTransactionHash(output);
-  
-  if (!txhash) {
-    throw new Error('Failed to extract transaction hash from blockchain response');
-  }
-  
-  return { txhash };
-}
+import { uploadToIPFS } from '@/lib/ipfs';
+import { UploadRequest, Dataset, TransactionResult } from '@/types/dataset';
+import crypto from 'crypto';
 
 export async function POST(request: NextRequest) {
   try {
     const formData = await request.formData();
     const file = formData.get('file') as File;
-    const metadata = JSON.parse(formData.get('metadata') as string) as UploadRequest;
+    const metadataStr = formData.get('metadata') as string;
 
     if (!file) {
       return NextResponse.json(
@@ -77,65 +17,115 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Validate required fields
-    const { title, description, agency, category } = metadata;
-    if (!title || !description || !agency || !category) {
+    if (!metadataStr) {
       return NextResponse.json(
-        { error: 'Missing required fields' },
+        { error: 'No metadata provided' },
         { status: 400 }
       );
     }
 
-    // File validation
-    const maxSize = 100 * 1024 * 1024; // 100MB limit
-    if (file.size > maxSize) {
+    const metadata: UploadRequest = JSON.parse(metadataStr);
+
+    // Validate required fields
+    if (!metadata.title || !metadata.description || !metadata.agency || !metadata.category) {
       return NextResponse.json(
-        { error: 'File too large (max 100MB)' },
+        { error: 'Missing required fields: title, description, agency, category' },
         { status: 400 }
       );
     }
 
     // Upload to IPFS
-    const { cid: ipfsCid, size: fileSize } = await uploadToIPFS(file);
+    const ipfsResult = await uploadToIPFS(file);
     
-    // Calculate checksum
-    const checksumSha256 = await calculateChecksum(file);
+    // Calculate file checksum
+    const buffer = await file.arrayBuffer();
+    const checksum = crypto.createHash('sha256').update(Buffer.from(buffer)).digest('hex');
+
+    // Prepare blockchain submission
+    const config = getBlockchainConfig();
+    const submitter = metadata.submitter || config.submitter;
+    const timestamp = Math.floor(Date.now() / 1000);
+    const fileUrl = `https://ipfs.io/ipfs/${ipfsResult.cid}`;
+    const fallbackUrl = metadata.fallbackUrl || '';
     
-    // Create file URL
-    const fileUrl = getIPFSUrl(ipfsCid);
+    // Create unique entry ID
+    const entryId = `entry-${timestamp}-${ipfsResult.cid.slice(-8)}`;
+
+    // Submit to blockchain using create-entry
+    const createEntryArgs = [
+      'tx',
+      'datasets', 
+      'create-entry',
+      entryId,                    // Index/Key
+      metadata.title,             // Title
+      metadata.description,       // Description  
+      ipfsResult.cid,            // IPFS CID
+      file.type || 'application/octet-stream', // MIME Type
+      file.name,                 // File Name
+      fileUrl,                   // File URL
+      fallbackUrl,               // Fallback URL
+      ipfsResult.size.toString(), // File Size
+      checksum,                  // Checksum
+      metadata.agency,           // Agency
+      metadata.category,         // Category
+      submitter,                 // Submitter
+      timestamp.toString(),      // Timestamp
+      '0',                      // Initial Pin Count
+      '--from', submitter,
+      '--chain-id', config.chainId,
+      '--keyring-backend', config.keyringBackend,
+      '--gas', 'auto',
+      '--gas-adjustment', '1.5',
+      '--yes',
+      '--output', 'json',
+      '--node', config.nodeUrl,
+    ];
+
+    const txOutput = await executeCommand(config.binary, createEntryArgs, 30000);
     
-    // Prepare blockchain transaction data
-    const transactionData = {
-      title,
-      description,
-      ipfsCid,
+    // Extract transaction hash
+    const txhash = extractTransactionHash(txOutput);
+    
+    if (!txhash) {
+      throw new Error('Transaction submitted but no hash returned');
+    }
+
+    // Prepare response dataset object
+    const dataset: Dataset = {
+      id: entryId,
+      title: metadata.title,
+      description: metadata.description,
+      ipfsCid: ipfsResult.cid,
       mimeType: file.type || 'application/octet-stream',
       fileName: file.name,
-      fileUrl,
-      fallbackUrl: metadata.fallbackUrl || '',
-      fileSize,
-      checksumSha256,
-      agency,
-      category,
+      fileUrl: fileUrl,
+      fallbackUrl: fallbackUrl,
+      fileSize: ipfsResult.size,
+      checksumSha256: checksum,
+      agency: metadata.agency,
+      category: metadata.category,
+      submitter: submitter,
+      timestamp: timestamp * 1000, // Convert to milliseconds for frontend
+      pinCount: 0,
     };
 
-    // Submit to blockchain
-    const result = await submitToBlockchain(transactionData);
+    const result: TransactionResult & { dataset: Dataset } = {
+      txhash,
+      raw_log: txOutput,
+      logs: [],
+      dataset,
+    };
 
-    return NextResponse.json({
-      success: true,
-      txhash: result.txhash,
-      dataset: {
-        ...transactionData,
-        timestamp: Date.now(),
-        pinCount: 1, // At least one pin (our node)
-      },
-    });
+    return NextResponse.json(result);
 
   } catch (error) {
-    console.error('Upload error:', error);
+    console.error('Upload failed:', error);
+    
     return NextResponse.json(
-      { error: 'Upload failed' },
+      { 
+        error: 'Upload failed',
+        details: error instanceof Error ? error.message : 'Unknown error'
+      },
       { status: 500 }
     );
   }

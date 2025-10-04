@@ -36,7 +36,7 @@ if [ "$#" -lt 5 ]; then
     echo "Usage: $0 <file> <title> <description> <agency> <category> [fallback-url] [submitter-key]"
     echo ""
     echo "Example:"
-    echo "  $0 data.csv \"Climate Data 2024\" \"Annual climate measurements\" \"NOAA\" \"climate\" \"https://backup.noaa.gov/data.csv\" alice"
+    echo "  $0 README.md \"Climate Data 2024\" \"Annual climate measurements\" \"NOAA\" \"climate\" \"https://backup.noaa.gov/data.csv\" alice"
     echo ""
     exit 1
 fi
@@ -116,7 +116,26 @@ echo -e "${GREEN}✓ Pinned successfully${NC}"
 
 # Submit to blockchain
 echo "⛓️  Submitting to blockchain..."
-TX_RESULT=$(govchaind tx datasets create-dataset \
+
+# Get current timestamp
+TIMESTAMP=$(date +%s)
+
+# Debug: Print the command that will be executed
+echo "Debug: About to execute transaction..."
+echo "Submitter: $SUBMITTER"
+echo "Timestamp: $TIMESTAMP"
+echo "Parameter count check..."
+echo "Checking command signature:"
+govchaind tx datasets create-entry --help 2>/dev/null | head -10 || echo "Help not available"
+echo ""
+
+# Add timeout and better error handling
+set +e  # Disable exit on error temporarily
+
+# Try with auto-generated index first
+echo "Attempting transaction with auto-generated index..."
+TX_RESULT=$(timeout 30s govchaind tx datasets create-entry \
+    "entry-$(date +%s)" \
     "$TITLE" \
     "$DESCRIPTION" \
     "$IPFS_CID" \
@@ -128,12 +147,30 @@ TX_RESULT=$(govchaind tx datasets create-dataset \
     "$CHECKSUM" \
     "$AGENCY" \
     "$CATEGORY" \
+    "$SUBMITTER" \
+    "$TIMESTAMP" \
+    "0" \
     --from "$SUBMITTER" \
     --chain-id govchain \
+    --keyring-backend test \
+    --gas auto \
+    --gas-adjustment 1.5 \
     --yes \
     --output json 2>&1)
 
-if [ $? -eq 0 ]; then
+TX_EXIT_CODE=$?
+set -e  # Re-enable exit on error
+
+# Check transaction result
+if [ $TX_EXIT_CODE -eq 124 ]; then
+    echo -e "${RED}❌ Transaction timed out after 30 seconds${NC}"
+    echo "This might indicate:"
+    echo "  - Blockchain node is not running"
+    echo "  - Network connectivity issues"
+    echo "  - Invalid command parameters"
+    echo "Raw output: $TX_RESULT"
+    exit 1
+elif [ $TX_EXIT_CODE -eq 0 ]; then
     echo -e "${GREEN}✓ Transaction submitted successfully${NC}"
     
     # Extract transaction hash if available
@@ -142,7 +179,8 @@ if [ $? -eq 0 ]; then
         echo -e "${GREEN}📋 Transaction hash: $TX_HASH${NC}"
     fi
 else
-    echo -e "${RED}❌ Transaction failed${NC}"
+    echo -e "${RED}❌ Transaction failed (exit code: $TX_EXIT_CODE)${NC}"
+    echo "Raw output:"
     echo "$TX_RESULT"
     exit 1
 fi
@@ -168,5 +206,7 @@ echo "  Primary URL: $FILE_URL"
 echo "  Local Gateway: http://localhost:8080/ipfs/$IPFS_CID"
 echo ""
 echo "Verify on blockchain:"
-echo "  govchaind query datasets list-datasets"
+echo "  govchaind query datasets list-entry"
+echo "  govchaind query datasets entries-by-agency $AGENCY"
+echo "  govchaind query datasets entries-by-category $CATEGORY"
 echo ""

@@ -37,7 +37,7 @@ export async function GET(request: NextRequest) {
       console.warn('Indexer unavailable, falling back to blockchain API');
       
       const blockchainResponse = await fetch(
-        `${process.env.BLOCKCHAIN_API || 'http://localhost:1317'}/govchain/datasets/dataset`,
+        `${process.env.BLOCKCHAIN_API || 'http://localhost:1317'}/govchain/datasets/v1/entry`,
         {
           headers: { 'Accept': 'application/json' },
         }
@@ -45,7 +45,7 @@ export async function GET(request: NextRequest) {
 
       if (blockchainResponse.ok) {
         const data = await blockchainResponse.json();
-        const datasets = data.Dataset || [];
+        const datasets = data.StoredDataset || data.Dataset || [];
         
         // Simple text-based filtering as fallback
         const filtered = datasets.filter((dataset: any) => {

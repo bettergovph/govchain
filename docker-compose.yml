@@ -53,7 +53,7 @@ services:
       - BLOCKCHAIN_NODE=tcp://host.docker.internal:26657
       - BLOCKCHAIN_SUBMITTER=alice
       - BLOCKCHAIN_KEYRING_BACKEND=test
-      - BLOCKCHAIN_BINARY=govchaind
+      - BLOCKCHAIN_BINARY=/usr/local/bin/govchaind  # Adjust path for container environment
       - IPFS_API_URL=http://host.docker.internal:5001
       - IPFS_GATEWAY_URL=http://host.docker.internal:8080
       - NEXT_PUBLIC_BLOCKCHAIN_API=http://localhost:1317

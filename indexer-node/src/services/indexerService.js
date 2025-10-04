@@ -149,7 +149,7 @@ class IndexerService {
 
   async fetchAndIndexAll() {
     try {
-      const url = `${this.blockchainAPI}/govchain/datasets/dataset`;
+      const url = `${this.blockchainAPI}/govchain/datasets/v1/entry`;
       logger.info(`Fetching datasets from ${url}`);
 
       const response = await axios.get(url, {

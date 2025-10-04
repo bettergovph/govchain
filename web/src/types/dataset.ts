@@ -1,23 +1,24 @@
 export interface Dataset {
-  id: string;
+  index: string;
   title: string;
   description: string;
-  ipfsCid: string;
-  mimeType: string;
-  fileName: string;
-  fileUrl: string;
-  fallbackUrl: string;
-  fileSize: number;
-  checksumSha256: string;
+  ipfs_cid: string;
+  mime_type: string;
+  file_name: string;
+  file_url: string;
+  fallback_url: string;
+  file_size: number;
+  checksum_sha_256: string;
   agency: string;
   category: string;
   submitter: string;
   timestamp: number;
   pinCount: number;
+  creator: string;
 }
 
 export interface BlockchainResponse {
-  Dataset: Dataset[];
+  entry?: Dataset[];
   pagination: {
     next_key: string;
     total: string;

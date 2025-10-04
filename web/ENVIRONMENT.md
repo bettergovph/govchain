@@ -14,6 +14,7 @@ These variables contain sensitive information and should be secured in productio
 
 - `BLOCKCHAIN_SUBMITTER`: Account name for submitting transactions (default: "alice")
 - `BLOCKCHAIN_KEYRING_BACKEND`: Keyring backend type (default: "test")
+- `BLOCKCHAIN_BINARY`: Path to the blockchain binary (default: "~/govchain-blockchain/govchaind")
 
 ### IPFS Configuration
 - `IPFS_API_URL`: IPFS API endpoint (default: "http://localhost:5001")
@@ -54,3 +55,8 @@ When using Docker Compose, environment variables are configured in the `docker-c
 1. Create a separate `docker-compose.prod.yml` with production values
 2. Use Docker secrets or external configuration management
 3. Override default values with secure production credentials
+
+**Note for Docker deployment**: The `BLOCKCHAIN_BINARY` path needs to be accessible within the container. Consider:
+- Mounting the blockchain binary as a volume
+- Installing the blockchain binary within the container
+- Using a blockchain service accessible via network APIs instead of local binary

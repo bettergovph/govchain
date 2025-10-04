@@ -57,17 +57,17 @@ export default function DatasetCard({ dataset }: DatasetCardProps) {
   };
 
   const formatDate = (timestamp: number) => {
-    return formatDistanceToNow(new Date(timestamp), { addSuffix: true });
+    return formatDistanceToNow(new Date(Number(timestamp) * 1000), { addSuffix: true }); 
   };
 
   const downloadFile = () => {
-    window.open(dataset.fileUrl, '_blank');
+    window.open(dataset.file_url, '_blank');
   };
 
   const viewOnBlockchain = () => {
     // This would link to a blockchain explorer
     // For now, we'll just show an alert with the transaction details
-    alert(`Dataset ID: ${dataset.id}\nIPFS CID: ${dataset.ipfsCid}\nChecksum: ${dataset.checksumSha256}`);
+    alert(`Dataset ID: ${dataset.index}\nIPFS CID: ${dataset.ipfs_cid}\nChecksum: ${dataset.checksum_sha_256}`);
   };
 
   return (
@@ -84,7 +84,7 @@ export default function DatasetCard({ dataset }: DatasetCardProps) {
               </CardDescription>
             </div>
             <div className="flex items-center gap-1 text-muted-foreground ml-4">
-              {getFileIcon(dataset.mimeType)}
+              {getFileIcon(dataset.mime_type)}
             </div>
           </div>
           
@@ -111,7 +111,7 @@ export default function DatasetCard({ dataset }: DatasetCardProps) {
             <div className="flex items-center gap-4">
               <span className="flex items-center gap-1">
                 <HardDrive className="h-3 w-3" />
-                {formatFileSize(dataset.fileSize)}
+                {formatFileSize(dataset.file_size)}
               </span>
               <span className="flex items-center gap-1">
                 <Clock className="h-3 w-3" />
@@ -149,7 +149,7 @@ export default function DatasetCard({ dataset }: DatasetCardProps) {
         <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
-              {getFileIcon(dataset.mimeType)}
+              {getFileIcon(dataset.mime_type)}
               {dataset.title}
             </DialogTitle>
             <DialogDescription>
@@ -189,15 +189,15 @@ export default function DatasetCard({ dataset }: DatasetCardProps) {
               <div className="grid gap-3">
                 <div className="grid grid-cols-3 gap-2 text-sm">
                   <span className="font-medium">Filename:</span>
-                  <span className="col-span-2 font-mono">{dataset.fileName}</span>
+                  <span className="col-span-2 font-mono">{dataset.file_name}</span>
                 </div>
                 <div className="grid grid-cols-3 gap-2 text-sm">
                   <span className="font-medium">MIME Type:</span>
-                  <span className="col-span-2 font-mono">{dataset.mimeType}</span>
+                  <span className="col-span-2 font-mono">{dataset.mime_type}</span>
                 </div>
                 <div className="grid grid-cols-3 gap-2 text-sm">
                   <span className="font-medium">File Size:</span>
-                  <span className="col-span-2">{formatFileSize(dataset.fileSize)}</span>
+                  <span className="col-span-2">{formatFileSize(dataset.file_size)}</span>
                 </div>
                 <div className="grid grid-cols-3 gap-2 text-sm">
                   <span className="font-medium">Uploaded:</span>
@@ -214,15 +214,15 @@ export default function DatasetCard({ dataset }: DatasetCardProps) {
               <div className="grid gap-3">
                 <div className="grid grid-cols-3 gap-2 text-sm">
                   <span className="font-medium">Dataset ID:</span>
-                  <span className="col-span-2 font-mono">{dataset.id}</span>
+                  <span className="col-span-2 font-mono">{dataset.index}</span>
                 </div>
                 <div className="grid grid-cols-3 gap-2 text-sm">
                   <span className="font-medium">IPFS CID:</span>
-                  <span className="col-span-2 font-mono break-all">{dataset.ipfsCid}</span>
+                  <span className="col-span-2 font-mono break-all">{dataset.ipfs_cid}</span>
                 </div>
                 <div className="grid grid-cols-3 gap-2 text-sm">
                   <span className="font-medium">SHA-256:</span>
-                  <span className="col-span-2 font-mono break-all">{dataset.checksumSha256}</span>
+                  <span className="col-span-2 font-mono break-all">{dataset.checksum_sha_256}</span>
                 </div>
                 <div className="grid grid-cols-3 gap-2 text-sm">
                   <span className="font-medium">Pin Count:</span>
@@ -241,29 +241,29 @@ export default function DatasetCard({ dataset }: DatasetCardProps) {
                   <label className="text-sm font-medium">Primary (IPFS):</label>
                   <div className="flex items-center gap-2 mt-1">
                     <code className="flex-1 text-xs bg-muted p-2 rounded break-all">
-                      {dataset.fileUrl}
+                      {dataset.file_url}
                     </code>
                     <Button 
                       size="sm" 
                       variant="outline"
-                      onClick={() => window.open(dataset.fileUrl, '_blank')}
+                      onClick={() => window.open(dataset.file_url, '_blank')}
                     >
                       <ExternalLink className="h-3 w-3" />
                     </Button>
                   </div>
                 </div>
                 
-                {dataset.fallbackUrl && (
+                {dataset.fallback_url && (
                   <div>
                     <label className="text-sm font-medium">Fallback:</label>
                     <div className="flex items-center gap-2 mt-1">
                       <code className="flex-1 text-xs bg-muted p-2 rounded break-all">
-                        {dataset.fallbackUrl}
+                        {dataset.fallback_url}
                       </code>
                       <Button 
                         size="sm" 
                         variant="outline"
-                        onClick={() => window.open(dataset.fallbackUrl, '_blank')}
+                        onClick={() => window.open(dataset.fallback_url, '_blank')}
                       >
                         <ExternalLink className="h-3 w-3" />
                       </Button>

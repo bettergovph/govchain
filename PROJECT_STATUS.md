@@ -147,13 +147,13 @@
 
 ┌──────────────┐  ┌──────────────┐  ┌──────────────┐
 │   Web UI     │  │   Indexer    │  │  Blockchain  │
-│  (HTML/JS)   │◄─┤  (Go/ChromaDB) │◄─┤ (Cosmos SDK) │
+│  (HTML/JS)   │◄─┤  (ChromaDB)  │◄─┤ (Cosmos SDK) │
 │  Port 8000   │  │  Port 3000   │  │  Port 1317   │
 └──────┬───────┘  └──────┬───────┘  └──────┬───────┘
        │                 │                 │
        │                 ▼                 │
        │          ┌──────────────┐         │
-       │          │   ChromaDB     │         │
+       │          │   ChromaDB   │         │
        │          │  Vector DB   │         │
        │          │  Port 6333   │         │
        │          └──────────────┘         │

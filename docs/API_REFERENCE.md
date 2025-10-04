@@ -9,7 +9,7 @@ Base URL: `http://localhost:1317` (development)
 ### List All Datasets
 
 ```http
-GET /govchain/datasets/dataset
+GET /govchain/datasets/v1/entry
 ```
 
 **Response:**
@@ -40,7 +40,7 @@ GET /govchain/datasets/dataset
 ### Get Dataset by ID
 
 ```http
-GET /govchain/datasets/dataset/{id}
+GET /govchain/datasets/v1/entry/{id}
 ```
 
 **Parameters:**
@@ -60,7 +60,7 @@ GET /govchain/datasets/dataset/{id}
 ### Get Datasets by Agency
 
 ```http
-GET /govchain/datasets/datasets-by-agency/{agency}
+GET /govchain/datasets/v1/entrys-by-agency/{agency}
 ```
 
 **Parameters:**
@@ -329,7 +329,7 @@ const data = await response.json();
 console.log(data.results);
 
 // Get dataset from blockchain
-const response = await fetch('http://localhost:1317/govchain/datasets/dataset/1');
+const response = await fetch('http://localhost:1317/govchain/datasets/v1/entry/1');
 const dataset = await response.json();
 
 // Download from IPFS
@@ -346,7 +346,7 @@ response = requests.get('http://localhost:3000/search', params={'q': 'climate'})
 results = response.json()['results']
 
 # Get dataset
-response = requests.get('http://localhost:1317/govchain/datasets/dataset/1')
+response = requests.get('http://localhost:1317/govchain/datasets/v1/entry/1')
 dataset = response.json()['Dataset']
 
 # Download from IPFS

@@ -30,10 +30,10 @@ if ! command -v ignite &> /dev/null; then
 fi
 
 # Check if we're in the right directory
-if [ ! -f "PROJECT.md" ]; then
-    echo "❌ Error: Please run this script from the govchain root directory"
-    exit 1
-fi
+# if [ ! -f "PROJECT.md" ]; then
+#     echo "❌ Error: Please run this script from the govchain root directory"
+#     exit 1
+# fi
 
 # Store the current directory (govchain project root) for later use
 GOVCHAIN_PROJECT_DIR="$(pwd)"
@@ -114,33 +114,8 @@ echo "🔧 Creating custom datasets module..."
 ignite scaffold module datasets --yes
 git add . && git commit -m "Add datasets module" || echo "⚠️  No changes to commit for datasets module"
 
-echo "🔧 Adding CreateDataset message type..."
-ignite scaffold message create-dataset \
-    title:string \
-    description:string \
-    ipfsCid:string \
-    mimeType:string \
-    fileName:string \
-    fileUrl:string \
-    fallbackUrl:string \
-    fileSize:uint \
-    checksumSha256:string \
-    agency:string \
-    category:string \
-    --module datasets \
-    --response datasetId:uint \
-    --yes
-git add . && git commit -m "Add CreateDataset message type" || echo "⚠️  No changes to commit for CreateDataset"
-
-echo "🔧 Adding PinDataset message type..."
-ignite scaffold message pin-dataset \
-    datasetId:uint \
-    --module datasets \
-    --yes
-git add . && git commit -m "Add PinDataset message type" || echo "⚠️  No changes to commit for PinDataset"
-
-echo "🔧 Adding Dataset storage type..."
-ignite scaffold list stored-dataset \
+echo "🔧 Adding Entry map with CRUD operations..."
+ignite scaffold map entry \
     title:string \
     description:string \
     ipfsCid:string \
@@ -157,12 +132,12 @@ ignite scaffold list stored-dataset \
     pinCount:uint \
     --module datasets \
     --yes
-git add . && git commit -m "Add StoredDataset storage type" || echo "⚠️  No changes to commit for Dataset storage"
+git add . && git commit -m "Add Entry map with CRUD operations" || echo "⚠️  No changes to commit for Entry map"
 
-echo "🔧 Adding queries..."
-ignite scaffold query stored-datasets-by-agency agency:string --module datasets --yes
-ignite scaffold query stored-datasets-by-category category:string --module datasets --yes
-ignite scaffold query stored-datasets-by-mimetype mimeType:string --module datasets --yes
+echo "🔧 Adding dataset queries..."
+ignite scaffold query entries-by-agency agency:string --module datasets --yes
+ignite scaffold query entries-by-category category:string --module datasets --yes
+ignite scaffold query entries-by-mimetype mimeType:string --module datasets --yes
 git add . && git commit -m "Add dataset queries" || echo "⚠️  No changes to commit for queries"
 
 # Copy essential project files from the setup directory
@@ -178,31 +153,31 @@ fi
 
 echo "📁 Copying from: $SETUP_DIR"
 
-# Verify source directory has required files
-if [ ! -f "$SETUP_DIR/PROJECT.md" ]; then
-    echo "❌ Error: Cannot find PROJECT.md in $SETUP_DIR"
-    echo "Please run this script from the govchain project root directory"
-    exit 1
-fi
-
 # Copy documentation and scripts only (Docker services stay in original project)
 cp "$SETUP_DIR/README.md" .
-cp "$SETUP_DIR/PROJECT.md" .
 cp "$SETUP_DIR/GETTING_STARTED.md" .
 cp "$SETUP_DIR/TECHNICAL_IMPLEMENTATION.md" .
-cp "$SETUP_DIR/LICENSE" .
 
 # Copy scripts (make them relative to blockchain directory)
 mkdir -p scripts
-cp "$SETUP_DIR/scripts/upload-dataset.sh" scripts/
 cp "$SETUP_DIR/scripts/quick-start.sh" scripts/ 2>/dev/null || echo "⚠️  quick-start.sh not found, skipping"
-cp "$SETUP_DIR/scripts/fix-dependencies.sh" scripts/ 2>/dev/null || echo "⚠️  fix-dependencies.sh not found, skipping"
+cp "$SETUP_DIR/scripts/upload-dataset.sh" scripts/ 2>/dev/null || echo "⚠️  upload-dataset.sh not found, skipping"
 
-# Update upload-dataset.sh to work from blockchain directory
-sed -i.bak "s|govchaind|./build/${CHAIN_NAME}d|g" scripts/upload-dataset.sh 2>/dev/null || \
-sed -i "s|govchaind|./build/${CHAIN_NAME}d|g" scripts/upload-dataset.sh 2>/dev/null || true
-sed -i.bak "s|--chain-id govchain|--chain-id $CHAIN_NAME|g" scripts/upload-dataset.sh 2>/dev/null || \
-sed -i "s|--chain-id govchain|--chain-id $CHAIN_NAME|g" scripts/upload-dataset.sh 2>/dev/null || true
+# Update upload-dataset.sh to work from blockchain directory with new entry structure
+if [ -f "scripts/upload-dataset.sh" ]; then
+    sed -i.bak "s|govchaind|./build/${CHAIN_NAME}d|g" scripts/upload-dataset.sh 2>/dev/null || \
+    sed -i "s|govchaind|./build/${CHAIN_NAME}d|g" scripts/upload-dataset.sh 2>/dev/null || true
+    sed -i.bak "s|--chain-id govchain|--chain-id $CHAIN_NAME|g" scripts/upload-dataset.sh 2>/dev/null || \
+    sed -i "s|--chain-id govchain|--chain-id $CHAIN_NAME|g" scripts/upload-dataset.sh 2>/dev/null || true
+    
+    # Update message type from create-dataset to create-entry
+    sed -i.bak "s|create-dataset|create-entry|g" scripts/upload-dataset.sh 2>/dev/null || \
+    sed -i "s|create-dataset|create-entry|g" scripts/upload-dataset.sh 2>/dev/null || true
+    
+    echo "✅ Updated upload-dataset.sh for entry structure"
+else
+    echo "⚠️  upload-dataset.sh not found, skipping updates"
+fi
 
 echo "✅ Project files copied successfully"
 
@@ -418,7 +393,7 @@ Tokenomics will be introduced later based on:
 
 Government datasets can be submitted without tokens:
 - Upload to IPFS
-- Submit metadata to blockchain
+- Submit metadata to blockchain as entries
 - Community validates quality
 - No fees for public data
 
@@ -467,6 +442,11 @@ echo "   docker-compose up -d"
 echo ""
 echo "4. Upload your first dataset (from this directory):"
 echo "   ./scripts/upload-dataset.sh <file> <title> <description> <agency> <category>"
+echo ""
+echo "5. Query entries:"
+echo "   ./build/${CHAIN_NAME}d query datasets list-entry"
+echo "   ./build/${CHAIN_NAME}d query datasets show-entry <id>"
+echo "   ./build/${CHAIN_NAME}d query datasets entries-by-agency <agency>"
 echo ""
 echo "5. Share with volunteers:"
 echo "   ./join-as-volunteer.sh"

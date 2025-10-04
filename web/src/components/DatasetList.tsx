@@ -283,7 +283,7 @@ export default function DatasetList() {
       ) : (
         <div className="grid gap-4">
           {filteredAndSortedDatasets.map((dataset) => (
-            <DatasetCard key={dataset.id} dataset={dataset} />
+            <DatasetCard key={dataset.index} dataset={dataset} />
           ))}
         </div>
       )}

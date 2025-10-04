@@ -11,7 +11,7 @@ export async function GET(
     const { id } = params;
     
     const response = await fetch(
-      `${BLOCKCHAIN_API}/govchain/datasets/dataset/${id}`,
+      `${BLOCKCHAIN_API}/govchain/datasets/v1/entry/${id}`,
       {
         headers: {
           'Accept': 'application/json',
@@ -33,7 +33,7 @@ export async function GET(
     const data = await response.json();
     
     return NextResponse.json({
-      dataset: data.Dataset || data,
+      dataset: data.StoredDataset || data.Dataset || data,
     });
   } catch (error) {
     console.error('Error fetching dataset:', error);

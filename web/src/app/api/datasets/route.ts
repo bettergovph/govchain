@@ -10,7 +10,7 @@ export async function GET(request: NextRequest) {
     const offset = searchParams.get('offset') || '0';
     
     const response = await fetch(
-      `${BLOCKCHAIN_API}/govchain/datasets/dataset?pagination.limit=${limit}&pagination.offset=${offset}`,
+      `${BLOCKCHAIN_API}/govchain/datasets/v1/entry?pagination.limit=${limit}&pagination.offset=${offset}`,
       {
         headers: {
           'Accept': 'application/json',
@@ -20,13 +20,13 @@ export async function GET(request: NextRequest) {
     );
 
     if (!response.ok) {
-      throw new Error(`Blockchain API returned ${response.status}`);
+      throw new Error(`Blockchain API returned ${response.status} ${response.statusText}`);
     }
 
     const data: BlockchainResponse = await response.json();
     
     return NextResponse.json({
-      datasets: data.Dataset || [],
+      datasets: data.entry || [],
       pagination: data.pagination,
       total: parseInt(data.pagination?.total || '0'),
     });

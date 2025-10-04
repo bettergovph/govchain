@@ -658,9 +658,9 @@ Part 10: API Reference Structure
 Blockchain REST API
 Endpoints:
 
-GET /govchain/datasets/dataset - List all
-GET /govchain/datasets/dataset/{id} - Get by ID
-GET /govchain/datasets/datasets-by-agency/{agency} - Filter
+GET /govchain/datasets/v1/entry - List all
+GET /govchain/datasets/v1/entry/{id} - Get by ID
+GET /govchain/datasets/v1/entrys-by-agency/{agency} - Filter
 POST /cosmos/tx/v1beta1/txs - Submit transaction
 
 Response Format:
@@ -925,7 +925,7 @@ When AI agents help implement features, they should track these files:
 Adding New Dataset Field
 Files to modify:
 
-proto/govchain/datasets/dataset.proto - Add field
+proto/govchain/datasets/v1/entry.proto - Add field
 Message handler - Include in storage logic
 Indexer payload - Add to vector DB metadata
 Frontend - Display in UI

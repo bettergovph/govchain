@@ -59,3 +59,5 @@ coverage.txt
 # OS
 Thumbs.db
 .DS_Store
+
+app/
