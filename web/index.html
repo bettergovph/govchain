@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GovChain - Decentralized Government Data</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            color: white;
+            margin-bottom: 40px;
+        }
+
+        h1 {
+            font-size: 3em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .tagline {
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+
+        .search-box {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            margin-bottom: 30px;
+        }
+
+        .search-input-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        input[type="text"] {
+            flex: 1;
+            padding: 15px 20px;
+            font-size: 16px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            transition: border-color 0.3s;
+        }
+
+        input[type="text"]:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        button {
+            padding: 15px 30px;
+            font-size: 16px;
+            font-weight: 600;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        .filters {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        select {
+            padding: 10px 15px;
+            font-size: 14px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            background: white;
+            cursor: pointer;
+        }
+
+        .results {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 20px;
+        }
+
+        .dataset-card {
+            background: white;
+            border-radius: 12px;
+            padding: 25px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .dataset-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+        }
+
+        .dataset-title {
+            font-size: 1.4em;
+            font-weight: 700;
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .dataset-description {
+            color: #666;
+            margin-bottom: 15px;
+            line-height: 1.5;
+        }
+
+        .dataset-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .badge {
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.85em;
+            font-weight: 600;
+        }
+
+        .badge-agency {
+            background: #e3f2fd;
+            color: #1976d2;
+        }
+
+        .badge-category {
+            background: #f3e5f5;
+            color: #7b1fa2;
+        }
+
+        .badge-pins {
+            background: #e8f5e9;
+            color: #388e3c;
+        }
+
+        .dataset-cid {
+            font-family: 'Courier New', monospace;
+            font-size: 0.85em;
+            color: #999;
+            margin-bottom: 10px;
+            word-break: break-all;
+        }
+
+        .dataset-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn-download {
+            flex: 1;
+            padding: 10px;
+            background: #4caf50;
+            color: white;
+            text-decoration: none;
+            text-align: center;
+            border-radius: 6px;
+            font-weight: 600;
+            transition: background 0.3s;
+        }
+
+        .btn-download:hover {
+            background: #45a049;
+        }
+
+        .btn-verify {
+            flex: 1;
+            padding: 10px;
+            background: #2196f3;
+            color: white;
+            text-decoration: none;
+            text-align: center;
+            border-radius: 6px;
+            font-weight: 600;
+            transition: background 0.3s;
+        }
+
+        .btn-verify:hover {
+            background: #0b7dda;
+        }
+
+        .loading {
+            text-align: center;
+            color: white;
+            font-size: 1.2em;
+            padding: 40px;
+        }
+
+        .error {
+            background: #ffebee;
+            color: #c62828;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        .no-results {
+            text-align: center;
+            color: white;
+            font-size: 1.2em;
+            padding: 40px;
+        }
+
+        .stats {
+            background: rgba(255,255,255,0.2);
+            color: white;
+            padding: 15px 25px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 2em;
+            }
+
+            .search-input-group {
+                flex-direction: column;
+            }
+
+            .results {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🏛️ GovChain</h1>
+            <p class="tagline">Decentralized Government Transparency Platform</p>
+        </header>
+
+        <div class="search-box">
+            <div class="search-input-group">
+                <input 
+                    type="text" 
+                    id="searchInput" 
+                    placeholder="Search datasets... (e.g., 'climate data', 'census 2024', 'public health')"
+                    onkeypress="handleKeyPress(event)"
+                >
+                <button onclick="searchDatasets()">🔍 Search</button>
+            </div>
+
+            <div class="filters">
+                <select id="agencyFilter">
+                    <option value="">All Agencies</option>
+                    <option value="NOAA">NOAA</option>
+                    <option value="CDC">CDC</option>
+                    <option value="EPA">EPA</option>
+                    <option value="Census">Census Bureau</option>
+                    <option value="NASA">NASA</option>
+                </select>
+
+                <select id="categoryFilter">
+                    <option value="">All Categories</option>
+                    <option value="climate">Climate</option>
+                    <option value="health">Health</option>
+                    <option value="environment">Environment</option>
+                    <option value="demographics">Demographics</option>
+                    <option value="space">Space</option>
+                </select>
+
+                <select id="limitFilter">
+                    <option value="10">10 results</option>
+                    <option value="25">25 results</option>
+                    <option value="50">50 results</option>
+                    <option value="100">100 results</option>
+                </select>
+            </div>
+        </div>
+
+        <div id="stats" class="stats" style="display: none;"></div>
+        <div id="error" class="error" style="display: none;"></div>
+        <div id="loading" class="loading" style="display: none;">Searching datasets...</div>
+        <div id="results" class="results"></div>
+        <div id="noResults" class="no-results" style="display: none;">
+            No datasets found. Try a different search query or browse all datasets.
+        </div>
+    </div>
+
+    <script>
+        const INDEXER_API = 'http://localhost:3000';
+        const BLOCKCHAIN_API = 'http://localhost:1317';
+        const IPFS_GATEWAY = 'https://ipfs.io/ipfs/';
+
+        function handleKeyPress(event) {
+            if (event.key === 'Enter') {
+                searchDatasets();
+            }
+        }
+
+        async function searchDatasets() {
+            const query = document.getElementById('searchInput').value.trim();
+            const agency = document.getElementById('agencyFilter').value;
+            const category = document.getElementById('categoryFilter').value;
+            const limit = document.getElementById('limitFilter').value;
+
+            // Show loading
+            document.getElementById('loading').style.display = 'block';
+            document.getElementById('error').style.display = 'none';
+            document.getElementById('results').innerHTML = '';
+            document.getElementById('noResults').style.display = 'none';
+            document.getElementById('stats').style.display = 'none';
+
+            try {
+                let datasets = [];
+
+                if (query) {
+                    // Use semantic search
+                    const params = new URLSearchParams({
+                        q: query,
+                        limit: limit
+                    });
+                    if (agency) params.append('agency', agency);
+                    if (category) params.append('category', category);
+
+                    const response = await fetch(`${INDEXER_API}/search?${params}`);
+                    if (!response.ok) {
+                        throw new Error('Search service unavailable, falling back to blockchain');
+                    }
+                    const data = await response.json();
+                    datasets = data.results || [];
+                } else {
+                    // Fetch all from blockchain
+                    const response = await fetch(`${BLOCKCHAIN_API}/govchain/datasets/dataset`);
+                    if (!response.ok) {
+                        throw new Error('Failed to fetch datasets from blockchain');
+                    }
+                    const data = await response.json();
+                    datasets = data.Dataset || [];
+
+                    // Apply filters
+                    if (agency) {
+                        datasets = datasets.filter(d => d.agency === agency);
+                    }
+                    if (category) {
+                        datasets = datasets.filter(d => d.category === category);
+                    }
+                    datasets = datasets.slice(0, parseInt(limit));
+                }
+
+                displayResults(datasets);
+            } catch (error) {
+                console.error('Search error:', error);
+                document.getElementById('error').textContent = `Error: ${error.message}`;
+                document.getElementById('error').style.display = 'block';
+            } finally {
+                document.getElementById('loading').style.display = 'none';
+            }
+        }
+
+        function displayResults(datasets) {
+            const resultsDiv = document.getElementById('results');
+            const statsDiv = document.getElementById('stats');
+            const noResultsDiv = document.getElementById('noResults');
+
+            if (datasets.length === 0) {
+                noResultsDiv.style.display = 'block';
+                return;
+            }
+
+            // Show stats
+            statsDiv.textContent = `Found ${datasets.length} dataset${datasets.length !== 1 ? 's' : ''}`;
+            statsDiv.style.display = 'block';
+
+            // Display datasets
+            resultsDiv.innerHTML = datasets.map(dataset => `
+                <div class="dataset-card">
+                    <div class="dataset-title">${escapeHtml(dataset.title)}</div>
+                    <div class="dataset-description">${escapeHtml(dataset.description)}</div>
+                    
+                    <div class="dataset-meta">
+                        <span class="badge badge-agency">🏛️ ${escapeHtml(dataset.agency)}</span>
+                        <span class="badge badge-category">📁 ${escapeHtml(dataset.category)}</span>
+                        <span class="badge badge-pins">📌 ${dataset.pinCount || 0} pins</span>
+                    </div>
+
+                    <div class="dataset-cid">
+                        <strong>IPFS CID:</strong> ${escapeHtml(dataset.ipfsCid)}
+                    </div>
+
+                    <div class="dataset-cid">
+                        <strong>Checksum:</strong> ${escapeHtml(dataset.checksumSha256)}
+                    </div>
+
+                    <div class="dataset-cid">
+                        <strong>Size:</strong> ${formatFileSize(dataset.fileSize)}
+                    </div>
+
+                    <div class="dataset-actions">
+                        <a href="${IPFS_GATEWAY}${dataset.ipfsCid}" 
+                           target="_blank" 
+                           class="btn-download">
+                            ⬇️ Download
+                        </a>
+                        <a href="${BLOCKCHAIN_API}/govchain/datasets/dataset/${dataset.id}" 
+                           target="_blank" 
+                           class="btn-verify">
+                            ✓ Verify
+                        </a>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text || '';
+            return div.innerHTML;
+        }
+
+        function formatFileSize(bytes) {
+            if (!bytes) return 'Unknown';
+            const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
+            if (bytes === 0) return '0 Bytes';
+            const i = Math.floor(Math.log(bytes) / Math.log(1024));
+            return Math.round(bytes / Math.pow(1024, i) * 100) / 100 + ' ' + sizes[i];
+        }
+
+        // Load all datasets on page load
+        window.addEventListener('load', () => {
+            searchDatasets();
+        });
+    </script>
+</body>
+</html>

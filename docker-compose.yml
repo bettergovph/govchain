@@ -1,0 +1,57 @@
+version: '3.8'
+
+services:
+  # Qdrant vector database
+  qdrant:
+    image: qdrant/qdrant:latest
+    container_name: govchain-qdrant
+    ports:
+      - "6333:6333"
+      - "6334:6334"
+    volumes:
+      - ./qdrant_storage:/qdrant/storage
+    environment:
+      - QDRANT__SERVICE__GRPC_PORT=6334
+    networks:
+      - govchain-network
+    restart: unless-stopped
+
+  # Vector search indexer
+  indexer:
+    build:
+      context: ./indexer
+      dockerfile: Dockerfile
+    container_name: govchain-indexer
+    ports:
+      - "3000:3000"
+    environment:
+      - QDRANT_URL=qdrant:6333
+      - BLOCKCHAIN_API=http://host.docker.internal:1317
+      - COLLECTION_NAME=govchain_datasets
+      - PORT=3000
+    depends_on:
+      - qdrant
+    networks:
+      - govchain-network
+    restart: unless-stopped
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+  # Web interface
+  web:
+    image: nginx:alpine
+    container_name: govchain-web
+    ports:
+      - "8080:80"
+    volumes:
+      - ./web:/usr/share/nginx/html:ro
+    networks:
+      - govchain-network
+    restart: unless-stopped
+
+networks:
+  govchain-network:
+    driver: bridge
+
+volumes:
+  qdrant_storage:

@@ -1,0 +1,61 @@
+# GovChain .gitignore
+
+# Blockchain data
+govchain/.ignite/
+govchain/build/
+govchain/dist/
+govchain/release/
+.govchain/
+
+# Go
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+*.test
+*.out
+go.work
+vendor/
+
+# IPFS
+.ipfs/
+qdrant_storage/
+
+# Environment files
+.env
+*.env.local
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Logs
+*.log
+logs/
+/tmp/
+
+# Dependencies
+node_modules/
+indexer/go.sum
+
+# Build artifacts
+*.tar.gz
+*.zip
+
+# Test coverage
+coverage.txt
+*.cover
+
+# Temporary files
+/temp/
+/tmp/
+*.tmp
+
+# OS
+Thumbs.db
+.DS_Store
