@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { checkIPFSStatus } from '@/lib/ipfs';
-import { executeCommand, getBlockchainConfig } from '@/lib/blockchain';
+import { getCosmJSClient, discoverActualTypeUrls, validateTypeUrls, getAvailableEndpoints } from '@/lib/cosmjs-client';
 
 interface ServiceStatus {
   name: string;
@@ -10,16 +10,20 @@ interface ServiceStatus {
 
 async function checkBlockchainStatus(): Promise<ServiceStatus> {
   try {
-    const config = getBlockchainConfig();
-    await executeCommand('govchaind', ['status'], 5000);
+    const cosmjsClient = getCosmJSClient();
+    const queryClient = await cosmjsClient.getQueryClient();
+    
+    // Test if we can connect to the blockchain
+    const chainId = await queryClient.getChainId();
+    
     return {
-      name: 'Blockchain (govchaind)',
+      name: 'Blockchain (CosmJS)',
       status: 'healthy',
-      message: `Connected to ${config.chainId}`,
+      message: `Connected to chain: ${chainId}`,
     };
   } catch (error) {
     return {
-      name: 'Blockchain (govchaind)',
+      name: 'Blockchain (CosmJS)',
       status: 'unhealthy',
       message: error instanceof Error ? error.message : 'Unknown error',
     };
@@ -88,11 +92,22 @@ async function checkBlockchainAPIStatus(): Promise<ServiceStatus> {
 export async function GET() {
   try {
     // Check all services in parallel
-    const [ipfsHealthy, blockchainStatus, indexerStatus, apiStatus] = await Promise.all([
+    const [
+      ipfsHealthy, 
+      blockchainStatus, 
+      indexerStatus, 
+      apiStatus,
+      discoveredTypeUrls,
+      typeUrlValidation,
+      availableEndpoints
+    ] = await Promise.all([
       checkIPFSStatus(),
       checkBlockchainStatus(),
       checkIndexerStatus(),
       checkBlockchainAPIStatus(),
+      discoverActualTypeUrls(),
+      validateTypeUrls(),
+      getAvailableEndpoints(),
     ]);
 
     const services: ServiceStatus[] = [
@@ -115,8 +130,27 @@ export async function GET() {
       configuration: {
         chainId: process.env.CHAIN_ID || 'govchain',
         blockchainAPI: process.env.BLOCKCHAIN_API || 'http://localhost:1317',
-        indexerAPI: process.env.INDEXER_API || 'http://localhost:9002',
+        blockchainRPC: process.env.BLOCKCHAIN_NODE || 'http://localhost:26657',
+        indexerAPI: process.env.INDEXER_URL || 'http://localhost:3001',
         ipfsGateway: process.env.NEXT_PUBLIC_IPFS_GATEWAY || 'https://ipfs.io',
+      },
+      blockchain: {
+        typeUrls: discoveredTypeUrls,
+        queryEndpoints: availableEndpoints,
+        typeUrlValidation,
+        messageTypes: {
+          'Discovered Type URLs': Object.keys(discoveredTypeUrls).join(', '),
+          'Total Found': Object.keys(discoveredTypeUrls).length.toString(),
+        },
+        queries: {
+          'Available Endpoints': Object.keys(availableEndpoints).join(', '),
+          'Total Endpoints': Object.keys(availableEndpoints).length.toString(),
+        },
+        discovery: {
+          'Type URL Discovery': 'Dynamic discovery from blockchain',
+          'Endpoint Discovery': 'Live testing of REST endpoints',
+          'Last Updated': new Date().toISOString(),
+        }
       },
     });
 

@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getBlockchainConfig, executeCommand, extractTransactionHash } from '@/lib/blockchain';
 import { uploadToIPFS } from '@/lib/ipfs';
 import { UploadRequest, Dataset, TransactionResult } from '@/types/dataset';
+import { getCosmJSClient } from '@/lib/cosmjs-client';
 import crypto from 'crypto';
 
 export async function POST(request: NextRequest) {
@@ -42,8 +42,8 @@ export async function POST(request: NextRequest) {
     const checksum = crypto.createHash('sha256').update(Buffer.from(buffer)).digest('hex');
 
     // Prepare blockchain submission
-    const config = getBlockchainConfig();
-    const submitter = metadata.submitter || config.submitter;
+    const cosmjsClient = getCosmJSClient();
+    const submitter = metadata.submitter || 'alice'; // Default to alice for development
     const timestamp = Math.floor(Date.now() / 1000);
     const fileUrl = `https://ipfs.io/ipfs/${ipfsResult.cid}`;
     const fallbackUrl = metadata.fallbackUrl || '';
@@ -51,72 +51,65 @@ export async function POST(request: NextRequest) {
     // Create unique entry ID
     const entryId = `entry-${timestamp}-${ipfsResult.cid.slice(-8)}`;
 
-    // Submit to blockchain using create-entry
-    const createEntryArgs = [
-      'tx',
-      'datasets', 
-      'create-entry',
-      entryId,                    // Index/Key
-      metadata.title,             // Title
-      metadata.description,       // Description  
-      ipfsResult.cid,            // IPFS CID
-      file.type || 'application/octet-stream', // MIME Type
-      file.name,                 // File Name
-      fileUrl,                   // File URL
-      fallbackUrl,               // Fallback URL
-      ipfsResult.size.toString(), // File Size
-      checksum,                  // Checksum
-      metadata.agency,           // Agency
-      metadata.category,         // Category
-      submitter,                 // Submitter
-      timestamp.toString(),      // Timestamp
-      '0',                      // Initial Pin Count
-      '--from', submitter,
-      '--chain-id', config.chainId,
-      '--keyring-backend', config.keyringBackend,
-      '--gas', 'auto',
-      '--gas-adjustment', '1.5',
-      '--yes',
-      '--output', 'json',
-      '--node', config.nodeUrl,
-    ];
+    // Submit to blockchain using CosmJS
+    try {
+      const result = await cosmjsClient.createEntry({
+        index: entryId,
+        title: metadata.title,
+        description: metadata.description,
+        ipfsCid: ipfsResult.cid,
+        mimeType: file.type || 'application/octet-stream',
+        fileName: file.name,
+        fileUrl: fileUrl,
+        fallbackUrl: fallbackUrl,
+        fileSize: ipfsResult.size.toString(),
+        checksumSha256: checksum,
+        agency: metadata.agency,
+        category: metadata.category,
+        submitter: submitter,
+        timestamp: timestamp.toString(),
+        pinCount: "0"
+      });
 
-    const txOutput = await executeCommand(config.binary, createEntryArgs, 30000);
-    
-    // Extract transaction hash
-    const txhash = extractTransactionHash(txOutput);
-    
-    if (!txhash) {
-      throw new Error('Transaction submitted but no hash returned');
+      const txhash = result.transactionHash;
+      
+      if (!txhash) {
+        throw new Error('Transaction submitted but no hash returned');
+      }
+
+      // Prepare response dataset object
+      const dataset: Dataset = {
+        index: entryId,
+        title: metadata.title,
+        description: metadata.description,
+        ipfs_cid: ipfsResult.cid,
+        mime_type: file.type || 'application/octet-stream',
+        file_name: file.name,
+        file_url: fileUrl,
+        fallback_url: fallbackUrl,
+        file_size: ipfsResult.size,
+        checksum_sha_256: checksum,
+        agency: metadata.agency,
+        category: metadata.category,
+        submitter: submitter,
+        timestamp: timestamp * 1000, // Convert to milliseconds for frontend
+        pinCount: 0,
+        creator: submitter,
+      };
+
+      const responseData: TransactionResult & { dataset: Dataset } = {
+        txhash,
+        raw_log: `Transaction successful at height ${result.height}`,
+        logs: [],
+        dataset,
+      };
+
+      return NextResponse.json(responseData);
+
+    } catch (blockchainError) {
+      console.error('Blockchain submission failed:', blockchainError);
+      throw new Error(`Blockchain transaction failed: ${blockchainError instanceof Error ? blockchainError.message : 'Unknown error'}`);
     }
-
-    // Prepare response dataset object
-    const dataset: Dataset = {
-      id: entryId,
-      title: metadata.title,
-      description: metadata.description,
-      ipfsCid: ipfsResult.cid,
-      mimeType: file.type || 'application/octet-stream',
-      fileName: file.name,
-      fileUrl: fileUrl,
-      fallbackUrl: fallbackUrl,
-      fileSize: ipfsResult.size,
-      checksumSha256: checksum,
-      agency: metadata.agency,
-      category: metadata.category,
-      submitter: submitter,
-      timestamp: timestamp * 1000, // Convert to milliseconds for frontend
-      pinCount: 0,
-    };
-
-    const result: TransactionResult & { dataset: Dataset } = {
-      txhash,
-      raw_log: txOutput,
-      logs: [],
-      dataset,
-    };
-
-    return NextResponse.json(result);
 
   } catch (error) {
     console.error('Upload failed:', error);
