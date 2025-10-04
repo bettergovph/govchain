@@ -38,17 +38,35 @@ services:
     extra_hosts:
       - "host.docker.internal:host-gateway"
 
-  # Web interface
+  # Web interface (Next.js)
   web:
-    image: nginx:alpine
+    build:
+      context: ./web
+      dockerfile: Dockerfile
     container_name: govchain-web
     ports:
-      - "9003:80"
-    volumes:
-      - ./web:/usr/share/nginx/html:ro
+      - "9004:3000"
+    environment:
+      - BLOCKCHAIN_API=http://host.docker.internal:1317
+      - INDEXER_API=http://indexer:3000
+      - CHAIN_ID=govchain
+      - BLOCKCHAIN_NODE=tcp://host.docker.internal:26657
+      - BLOCKCHAIN_SUBMITTER=alice
+      - BLOCKCHAIN_KEYRING_BACKEND=test
+      - BLOCKCHAIN_BINARY=govchaind
+      - IPFS_API_URL=http://host.docker.internal:5001
+      - IPFS_GATEWAY_URL=http://host.docker.internal:8080
+      - NEXT_PUBLIC_BLOCKCHAIN_API=http://localhost:1317
+      - NEXT_PUBLIC_INDEXER_API=http://localhost:9002
+      - NEXT_PUBLIC_IPFS_GATEWAY=https://ipfs.io
+      - NEXT_PUBLIC_APP_NAME=GovChain Data Portal
+    depends_on:
+      - indexer
     networks:
       - govchain-network
     restart: unless-stopped
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
 
 networks:
   govchain-network:
