@@ -32,10 +32,10 @@ fi
 
 # Parse arguments
 if [ "$#" -lt 5 ]; then
-    echo "Usage: $0 <file> <title> <description> <agency> <category> [submitter-key]"
+    echo "Usage: $0 <file> <title> <description> <agency> <category> [fallback-url] [submitter-key]"
     echo ""
     echo "Example:"
-    echo "  $0 data.csv \"Climate Data 2024\" \"Annual climate measurements\" \"NOAA\" \"climate\" alice"
+    echo "  $0 data.csv \"Climate Data 2024\" \"Annual climate measurements\" \"NOAA\" \"climate\" \"https://backup.noaa.gov/data.csv\" alice"
     echo ""
     exit 1
 fi
@@ -45,7 +45,8 @@ TITLE="$2"
 DESCRIPTION="$3"
 AGENCY="$4"
 CATEGORY="$5"
-SUBMITTER="${6:-alice}"
+FALLBACK_URL="${6:-}"
+SUBMITTER="${7:-alice}"
 
 # Validate file exists
 if [ ! -f "$FILE_PATH" ]; then
@@ -57,11 +58,41 @@ echo -e "${YELLOW}📄 File: $FILE_PATH${NC}"
 echo -e "${YELLOW}📝 Title: $TITLE${NC}"
 echo -e "${YELLOW}🏛️  Agency: $AGENCY${NC}"
 echo -e "${YELLOW}📁 Category: $CATEGORY${NC}"
+if [ -n "$FALLBACK_URL" ]; then
+    echo -e "${YELLOW}🔗 Fallback URL: $FALLBACK_URL${NC}"
+fi
 echo ""
 
 # Calculate file size
 FILE_SIZE=$(stat -f%z "$FILE_PATH" 2>/dev/null || stat -c%s "$FILE_PATH")
 echo -e "${GREEN}📊 File size: $FILE_SIZE bytes${NC}"
+
+# Extract filename
+FILE_NAME=$(basename "$FILE_PATH")
+echo -e "${GREEN}📄 Filename: $FILE_NAME${NC}"
+
+# Detect MIME type
+echo "🔍 Detecting MIME type..."
+if command -v file &> /dev/null; then
+    MIME_TYPE=$(file -b --mime-type "$FILE_PATH")
+else
+    # Fallback MIME type detection based on file extension
+    case "${FILE_PATH##*.}" in
+        csv) MIME_TYPE="text/csv" ;;
+        json) MIME_TYPE="application/json" ;;
+        xml) MIME_TYPE="application/xml" ;;
+        pdf) MIME_TYPE="application/pdf" ;;
+        txt) MIME_TYPE="text/plain" ;;
+        html|htm) MIME_TYPE="text/html" ;;
+        jpg|jpeg) MIME_TYPE="image/jpeg" ;;
+        png) MIME_TYPE="image/png" ;;
+        *) MIME_TYPE="application/octet-stream" ;;
+    esac
+fi
+echo -e "${GREEN}✓ MIME type: $MIME_TYPE${NC}"
+
+# Create file URL from IPFS CID (will be set after upload)
+# This will be updated after we get the IPFS CID
 
 # Calculate SHA-256 checksum
 echo "🔐 Calculating checksum..."
@@ -72,6 +103,10 @@ echo -e "${GREEN}✓ Checksum: $CHECKSUM${NC}"
 echo "📤 Uploading to IPFS..."
 IPFS_CID=$(ipfs add -Q "$FILE_PATH")
 echo -e "${GREEN}✓ IPFS CID: $IPFS_CID${NC}"
+
+# Create file URL from IPFS CID
+FILE_URL="https://ipfs.io/ipfs/$IPFS_CID"
+echo -e "${GREEN}🔗 File URL: $FILE_URL${NC}"
 
 # Pin the file
 echo "📌 Pinning to local IPFS node..."
@@ -84,6 +119,10 @@ TX_RESULT=$(govchaind tx datasets create-dataset \
     "$TITLE" \
     "$DESCRIPTION" \
     "$IPFS_CID" \
+    "$MIME_TYPE" \
+    "$FILE_NAME" \
+    "$FILE_URL" \
+    "$FALLBACK_URL" \
     "$FILE_SIZE" \
     "$CHECKSUM" \
     "$AGENCY" \
@@ -114,12 +153,17 @@ echo "================================"
 echo ""
 echo "Dataset Details:"
 echo "  Title: $TITLE"
+echo "  Filename: $FILE_NAME"
+echo "  MIME Type: $MIME_TYPE"
 echo "  IPFS CID: $IPFS_CID"
 echo "  Checksum: $CHECKSUM"
 echo "  Size: $FILE_SIZE bytes"
+if [ -n "$FALLBACK_URL" ]; then
+    echo "  Fallback URL: $FALLBACK_URL"
+fi
 echo ""
 echo "Access your dataset:"
-echo "  IPFS Gateway: https://ipfs.io/ipfs/$IPFS_CID"
+echo "  Primary URL: $FILE_URL"
 echo "  Local Gateway: http://localhost:8080/ipfs/$IPFS_CID"
 echo ""
 echo "Verify on blockchain:"

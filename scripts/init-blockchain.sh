@@ -41,6 +41,10 @@ ignite scaffold message create-dataset \
     title:string \
     description:string \
     ipfsCid:string \
+    mimeType:string \
+    fileName:string \
+    fileUrl:string \
+    fallbackUrl:string \
     fileSize:uint \
     checksumSha256:string \
     agency:string \
@@ -58,6 +62,10 @@ ignite scaffold list dataset \
     title:string \
     description:string \
     ipfsCid:string \
+    mimeType:string \
+    fileName:string \
+    fileUrl:string \
+    fallbackUrl:string \
     fileSize:uint \
     checksumSha256:string \
     agency:string \
@@ -71,6 +79,8 @@ echo "🔧 Adding queries..."
 ignite scaffold query list-datasets --module datasets
 ignite scaffold query get-dataset id:uint --module datasets
 ignite scaffold query datasets-by-agency agency:string --module datasets
+ignite scaffold query datasets-by-category category:string --module datasets
+ignite scaffold query datasets-by-mimetype mimeType:string --module datasets
 
 echo ""
 echo "================================"
