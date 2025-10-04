@@ -15,13 +15,13 @@ GovChain combines three powerful technologies:
 
 1. **Cosmos Blockchain** - Immutable registry of dataset metadata and provenance
 2. **IPFS** - Distributed file storage with content addressing
-3. **Qdrant Vector DB** - AI-powered semantic search
+3. **ChromaDB Vector DB** - AI-powered semantic search
 
 ### System Components
 
 ```
 ┌─────────────┐     ┌──────────────┐     ┌─────────────┐
-│   Web UI    │────▶│   Indexer    │────▶│   Qdrant    │
+│   Web UI    │────▶│   Indexer    │────▶│   ChromaDB    │
 │  (Search)   │     │ (REST API)   │     │  (Vectors)  │
 └─────────────┘     └──────────────┘     └─────────────┘
        │                    │
@@ -67,8 +67,8 @@ ignite chain serve
 ipfs init
 ipfs daemon
 
-# Terminal 3: Start Qdrant
-docker run -p 6333:6333 -v $(pwd)/qdrant_storage:/qdrant/storage qdrant/qdrant
+# Terminal 3: Start ChromaDB
+docker run -p 6333:6333 -v $(pwd)/ChromaDB_storage:/ChromaDB/storage ChromaDB/ChromaDB
 
 # Terminal 4: Start indexer
 cd indexer
@@ -112,7 +112,7 @@ govchain/
 
 - **Blockchain**: Cosmos SDK, Tendermint BFT
 - **Storage**: IPFS (Kubo)
-- **Search**: Qdrant vector database, OpenAI embeddings
+- **Search**: ChromaDB vector database, OpenAI embeddings
 - **Backend**: Go 1.21+
 - **Frontend**: HTML/CSS/JavaScript (Vanilla)
 

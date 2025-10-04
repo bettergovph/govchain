@@ -20,7 +20,7 @@ vendor/
 
 # IPFS
 .ipfs/
-qdrant_storage/
+ChromaDB_storage/
 
 # Environment files
 .env

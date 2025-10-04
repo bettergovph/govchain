@@ -50,11 +50,11 @@ if [ ! -d "$HOME/.ipfs" ]; then
 fi
 
 # Start Docker services
-echo "🐳 Starting Docker services (Qdrant, Web)..."
-docker compose up -d qdrant web
+echo "🐳 Starting Docker services (ChromaDB, Web)..."
+docker compose up -d chromadb web
 
-# Wait for Qdrant to be ready
-echo "⏳ Waiting for Qdrant to start..."
+# Wait for ChromaDB to be ready
+echo "⏳ Waiting for ChromaDB to start..."
 sleep 5
 
 # Start IPFS daemon in background
@@ -86,7 +86,7 @@ echo ""
 echo "Access points:"
 echo "  🌐 Web Interface: http://localhost:8080"
 echo "  🔍 Search API: http://localhost:3000"
-echo "  📊 Qdrant Dashboard: http://localhost:6333/dashboard"
+echo "  📊 ChromaDB Dashboard: http://localhost:6333/dashboard"
 echo "  📦 IPFS Gateway: http://localhost:8080/ipfs/<CID>"
 echo "  ⛓️  Blockchain API: http://localhost:1317"
 echo ""

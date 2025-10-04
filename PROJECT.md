@@ -40,10 +40,10 @@ No single point of failure
 
 
 
-Layer 3: Qdrant Vector Database (Search Layer)
+Layer 3: ChromaDB Vector Database (Search Layer)
 
 Purpose: Semantic search and discovery
-Technology: Qdrant vector database with OpenAI embeddings
+Technology: ChromaDB vector database with OpenAI embeddings
 Features:
 
 Natural language queries ("climate data from 2020-2024")
@@ -178,7 +178,7 @@ HTTP gateway support: Public access via ipfs.io, cloudflare-ipfs.com
 
 Vector Search
 
-Database: Qdrant
+Database: ChromaDB
 Embedding model: OpenAI Ada-002 (1536 dimensions) or local alternatives
 Distance metric: Cosine similarity
 Query types:
@@ -316,7 +316,7 @@ Validator setup scripts
 
 govchain-indexer - Vector search service
 
-Qdrant integration
+ChromaDB integration
 REST API
 Event listener
 

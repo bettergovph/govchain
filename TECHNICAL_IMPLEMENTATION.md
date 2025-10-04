@@ -202,7 +202,7 @@ The indexer is a separate Go service that:
 Polls blockchain API every 30 seconds
 Fetches new/updated datasets
 Generates text embeddings
-Stores vectors in Qdrant
+Stores vectors in ChromaDB
 Provides REST API for search
 
 Indexer Components
@@ -210,18 +210,18 @@ Main Application (main.go):
 
 Indexer Struct
 
-qdrantClient: Connection to vector DB
+ChromaDBClient: Connection to vector DB
 openaiClient: For embeddings (optional)
 blockchainAPI: URL to Cosmos REST API
-collectionName: Qdrant collection identifier
+collectionName: ChromaDB collection identifier
 
 
 Initialization (NewIndexer)
 
 Load environment variables
-Connect to Qdrant (with retry logic)
+Connect to ChromaDB (with retry logic)
 Connect to OpenAI (if API key provided)
-Initialize Qdrant collection if not exists
+Initialize ChromaDB collection if not exists
 
 
 Collection Setup (initCollection)
@@ -242,7 +242,7 @@ Indexing (indexDataset)
 
 Concatenate title, description, agency, category
 Generate embedding vector
-Create Qdrant point with ID = dataset ID
+Create ChromaDB point with ID = dataset ID
 Store all metadata as payload
 Upsert to collection
 
@@ -250,7 +250,7 @@ Upsert to collection
 Search (searchDatasets)
 
 Generate embedding for query text
-Query Qdrant with vector similarity
+Query ChromaDB with vector similarity
 Apply filters if provided
 Return dataset metadata from payload
 
@@ -282,7 +282,7 @@ CORS enabled for web access
 Dependencies (go.mod)
 Required packages:
 
-github.com/qdrant/go-client/qdrant
+github.com/ChromaDB/go-client/ChromaDB
 github.com/gin-gonic/gin
 github.com/joho/godotenv
 github.com/sashabaranov/go-openai
@@ -290,7 +290,7 @@ github.com/sashabaranov/go-openai
 Environment Configuration (.env)
 Variables needed:
 
-QDRANT_URL: Connection string (host:port)
+ChromaDB_URL: Connection string (host:port)
 BLOCKCHAIN_API: Cosmos REST endpoint
 OPENAI_API_KEY: Optional for better embeddings
 
@@ -304,9 +304,9 @@ Run compiled binary
 
 docker-compose.yml:
 
-Service: qdrant (official image)
+Service: ChromaDB (official image)
 Service: indexer (custom build)
-Volume for Qdrant persistence
+Volume for ChromaDB persistence
 Network linking
 Port mappings
 
@@ -631,7 +631,7 @@ Redundant pinning services
 
 Database:
 
-Qdrant collection snapshots
+ChromaDB collection snapshots
 Configuration backups
 
 Scaling Considerations
@@ -719,9 +719,9 @@ Accessible on localhost:5001 (API)
 Gateway on localhost:8080
 
 
-Start Qdrant:
+Start ChromaDB:
 
-Use Docker: docker run -p 6333:6333 qdrant/qdrant
+Use Docker: docker run -p 6333:6333 ChromaDB/ChromaDB
 Persistent volume for data
 
 
@@ -769,7 +769,7 @@ Debugging Tools
 Blockchain logs: govchaind status
 Transaction queries: govchaind query tx {hash}
 IPFS diagnostics: ipfs diag sys
-Qdrant admin UI: http://localhost:6333/dashboard
+ChromaDB admin UI: http://localhost:6333/dashboard
 Browser DevTools for frontend
 
 
@@ -884,10 +884,10 @@ Creating custom module structure
 Implementing message handlers
 Testing locally with ignite chain serve
 
-Scenario 2: "My indexer won't connect to Qdrant"
+Scenario 2: "My indexer won't connect to ChromaDB"
 AI should check:
 
-Is Qdrant running? (docker ps)
+Is ChromaDB running? (docker ps)
 Correct URL in .env file
 Port accessibility (firewall)
 Network configuration in Docker
@@ -907,7 +907,7 @@ AI should debug:
 Is indexer running and polling?
 Check indexer logs for errors
 Verify embeddings are generated
-Test Qdrant collection has data
+Test ChromaDB collection has data
 Check query embedding generation
 
 Scenario 5: "I want to add metadata filtering"
@@ -915,7 +915,7 @@ AI should guide:
 
 Update search function in indexer
 Add filter parameters to API endpoint
-Build Qdrant filter conditions
+Build ChromaDB filter conditions
 Update frontend to send filters
 Test with various filter combinations
 
@@ -972,7 +972,7 @@ Indexer:
 Test embedding generation
 Test search logic
 Test error handling
-Mock Qdrant and blockchain APIs
+Mock ChromaDB and blockchain APIs
 
 Integration Tests
 
@@ -1029,7 +1029,7 @@ Key operations: CreateDataset, PinDataset
 Vector Search Indexer (indexer/)
 
 Go application using Gin framework
-Polls blockchain, indexes to Qdrant
+Polls blockchain, indexes to ChromaDB
 Provides semantic search API
 Uses OpenAI embeddings (or fallback)
 

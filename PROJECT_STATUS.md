@@ -28,7 +28,7 @@
 
 ### Indexer Service (indexer/)
 - ✅ **main.go** - Complete vector search service (600+ lines)
-  - Qdrant integration
+  - ChromaDB integration
   - OpenAI embeddings support
   - REST API with Gin framework
   - Blockchain polling
@@ -48,7 +48,7 @@
 
 ### Infrastructure
 - ✅ **docker-compose.yml** - Multi-service orchestration
-  - Qdrant vector database
+  - ChromaDB vector database
   - Indexer service
   - Web server (nginx)
 
@@ -89,8 +89,8 @@
    # Terminal 2: IPFS
    ipfs init && ipfs daemon
    
-   # Terminal 3: Qdrant
-   docker run -p 6333:6333 qdrant/qdrant
+   # Terminal 3: ChromaDB
+   docker run -p 6333:6333 ChromaDB/ChromaDB
    
    # Terminal 4: Indexer
    cd indexer && cp .env.example .env && go run main.go
@@ -147,13 +147,13 @@
 
 ┌──────────────┐  ┌──────────────┐  ┌──────────────┐
 │   Web UI     │  │   Indexer    │  │  Blockchain  │
-│  (HTML/JS)   │◄─┤  (Go/Qdrant) │◄─┤ (Cosmos SDK) │
+│  (HTML/JS)   │◄─┤  (Go/ChromaDB) │◄─┤ (Cosmos SDK) │
 │  Port 8000   │  │  Port 3000   │  │  Port 1317   │
 └──────┬───────┘  └──────┬───────┘  └──────┬───────┘
        │                 │                 │
        │                 ▼                 │
        │          ┌──────────────┐         │
-       │          │   Qdrant     │         │
+       │          │   ChromaDB     │         │
        │          │  Vector DB   │         │
        │          │  Port 6333   │         │
        │          └──────────────┘         │
@@ -221,7 +221,7 @@ govchain/
 - **Status**: ✅ Ready to use
 
 ### Search Layer
-- **Database**: Qdrant
+- **Database**: ChromaDB
 - **Embeddings**: OpenAI Ada-002 (optional)
 - **API**: REST with Gin
 - **Language**: Go
@@ -320,7 +320,7 @@ Built with:
 - Cosmos SDK - Blockchain framework
 - Tendermint - Consensus engine
 - IPFS - Distributed storage
-- Qdrant - Vector database
+- ChromaDB - Vector database
 - OpenAI - Embeddings API
 - Gin - Web framework
 
@@ -349,7 +349,7 @@ If you're using WSL2, you'll need to:
 The first time you run the system:
 - Blockchain initialization takes ~5 minutes
 - IPFS initialization takes ~1 minute
-- Qdrant starts immediately
+- ChromaDB starts immediately
 - Indexer connects within seconds
 
 ---

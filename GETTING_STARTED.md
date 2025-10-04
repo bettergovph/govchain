@@ -76,12 +76,12 @@ ipfs daemon
 
 Wait for: `Daemon is ready`
 
-**Terminal 3 - Qdrant (Vector Database):**
+**Terminal 3 - ChromaDB (Vector Database):**
 ```bash
-docker run -p 6333:6333 -v $(pwd)/qdrant_storage:/qdrant/storage qdrant/qdrant
+docker run -p 6333:6333 -v $(pwd)/ChromaDB_storage:/ChromaDB/storage ChromaDB/ChromaDB
 ```
 
-Wait for: `Qdrant is ready`
+Wait for: `ChromaDB is ready`
 
 **Terminal 4 - Indexer:**
 ```bash
@@ -163,7 +163,7 @@ chmod +x scripts/upload-dataset.sh
        │                 │
        ▼                 │
 ┌──────────────┐         │
-│   Qdrant     │         │
+│   ChromaDB     │         │
 │  Port 6333   │         │
 └──────────────┘         │
                          │
@@ -182,7 +182,7 @@ chmod +x scripts/upload-dataset.sh
 | Search API | http://localhost:3000 | Vector search endpoint |
 | Blockchain API | http://localhost:1317 | Query blockchain data |
 | Blockchain RPC | http://localhost:26657 | Direct blockchain access |
-| Qdrant Dashboard | http://localhost:6333/dashboard | Vector DB admin |
+| ChromaDB Dashboard | http://localhost:6333/dashboard | Vector DB admin |
 | IPFS Gateway | http://localhost:8080/ipfs/{CID} | Download files |
 | IPFS API | http://localhost:5001 | IPFS commands |
 
@@ -268,13 +268,13 @@ pkill ipfs
 ipfs daemon
 ```
 
-### Indexer Can't Connect to Qdrant
+### Indexer Can't Connect to ChromaDB
 
 ```bash
-# Check if Qdrant is running
-docker ps | grep qdrant
+# Check if ChromaDB is running
+docker ps | grep ChromaDB
 
-# Restart Qdrant
+# Restart ChromaDB
 docker restart <container_id>
 ```
 
@@ -441,10 +441,10 @@ A: Yes, edit the configuration files or environment variables.
 A: This is a development version. Production deployment requires additional security and scaling considerations.
 
 **Q: Where is data stored?**
-A: Blockchain data in `~/.govchain/`, IPFS data in `~/.ipfs/`, Qdrant data in `./qdrant_storage/`
+A: Blockchain data in `~/.govchain/`, IPFS data in `~/.ipfs/`, ChromaDB data in `./ChromaDB_storage/`
 
 **Q: How do I reset everything?**
-A: Delete `~/.govchain/`, `~/.ipfs/`, and `./qdrant_storage/`, then start over.
+A: Delete `~/.govchain/`, `~/.ipfs/`, and `./ChromaDB_storage/`, then start over.
 
 ## Getting Help
 

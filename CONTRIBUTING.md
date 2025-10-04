@@ -49,11 +49,11 @@ We are committed to providing a welcoming and inclusive environment. All contrib
 ```bash
 # Fork the repository on GitHub
 # Clone your fork
-git clone https://github.com/YOUR_USERNAME/govchain.git
+git clone https://github.com/bettergov/govchain.git
 cd govchain
 
 # Add upstream remote
-git remote add upstream https://github.com/govchain/govchain.git
+git remote add upstream https://github.com/bettergov/govchain.git
 
 # Install dependencies
 ./scripts/install-prerequisites.sh
