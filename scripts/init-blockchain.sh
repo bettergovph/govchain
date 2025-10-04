@@ -5,9 +5,22 @@
 
 set -e
 
+# Auto-confirm Ignite CLI prompts
+export IGNITE_CLI_AUTO_CONFIRM=true
+
 echo "================================"
 echo "GovChain Blockchain Initialization"
 echo "================================"
+echo ""
+echo "⚠️  WARNING: This script will create a new blockchain project"
+echo "   Make sure you understand blockchain development before proceeding."
+echo "   This will scaffold a complete Cosmos SDK blockchain with custom modules."
+echo ""
+read -p "Do you want to continue? (y/N): " proceed
+if [ "$proceed" != "y" ] && [ "$proceed" != "Y" ]; then
+    echo "Cancelled."
+    exit 0
+fi
 echo ""
 
 # Check if Ignite is installed
@@ -22,15 +35,35 @@ if [ ! -f "PROJECT.md" ]; then
     exit 1
 fi
 
-# Ask user for blockchain directory location
-echo "Where would you like to create the blockchain?"
-echo "(This avoids path conflicts with the current project directory)"
+# Store the current directory (govchain project root) for later use
+GOVCHAIN_PROJECT_DIR="$(pwd)"
+export GOVCHAIN_PROJECT_DIR
+
+# Ask for chain name
+echo "Blockchain Configuration:"
+read -p "Enter blockchain name [default: govchain]: " CHAIN_NAME
+
+# Use default if no input provided
+if [ -z "$CHAIN_NAME" ]; then
+    CHAIN_NAME="govchain"
+fi
+
+# Validate chain name (alphanumeric and hyphens only)
+if ! echo "$CHAIN_NAME" | grep -qE '^[a-zA-Z0-9-]+$'; then
+    echo "❌ Error: Chain name must contain only letters, numbers, and hyphens"
+    exit 1
+fi
+
+echo "📋 Chain name: $CHAIN_NAME"
 echo ""
-read -p "Enter path [default: $HOME/govchain-blockchain]: " BLOCKCHAIN_PATH
+
+# Ask user for blockchain directory location
+echo "Directory Configuration:"
+read -p "Enter blockchain directory path [default: $HOME/$CHAIN_NAME-blockchain]: " BLOCKCHAIN_PATH
 
 # Use default if no input provided
 if [ -z "$BLOCKCHAIN_PATH" ]; then
-    BLOCKCHAIN_PATH="$HOME/govchain-blockchain"
+    BLOCKCHAIN_PATH="$HOME/$CHAIN_NAME-blockchain"
 fi
 
 # Expand tilde to home directory if used
@@ -56,12 +89,12 @@ fi
 mkdir -p "$(dirname "$BLOCKCHAIN_PATH")"
 
 # Create blockchain project in the specified directory
-echo "🔧 Creating new Cosmos blockchain: govchain"
+echo "🔧 Creating new Cosmos blockchain: $CHAIN_NAME"
 PARENT_DIR="$(dirname "$BLOCKCHAIN_PATH")"
 BLOCKCHAIN_NAME="$(basename "$BLOCKCHAIN_PATH")"
 
 cd "$PARENT_DIR"
-ignite scaffold chain govchain --path "$BLOCKCHAIN_NAME" --no-module
+ignite scaffold chain "$CHAIN_NAME" --path "$BLOCKCHAIN_NAME" --no-module
 
 cd "$BLOCKCHAIN_PATH"
 
@@ -78,7 +111,7 @@ else
 fi
 
 echo "🔧 Creating custom datasets module..."
-ignite scaffold module datasets
+ignite scaffold module datasets --yes
 git add . && git commit -m "Add datasets module" || echo "⚠️  No changes to commit for datasets module"
 
 echo "🔧 Adding CreateDataset message type..."
@@ -95,13 +128,15 @@ ignite scaffold message create-dataset \
     agency:string \
     category:string \
     --module datasets \
-    --response datasetId:uint
+    --response datasetId:uint \
+    --yes
 git add . && git commit -m "Add CreateDataset message type" || echo "⚠️  No changes to commit for CreateDataset"
 
 echo "🔧 Adding PinDataset message type..."
 ignite scaffold message pin-dataset \
     datasetId:uint \
-    --module datasets
+    --module datasets \
+    --yes
 git add . && git commit -m "Add PinDataset message type" || echo "⚠️  No changes to commit for PinDataset"
 
 echo "🔧 Adding Dataset storage type..."
@@ -120,25 +155,37 @@ ignite scaffold list stored-dataset \
     submitter:string \
     timestamp:int \
     pinCount:uint \
-    --module datasets
+    --module datasets \
+    --yes
 git add . && git commit -m "Add StoredDataset storage type" || echo "⚠️  No changes to commit for Dataset storage"
 
 echo "🔧 Adding queries..."
-ignite scaffold query stored-datasets-by-agency agency:string --module datasets
-ignite scaffold query stored-datasets-by-category category:string --module datasets
-ignite scaffold query stored-datasets-by-mimetype mimeType:string --module datasets
+ignite scaffold query stored-datasets-by-agency agency:string --module datasets --yes
+ignite scaffold query stored-datasets-by-category category:string --module datasets --yes
+ignite scaffold query stored-datasets-by-mimetype mimeType:string --module datasets --yes
 git add . && git commit -m "Add dataset queries" || echo "⚠️  No changes to commit for queries"
 
 # Copy essential project files from the setup directory
-echo "📋 Copying project files and dependencies..."
-SETUP_DIR="$OLDPWD"
+echo "📋 Copying project documentation and scripts..."
+# Get the original govchain project directory (where the script was run from)
+if [ -n "$GOVCHAIN_PROJECT_DIR" ]; then
+    SETUP_DIR="$GOVCHAIN_PROJECT_DIR"
+else
+    # Fallback: assume script is in scripts/ subdirectory of project
+    SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+    SETUP_DIR="$(dirname "$SCRIPT_DIR")"
+fi
 
-# Copy Docker Compose and related infrastructure
-cp "$SETUP_DIR/docker-compose.yml" .
-cp -r "$SETUP_DIR/indexer" .
-cp -r "$SETUP_DIR/web" .
+echo "📁 Copying from: $SETUP_DIR"
 
-# Copy documentation
+# Verify source directory has required files
+if [ ! -f "$SETUP_DIR/PROJECT.md" ]; then
+    echo "❌ Error: Cannot find PROJECT.md in $SETUP_DIR"
+    echo "Please run this script from the govchain project root directory"
+    exit 1
+fi
+
+# Copy documentation and scripts only (Docker services stay in original project)
 cp "$SETUP_DIR/README.md" .
 cp "$SETUP_DIR/PROJECT.md" .
 cp "$SETUP_DIR/GETTING_STARTED.md" .
@@ -152,56 +199,82 @@ cp "$SETUP_DIR/scripts/quick-start.sh" scripts/ 2>/dev/null || echo "⚠️  qui
 cp "$SETUP_DIR/scripts/fix-dependencies.sh" scripts/ 2>/dev/null || echo "⚠️  fix-dependencies.sh not found, skipping"
 
 # Update upload-dataset.sh to work from blockchain directory
-sed -i.bak 's|govchaind|./build/govchaind|g' scripts/upload-dataset.sh 2>/dev/null || \
-sed -i 's|govchaind|./build/govchaind|g' scripts/upload-dataset.sh 2>/dev/null || true
+sed -i.bak "s|govchaind|./build/${CHAIN_NAME}d|g" scripts/upload-dataset.sh 2>/dev/null || \
+sed -i "s|govchaind|./build/${CHAIN_NAME}d|g" scripts/upload-dataset.sh 2>/dev/null || true
+sed -i.bak "s|--chain-id govchain|--chain-id $CHAIN_NAME|g" scripts/upload-dataset.sh 2>/dev/null || \
+sed -i "s|--chain-id govchain|--chain-id $CHAIN_NAME|g" scripts/upload-dataset.sh 2>/dev/null || true
 
 echo "✅ Project files copied successfully"
 
+# Fix config.yml to specify main package path
+echo "🔧 Configuring build settings..."
+if [ -f "config.yml" ]; then
+    # Add build configuration if it doesn't exist
+    if ! grep -q "build:" config.yml; then
+        echo "" >> config.yml
+        echo "build:" >> config.yml
+        echo "  main: ./cmd/${CHAIN_NAME}d" >> config.yml
+        echo "✅ Added build configuration to config.yml"
+    else
+        # Update existing build configuration
+        sed -i.bak "s|main: .*|main: ./cmd/${CHAIN_NAME}d|g" config.yml 2>/dev/null || \
+        sed -i "s|main: .*|main: ./cmd/${CHAIN_NAME}d|g" config.yml 2>/dev/null || true
+        echo "✅ Updated build configuration in config.yml"
+    fi
+else
+    echo "⚠️  config.yml not found, creating basic configuration..."
+    cat > config.yml << EOF
+build:
+  main: ./cmd/${CHAIN_NAME}d
+EOF
+    echo "✅ Created config.yml with build configuration"
+fi
+
 # Create a setup script for the blockchain directory
-cat > setup-env.sh << 'EOF'
+cat > setup-env.sh << EOF
 #!/bin/bash
 
-# GovChain Blockchain Environment Setup (Tokenless Configuration)
+# $CHAIN_NAME Blockchain Environment Setup (Tokenless Configuration)
 # Run this script after building the blockchain
 
 set -e
 
 echo "================================"
-echo "GovChain Environment Setup (Tokenless)"
+echo "$CHAIN_NAME Environment Setup (Tokenless)"
 echo "================================"
 echo ""
 
 # Check if blockchain is built
-if [ ! -f "./build/govchaind" ]; then
+if [ ! -f "./build/${CHAIN_NAME}d" ]; then
     echo "⚠️  Blockchain not built yet. Building now..."
     ignite chain build
 fi
 
 # Initialize blockchain if not already done
-if [ ! -d "$HOME/.govchain" ]; then
+if [ ! -d "\$HOME/.$CHAIN_NAME" ]; then
     echo "🔧 Initializing tokenless blockchain..."
-    ./build/govchaind init mynode --chain-id govchain
+    ./build/${CHAIN_NAME}d init mynode --chain-id $CHAIN_NAME
     
     # Create validator key (no tokens needed)
-    ./build/govchaind keys add validator --keyring-backend test
+    ./build/${CHAIN_NAME}d keys add validator --keyring-backend test
     
     # Create a tokenless genesis configuration
     # No genesis accounts with stake tokens needed for tokenless network
     echo "📝 Configuring tokenless genesis..."
     
     # Modify genesis.json for tokenless operation
-    GENESIS_FILE="$HOME/.govchain/config/genesis.json"
+    GENESIS_FILE="\$HOME/.$CHAIN_NAME/config/genesis.json"
     
     # Set minimal staking parameters (validators don't need tokens)
-    jq '.app_state.staking.params.bond_denom = ""' "$GENESIS_FILE" > tmp.json && mv tmp.json "$GENESIS_FILE"
-    jq '.app_state.gov.params.min_deposit = []' "$GENESIS_FILE" > tmp.json && mv tmp.json "$GENESIS_FILE"
-    jq '.app_state.mint.minter.inflation = "0.000000000000000000"' "$GENESIS_FILE" > tmp.json && mv tmp.json "$GENESIS_FILE"
+    jq '.app_state.staking.params.bond_denom = ""' "\$GENESIS_FILE" > tmp.json && mv tmp.json "\$GENESIS_FILE"
+    jq '.app_state.gov.params.min_deposit = []' "\$GENESIS_FILE" > tmp.json && mv tmp.json "\$GENESIS_FILE"
+    jq '.app_state.mint.minter.inflation = "0.000000000000000000"' "\$GENESIS_FILE" > tmp.json && mv tmp.json "\$GENESIS_FILE"
     
     # Create genesis transaction without staking tokens
-    ./build/govchaind genesis gentx validator 1000000stake --chain-id govchain --keyring-backend test
+    ./build/${CHAIN_NAME}d genesis gentx validator 1000000stake --chain-id $CHAIN_NAME --keyring-backend test
     
     # Collect genesis transactions
-    ./build/govchaind genesis collect-gentxs
+    ./build/${CHAIN_NAME}d genesis collect-gentxs
     
     echo "✅ Tokenless blockchain configured!"
     echo "🌐 Volunteers can join as validators without tokens"
@@ -212,8 +285,8 @@ echo ""
 echo "To start the blockchain:"
 echo "  ignite chain serve"
 echo ""
-echo "To start supporting services:"
-echo "  docker-compose up -d"
+echo "To start supporting services (run from original govchain directory):"
+echo "  cd $SETUP_DIR && docker-compose up -d"
 echo ""
 echo "📋 Volunteer Node Operators:"
 echo "  - No tokens required to participate"
@@ -226,74 +299,74 @@ chmod +x setup-env.sh
 echo "📋 Created setup-env.sh script"
 
 # Create volunteer node joining script
-cat > join-as-volunteer.sh << 'EOF'
+cat > join-as-volunteer.sh << EOF
 #!/bin/bash
 
-# GovChain Volunteer Node Setup
+# $CHAIN_NAME Volunteer Node Setup
 # Allows volunteers to join the network as validators without tokens
 
 set -e
 
 echo "================================"
-echo "GovChain Volunteer Node Setup"
+echo "$CHAIN_NAME Volunteer Node Setup"
 echo "================================"
 echo ""
 
-if [ "$#" -lt 2 ]; then
-    echo "Usage: $0 <node-name> <genesis-file-url>"
+if [ "\$#" -lt 2 ]; then
+    echo "Usage: \$0 <node-name> <genesis-file-url>"
     echo ""
     echo "Example:"
-    echo "  $0 volunteer-node-1 https://raw.githubusercontent.com/org/govchain/main/genesis.json"
+    echo "  \$0 volunteer-node-1 https://raw.githubusercontent.com/org/$CHAIN_NAME/main/genesis.json"
     echo ""
     exit 1
 fi
 
-NODE_NAME="$1"
-GENESIS_URL="$2"
+NODE_NAME="\$1"
+GENESIS_URL="\$2"
 
-echo "📝 Node Name: $NODE_NAME"
-echo "🌐 Genesis URL: $GENESIS_URL"
+echo "📝 Node Name: \$NODE_NAME"
+echo "🌐 Genesis URL: \$GENESIS_URL"
 echo ""
 
 # Check if blockchain is built
-if [ ! -f "./build/govchaind" ]; then
+if [ ! -f "./build/${CHAIN_NAME}d" ]; then
     echo "❌ Error: Blockchain not built. Please run: ignite chain build"
     exit 1
 fi
 
 # Initialize node
 echo "🔧 Initializing volunteer node..."
-./build/govchaind init "$NODE_NAME" --chain-id govchain
+./build/${CHAIN_NAME}d init "\$NODE_NAME" --chain-id $CHAIN_NAME
 
 # Download genesis file
 echo "📥 Downloading genesis file..."
-curl -s "$GENESIS_URL" > "$HOME/.govchain/config/genesis.json"
+curl -s "\$GENESIS_URL" > "\$HOME/.$CHAIN_NAME/config/genesis.json"
 
 # Create validator key
 echo "🔑 Creating validator key..."
-./build/govchaind keys add validator --keyring-backend test
+./build/${CHAIN_NAME}d keys add validator --keyring-backend test
 
 # Get validator address
-VALIDATOR_ADDR=$(./build/govchaind keys show validator -a --keyring-backend test)
+VALIDATOR_ADDR=\$(./build/${CHAIN_NAME}d keys show validator -a --keyring-backend test)
 
 echo ""
 echo "✅ Volunteer node setup complete!"
 echo "================================"
 echo ""
 echo "📝 Node Details:"
-echo "  Name: $NODE_NAME"
-echo "  Validator Address: $VALIDATOR_ADDR"
+echo "  Name: \$NODE_NAME"
+echo "  Validator Address: \$VALIDATOR_ADDR"
 echo ""
 echo "🚀 To start your volunteer node:"
-echo "  ./build/govchaind start"
+echo "  ./build/${CHAIN_NAME}d start"
 echo ""
 echo "🌐 To become a validator:"
-echo "  ./build/govchaind tx staking create-validator \\"
-echo "    --amount=1000000stake \\"
-echo "    --pubkey=\$(./build/govchaind tendermint show-validator) \\"
-echo "    --moniker=\"$NODE_NAME\" \\"
-echo "    --chain-id=govchain \\"
-echo "    --from=validator \\"
+echo "  ./build/${CHAIN_NAME}d tx staking create-validator \\\\"
+echo "    --amount=1000000stake \\\\"
+echo "    --pubkey=\\\$(./build/${CHAIN_NAME}d tendermint show-validator) \\\\"
+echo "    --moniker=\"\$NODE_NAME\" \\\\"
+echo "    --chain-id=$CHAIN_NAME \\\\"
+echo "    --from=validator \\\\"
 echo "    --keyring-backend=test"
 echo ""
 EOF
@@ -302,12 +375,12 @@ chmod +x join-as-volunteer.sh
 echo "📋 Created join-as-volunteer.sh script"
 
 # Create network configuration documentation
-cat > NETWORK_CONFIG.md << 'EOF'
-# GovChain Network Configuration
+cat > NETWORK_CONFIG.md << EOF
+# $CHAIN_NAME Network Configuration
 
 ## Tokenless Architecture
 
-GovChain operates as a **tokenless blockchain** designed for public good:
+$CHAIN_NAME operates as a **tokenless blockchain** designed for public good:
 
 ### Key Principles
 - **No Economic Barriers**: Volunteers can participate without purchasing tokens
@@ -317,9 +390,9 @@ GovChain operates as a **tokenless blockchain** designed for public good:
 ### Volunteer Node Operators
 
 #### How to Join
-1. **Build the blockchain**: `ignite chain build`
-2. **Join as volunteer**: `./join-as-volunteer.sh <node-name> <genesis-url>`
-3. **Start your node**: `./build/govchaind start`
+1. **Build the blockchain**: \`ignite chain build\`
+2. **Join as volunteer**: \`./join-as-volunteer.sh <node-name> <genesis-url>\`
+3. **Start your node**: \`./build/${CHAIN_NAME}d start\`
 
 #### Requirements
 - Reliable internet connection
@@ -362,7 +435,6 @@ EOF
 echo "📋 Created NETWORK_CONFIG.md documentation"
 
 # Navigate to the blockchain directory
-echo ""
 echo "🔄 Navigating to blockchain directory..."
 cd "$BLOCKCHAIN_PATH"
 
@@ -372,7 +444,8 @@ echo "✅ Tokenless Blockchain Setup Complete!"
 echo "================================"
 echo ""
 echo "📍 Current location: $(pwd)"
-echo "📁 Project files available: docker-compose.yml, indexer/, web/, docs, scripts/"
+echo "📁 Project files available: documentation, scripts/"
+echo "🐳 Docker services remain in: $GOVCHAIN_PROJECT_DIR"
 echo ""
 echo "🌐 Tokenless Network Features:"
 echo "  • No tokens required for participation"
@@ -380,18 +453,19 @@ echo "  • Volunteer-operated validator network"
 echo "  • Data-driven governance model"
 echo "  • Public good mission focus"
 echo ""
-echo "🚀 Next Steps (run these commands):"
+echo "🚀 Next Steps:"
 echo ""
-echo "1. Complete blockchain setup:"
+echo "1. Complete blockchain setup (in this directory):"
 echo "   ./setup-env.sh"
 echo ""
-echo "2. Start the blockchain:"
+echo "2. Start the blockchain (in this directory):"
 echo "   ignite chain serve"
 echo ""
-echo "3. In another terminal, start supporting services:"
+echo "3. Start supporting services (in separate terminal, from original project):"
+echo "   cd $GOVCHAIN_PROJECT_DIR"
 echo "   docker-compose up -d"
 echo ""
-echo "4. Upload your first dataset:"
+echo "4. Upload your first dataset (from this directory):"
 echo "   ./scripts/upload-dataset.sh <file> <title> <description> <agency> <category>"
 echo ""
 echo "5. Share with volunteers:"
