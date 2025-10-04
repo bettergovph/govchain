@@ -26,7 +26,8 @@ fi
 # Check if blockchain CLI is available
 if ! command -v govchaind &> /dev/null; then
     echo -e "${RED}❌ Error: govchaind not found${NC}"
-    echo "Please build the blockchain first"
+    echo "Please build the blockchain first by running:"
+    echo "  cd blockchain && ignite chain build"
     exit 1
 fi
 

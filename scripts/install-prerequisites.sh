@@ -91,9 +91,9 @@ if ! command -v gcc &> /dev/null; then
     fi
 fi
 
-# Install Go 1.21
-echo "🔧 Installing Go 1.21..."
-GO_VERSION="1.21.6"
+# Install Go 1.24+
+echo "🔧 Installing Go 1.24+..."
+GO_VERSION="1.25.1"
 if ! command -v go &> /dev/null; then
     if [ "$MACHINE" = "Linux" ]; then
         wget https://go.dev/dl/go${GO_VERSION}.linux-amd64.tar.gz
@@ -109,14 +109,14 @@ if ! command -v go &> /dev/null; then
         export GOPATH=$HOME/go
         export PATH=$PATH:$GOPATH/bin
     elif [ "$MACHINE" = "Mac" ]; then
-        # Use Homebrew for macOS
-        brew install go@1.21
+        # Use Homebrew for macOS - install latest Go
+        brew install go
         
         # Add Go to PATH for macOS
-        echo "export PATH=\$PATH:/opt/homebrew/opt/go@1.21/bin" >> ~/.zshrc
+        echo "export PATH=\$PATH:/opt/homebrew/bin" >> ~/.zshrc
         echo "export GOPATH=\$HOME/go" >> ~/.zshrc
         echo "export PATH=\$PATH:\$GOPATH/bin" >> ~/.zshrc
-        export PATH=$PATH:/opt/homebrew/opt/go@1.21/bin
+        export PATH=$PATH:/opt/homebrew/bin
         export GOPATH=$HOME/go
         export PATH=$PATH:$GOPATH/bin
     fi
