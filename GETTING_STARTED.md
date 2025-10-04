@@ -54,15 +54,24 @@ chmod +x scripts/init-blockchain.sh
 ./scripts/init-blockchain.sh
 ```
 
-This creates the Cosmos blockchain with the custom datasets module.
+This creates the Cosmos blockchain with:
+- Custom datasets module using entry-based storage
+- CRUD operations for dataset entries
+- Query endpoints for searching by agency, category, and MIME type
+- Tokenless validator network for volunteers
+
+The script will prompt for:
+- Blockchain name (default: govchain)
+- Installation directory (default: ~/govchain-blockchain)
 
 ### Step 5: Start Services
 
-Open **5 terminal windows** and run these commands:
+Open **4 terminal windows** and run these commands:
 
 **Terminal 1 - Blockchain:**
 ```bash
-cd govchain
+# Navigate to blockchain directory (created by init script)
+cd ~/govchain-blockchain  # or your chosen directory
 ignite chain serve
 ```
 
@@ -76,38 +85,34 @@ ipfs daemon
 
 Wait for: `Daemon is ready`
 
-**Terminal 3 - ChromaDB (Vector Database):**
+**Terminal 3 - Indexer:**
 ```bash
-docker run -p 6333:6333 -v $(pwd)/ChromaDB_storage:/ChromaDB/storage ChromaDB/ChromaDB
-```
-
-Wait for: `ChromaDB is ready`
-
-**Terminal 4 - Indexer:**
-```bash
-cd indexer
-cp .env.example .env
-go mod download
-go run main.go
+cd indexer-node
+npm install
+npm start
 ```
 
 Wait for: `Server starting on port 3000`
 
-**Terminal 5 - Web Server:**
+**Terminal 4 - Web Application:**
 ```bash
 cd web
-python3 -m http.server 8000
+npm install
+npm run dev
 ```
 
-Or use any web server you prefer.
+Wait for: `Next.js ready on http://localhost:3000`
 
 ### Step 6: Access GovChain
 
 Open your browser and visit:
 
-🌐 **http://localhost:8000**
+🌐 **http://localhost:3000**
 
-You should see the GovChain search interface!
+You should see the GovChain web interface with:
+- Dataset search functionality
+- Upload form for new datasets
+- Browse datasets by agency and category
 
 ## Testing Your Setup
 
@@ -123,18 +128,21 @@ Bob,25,LA" > test-data.csv
 Upload it:
 ```bash
 chmod +x scripts/upload-dataset.sh
+# Navigate to blockchain directory first
+cd ~/govchain-blockchain
 ./scripts/upload-dataset.sh \
   test-data.csv \
   "Test Dataset" \
   "Sample demographic data for testing" \
   "Test Agency" \
   "demographics" \
+  "https://backup.example.com/test.csv" \
   alice
 ```
 
 ### Search for Your Dataset
 
-1. Go to http://localhost:8000
+1. Go to http://localhost:3000
 2. Type "test" in the search box
 3. Click Search
 4. You should see your dataset!
@@ -143,28 +151,28 @@ chmod +x scripts/upload-dataset.sh
 
 1. Click the "Download" button
 2. The file downloads from IPFS
-3. Click "Verify" to see blockchain record
+3. Click "Details" to see blockchain record
 
 ## Architecture Overview
 
 ```
 ┌─────────────────────────────────────────────────┐
 │                  Web Browser                     │
-│              http://localhost:8000               │
+│              http://localhost:3000               │
 └────────────────┬────────────────────────────────┘
                  │
         ┌────────┴────────┐
         │                 │
         ▼                 ▼
 ┌──────────────┐  ┌──────────────┐
-│   Indexer    │  │  Blockchain  │
+│   Next.js App   │  │  Blockchain  │
 │  Port 3000   │  │  Port 1317   │
 └──────┬───────┘  └──────┬───────┘
        │                 │
        ▼                 │
 ┌──────────────┐         │
-│   ChromaDB     │         │
-│  Port 6333   │         │
+│   Indexer     │         │
+│  Port 3001   │         │
 └──────────────┘         │
                          │
                          ▼
@@ -178,11 +186,10 @@ chmod +x scripts/upload-dataset.sh
 
 | Service | URL | Purpose |
 |---------|-----|---------|
-| Web UI | http://localhost:8000 | Search and browse datasets |
-| Search API | http://localhost:3000 | Vector search endpoint |
+| Web UI | http://localhost:3000 | Next.js app for search and upload |
 | Blockchain API | http://localhost:1317 | Query blockchain data |
 | Blockchain RPC | http://localhost:26657 | Direct blockchain access |
-| ChromaDB Dashboard | http://localhost:6333/dashboard | Vector DB admin |
+| Indexer API | http://localhost:3001 | Vector search endpoint |
 | IPFS Gateway | http://localhost:8080/ipfs/{CID} | Download files |
 | IPFS API | http://localhost:5001 | IPFS commands |
 
@@ -191,14 +198,20 @@ chmod +x scripts/upload-dataset.sh
 ### Blockchain
 
 ```bash
-# Query all datasets
-govchaind query datasets list-datasets
+# Query all entries
+govchaind query datasets list-entry
 
-# Query specific dataset
-govchaind query datasets get-dataset 1
+# Query specific entry
+govchaind query datasets show-entry <id>
+
+# Query by agency
+govchaind query datasets entries-by-agency "Department of Health"
+
+# Query by category
+govchaind query datasets entries-by-category "healthcare"
 
 # Check account balance
-govchaind query bank balances $(govchaind keys show alice -a)
+govchaind query bank balances $(govchaind keys show alice -a --keyring-backend test)
 
 # View transaction
 govchaind query tx <TX_HASH>
@@ -224,13 +237,13 @@ ipfs repo stat
 
 ```bash
 # Health check
-curl http://localhost:3000/health
+curl http://localhost:3001/health
 
 # Search datasets
-curl "http://localhost:3000/search?q=climate&limit=5"
+curl "http://localhost:3001/search?q=climate&limit=5"
 
 # Trigger reindex
-curl -X POST http://localhost:3000/reindex
+curl -X POST http://localhost:3001/reindex
 ```
 
 ## Troubleshooting
@@ -247,11 +260,17 @@ lsof -i :3000  # Replace with your port
 kill -9 <PID>
 ```
 
+**Note**: If Next.js dev server conflicts, try different ports:
+```bash
+# Start Next.js on different port
+npm run dev -- --port 3002
+```
+
 ### Blockchain Won't Start
 
 ```bash
-# Reset blockchain data
-cd govchain
+# Reset blockchain data (from blockchain directory)
+cd ~/govchain-blockchain
 ignite chain serve --reset-once
 ```
 

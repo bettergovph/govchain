@@ -21,16 +21,15 @@ GovChain combines three powerful technologies:
 
 ```
 ┌─────────────┐     ┌──────────────┐     ┌─────────────┐
-│   Web UI    │────▶│   Indexer    │────▶│   ChromaDB    │
-│  (Search)   │     │ (REST API)   │     │  (Vectors)  │
+│   Next.js   │────▶│   Indexer    │────▶│  Blockchain │
+│  (Web UI)   │     │ (REST API)   │     │ (Metadata) │
 └─────────────┘     └──────────────┘     └─────────────┘
-       │                    │
-       │                    │
-       ▼                    ▼
-┌─────────────┐     ┌──────────────┐
-│    IPFS     │     │  Blockchain  │
-│  (Storage)  │◀────│  (Metadata)  │
-└─────────────┘     └──────────────┘
+       │                    │                    │
+       ▼                    ▼                    ▼
+┌─────────────┐     ┌──────────────┐     ┌─────────────┐
+│    IPFS     │     │   ChromaDB    │     │    IPFS    │
+│  (Storage) │◀────│  (Vectors)  │     │  (Storage) │
+└─────────────┘     └──────────────┘     └─────────────┘
 ```
 
 ## 🚀 Quick Start
@@ -60,27 +59,25 @@ source ~/.bashrc
 
 ```bash
 # Terminal 1: Start blockchain
-cd govchain
+cd ~/govchain-blockchain
 ignite chain serve
 
 # Terminal 2: Start IPFS
 ipfs init
 ipfs daemon
 
-# Terminal 3: Start ChromaDB
-docker run -p 6333:6333 -v $(pwd)/ChromaDB_storage:/ChromaDB/storage ChromaDB/ChromaDB
+# Terminal 3: Start indexer
+cd indexer-node
+npm install
+npm start
 
-# Terminal 4: Start indexer
-cd indexer
-cp .env.example .env
-go run main.go
-
-# Terminal 5: Serve web interface
+# Terminal 4: Start web application
 cd web
-python3 -m http.server 8000
+npm install
+npm run dev
 ```
 
-Visit `http://localhost:8000` to access the web interface.
+Visit `http://localhost:3000` to access the web interface.
 
 ## 📚 Documentation
 
@@ -96,25 +93,26 @@ Visit `http://localhost:8000` to access the web interface.
 
 ```
 govchain/
-├── govchain/          # Cosmos blockchain core
-│   ├── x/datasets/    # Custom datasets module
-│   ├── proto/         # Protocol buffers
-│   └── cmd/           # CLI binaries
-├── indexer/           # Vector search service
-│   └── main.go        # Go application
-├── web/               # Frontend interface
-│   └── index.html     # Search UI
-├── scripts/           # Helper scripts
-└── docs/              # Documentation
+├── govchain-blockchain/   # Cosmos blockchain (created by init script)
+│   ├── x/datasets/        # Custom datasets module
+│   ├── proto/             # Protocol buffers
+│   └── cmd/               # CLI binaries
+├── indexer-node/          # Vector search service
+│   └── src/               # Node.js application
+├── web/                   # Next.js frontend
+│   ├── src/app/           # Next.js app router
+│   └── src/components/    # React components
+├── scripts/               # Helper scripts
+└── docs/                  # Documentation
 ```
 
 ### Key Technologies
 
-- **Blockchain**: Cosmos SDK, Tendermint BFT
+- **Blockchain**: Cosmos SDK with entry-based storage
 - **Storage**: IPFS (Kubo)
 - **Search**: ChromaDB vector database, OpenAI embeddings
-- **Backend**: Go 1.21+
-- **Frontend**: HTML/CSS/JavaScript (Vanilla)
+- **Backend**: Node.js, Next.js API routes
+- **Frontend**: Next.js with React and TypeScript
 
 ## 🌟 Features
 
@@ -158,9 +156,11 @@ We welcome contributions! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for guid
 
 ### Phase 1: Testnet & Pilot (Months 1-6)
 - [x] Project specification
+- [x] Entry-based blockchain structure
+- [x] Next.js web application
+- [x] IPFS integration
 - [ ] Deploy Cosmos blockchain testnet
 - [ ] Launch IPFS cluster
-- [ ] Build web interface
 - [ ] Partner with pilot agencies
 - [ ] Recruit 20-30 volunteers
 

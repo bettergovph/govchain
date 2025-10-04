@@ -6,7 +6,7 @@ This guide is designed to help AI agents (like Claude, ChatGPT, or other LLM-bas
 
 Project Structure Overview
 govchain-project/
-├── govchain/                    # Cosmos blockchain
+├── govchain-blockchain/         # Cosmos blockchain (created by init script)
 │   ├── app/                     # Blockchain application
 │   ├── cmd/                     # CLI binaries
 │   ├── proto/                   # Protocol buffers
@@ -14,15 +14,18 @@ govchain-project/
 │   ├── config.yml               # Ignite configuration
 │   └── testnet/                 # Testnet configs
 │
-├── indexer/                     # Vector search indexer
-│   ├── main.go                  # Main application
+├── indexer-node/                # Vector search indexer
+│   ├── src/                     # Source code
+│   ├── package.json             # Dependencies
 │   ├── Dockerfile               # Container image
-│   ├── .env                     # Environment config
-│   └── go.mod                   # Dependencies
+│   └── .env                     # Environment config
 │
-├── web/                         # Frontend interface
-│   ├── index.html               # Main UI
-│   └── assets/                  # Static resources
+├── web/                         # Next.js frontend
+│   ├── src/app/                 # App router pages
+│   ├── src/components/          # React components
+│   ├── src/lib/                 # Utility libraries
+│   ├── src/types/               # TypeScript types
+│   └── package.json             # Dependencies
 │
 ├── scripts/                     # Helper scripts
 │   ├── setup-testnet.sh         # Testnet initialization
@@ -47,11 +50,11 @@ Internet connection
 
 Software Dependencies:
 
-Go 1.21+ - Blockchain and indexer development
+Go 1.21+ - Blockchain development
 Ignite CLI - Cosmos blockchain scaffolding tool
 IPFS Kubo - Distributed file storage
 Docker & Docker Compose - Container orchestration
-Node.js 18+ (optional) - Frontend development
+Node.js 18+ - Web application and indexer
 Git - Version control
 
 Installation Commands Reference
@@ -84,16 +87,16 @@ Integrates with standard Cosmos SDK modules
 Custom Module Components
 Message Types to Create:
 
-CreateDataset Message
+CreateEntry Message
 
-Fields: title, description, ipfsCid, fileSize, checksumSha256, agency, category
+Fields: title, description, ipfsCid, mimeType, fileName, fileUrl, fallbackUrl, fileSize, checksumSha256, agency, category, submitter, timestamp, pinCount
 Signer field: submitter
-Returns: datasetId
+Returns: entryId
 
 
-PinDataset Message
+PinEntry Message
 
-Fields: datasetId
+Fields: entryId
 Signer field: pinner
 Tracks which nodes are hosting data
 
@@ -101,17 +104,18 @@ Tracks which nodes are hosting data
 
 Storage Types:
 
-Dataset Type (as a List)
+Entry Type (using scaffold map)
 
 Auto-incrementing ID
-All metadata fields
+All metadata fields (title, description, ipfsCid, etc.)
 Timestamp and submitter tracking
 Pin count
+Generated automatically with CRUD operations
 
 
 Pin Type (Custom)
 
-Links dataset ID to pinner address
+Links entry ID to pinner address
 Timestamp of pin creation
 Requires custom keeper methods
 
@@ -119,10 +123,12 @@ Requires custom keeper methods
 
 Query Types:
 
-List all datasets
-Get dataset by ID
-Get datasets by agency (custom query)
-Get pinners for dataset (custom query)
+List all entries (list-entry)
+Get entry by ID (show-entry)
+Get entries by agency (entries-by-agency)
+Get entries by category (entries-by-category)
+Get entries by MIME type (entries-by-mimetype)
+Get pinners for entry (custom query)
 
 Custom Logic Implementation
 Files to Modify:
@@ -279,20 +285,23 @@ CORS enabled for web access
 
 
 
-Dependencies (go.mod)
+Dependencies (package.json)
 Required packages:
 
-github.com/ChromaDB/go-client/ChromaDB
-github.com/gin-gonic/gin
-github.com/joho/godotenv
-github.com/sashabaranov/go-openai
+next: React framework
+react: UI library
+typescript: Type safety
+tailwindcss: Styling
+lucide-react: Icons
+date-fns: Date utilities
 
-Environment Configuration (.env)
+Environment Configuration (.env.local)
 Variables needed:
 
-ChromaDB_URL: Connection string (host:port)
-BLOCKCHAIN_API: Cosmos REST endpoint
-OPENAI_API_KEY: Optional for better embeddings
+CHAIN_ID: Blockchain chain ID
+BLOCKCHAIN_NODE: RPC endpoint
+BLOCKCHAIN_API: REST endpoint
+IPFS_GATEWAY: IPFS gateway URL
 
 Docker Configuration
 Dockerfile:
@@ -360,10 +369,10 @@ User: Non-root account
 Part 5: Web Interface
 Technology Stack
 
-Pure HTML/CSS/JavaScript (no build step)
-Vanilla JS for API calls
-Responsive design
-No authentication required
+Next.js with App Router
+React with TypeScript
+Tailwind CSS for styling
+API routes for backend integration
 
 Key Features
 
@@ -372,35 +381,58 @@ Search Interface
 Text input for queries
 Submit triggers vector search API
 Display results with metadata
-Fallback to blockchain API if search unavailable
+Real-time search with debouncing
 
 
 Dataset Display
 
-Card-based layout
+Card-based layout with detailed modal
 Shows title, description, metadata
 Displays IPFS CID and checksum
 Download button to IPFS gateway
 
 
+Upload Interface
+
+File upload with drag-and-drop
+Form validation
+Progress tracking
+Success/error feedback
+
+
 API Integration
 
-Fetch from search indexer (localhost:3000)
-Fetch from blockchain API (localhost:1317)
+Next.js API routes (localhost:3000/api)
+Fetch from blockchain API via server-side calls
 Use IPFS gateway for downloads
 
 
 
 File Structure
-index.html:
+src/app/:
 
-Header with branding
-Search box component
-Results container
-JavaScript for API calls
-CSS for styling
+page.tsx: Main dashboard
+api/: Server-side API routes
+layout.tsx: Root layout
 
-No build process needed - serve directly or via nginx
+src/components/:
+
+DatasetCard.tsx: Individual dataset display
+DatasetList.tsx: Dataset browsing
+UploadSection.tsx: File upload interface
+SearchSection.tsx: Search functionality
+
+src/lib/:
+
+blockchain.ts: Blockchain interaction utilities
+ipfs.ts: IPFS integration
+utils.ts: Common utilities
+
+src/types/:
+
+dataset.ts: TypeScript interfaces
+
+Build process uses Next.js compilation
 
 Part 6: Helper Scripts
 setup-testnet.sh
@@ -706,6 +738,7 @@ Local Testing Environment
 
 Start Blockchain:
 
+Navigate to blockchain directory (~/govchain-blockchain)
 Use ignite chain serve
 Runs single validator
 Creates test accounts
@@ -719,23 +752,18 @@ Accessible on localhost:5001 (API)
 Gateway on localhost:8080
 
 
-Start ChromaDB:
-
-Use Docker: docker run -p 6333:6333 ChromaDB/ChromaDB
-Persistent volume for data
-
-
 Start Indexer:
 
-Run go run main.go in indexer directory
+Run npm start in indexer-node directory
 Polls blockchain every 30s
+API on localhost:3001
+
+
+Start Web Application:
+
+Run npm run dev in web directory
+Next.js dev server with hot reload
 API on localhost:3000
-
-
-Open Web Interface:
-
-Serve index.html with local server
-Or open directly in browser
 
 
 
@@ -745,7 +773,7 @@ Create Test Dataset:
 
 Create dummy file
 Add to IPFS
-Submit CreateDataset transaction
+Submit CreateEntry transaction
 Verify on blockchain
 
 
@@ -753,7 +781,7 @@ Test Search:
 
 Wait for indexer to poll (or trigger reindex)
 Query search API
-Verify results contain dataset
+Verify results contain entry
 
 
 Test Download:
