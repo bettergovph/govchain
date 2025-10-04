@@ -13,7 +13,7 @@ class IndexerApp {
     this.app = express();
     this.port = process.env.PORT || 3000;
     this.indexer = null;
-    
+
     this.setupMiddleware();
     this.setupRoutes();
   }
@@ -21,7 +21,7 @@ class IndexerApp {
   setupMiddleware() {
     // Security middleware
     this.app.use(helmet());
-    
+
     // CORS configuration
     this.app.use(cors({
       origin: '*',
@@ -32,7 +32,7 @@ class IndexerApp {
 
     // Logging
     this.app.use(morgan('combined'));
-    
+
     // JSON parsing
     this.app.use(express.json());
     this.app.use(express.urlencoded({ extended: true }));
@@ -53,7 +53,7 @@ class IndexerApp {
     this.app.get('/search', async (req, res) => {
       try {
         const { q: query, limit = 10, agency, category } = req.query;
-        
+
         if (!query) {
           return res.status(400).json({ error: 'Query parameter "q" is required' });
         }
@@ -139,7 +139,7 @@ class IndexerApp {
       } catch (error) {
         logger.warn('Initial indexing failed - service will continue running:', error.message);
       }
-      
+
     } catch (error) {
       logger.error('Failed to initialize indexer:', error);
       throw error;
@@ -149,7 +149,7 @@ class IndexerApp {
   async start() {
     try {
       await this.initialize();
-      
+
       this.app.listen(this.port, () => {
         logger.info(`🚀 GovChain Indexer running on port ${this.port}`);
         logger.info(`📊 Health check: http://localhost:${this.port}/health`);

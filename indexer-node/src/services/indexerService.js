@@ -70,14 +70,9 @@ class IndexerService {
       } catch (error) {
         // Collection doesn't exist, create it
         logger.info(`Creating collection '${this.collectionName}'...`);
-        
-        const embeddingFunction = this.useOpenAI ? 
-          undefined : // Use Chroma's default embedding function
-          undefined;
 
         this.collection = await this.chromaClient.createCollection({
           name: this.collectionName,
-          embeddingFunction: embeddingFunction,
           metadata: {
             description: 'GovChain datasets vector search collection',
             created: new Date().toISOString()
@@ -123,10 +118,7 @@ class IndexerService {
         dataset.category
       ].filter(Boolean).join(' ');
 
-      // Generate embedding if using OpenAI
-      const embedding = await this.generateEmbedding(searchText);
-
-      // Prepare document data
+      // Prepare document data - let Chroma handle embeddings
       const documentData = {
         ids: [dataset.id],
         documents: [searchText],
@@ -144,11 +136,6 @@ class IndexerService {
           pinCount: dataset.pinCount
         }]
       };
-
-      // Add embeddings if using OpenAI
-      if (embedding) {
-        documentData.embeddings = [embedding];
-      }
 
       // Upsert document
       await this.collection.upsert(documentData);
@@ -174,7 +161,7 @@ class IndexerService {
       }
 
       const { Dataset: datasets } = response.data;
-      
+
       if (!datasets || !Array.isArray(datasets)) {
         logger.warn('No datasets found in blockchain response');
         return;
@@ -186,11 +173,11 @@ class IndexerService {
       const batchSize = 10;
       for (let i = 0; i < datasets.length; i += batchSize) {
         const batch = datasets.slice(i, i + batchSize);
-        
+
         await Promise.allSettled(
           batch.map(dataset => this.indexDataset(dataset))
         );
-        
+
         // Small delay between batches
         if (i + batchSize < datasets.length) {
           await new Promise(resolve => setTimeout(resolve, 100));
@@ -214,9 +201,6 @@ class IndexerService {
 
   async searchDatasets({ query, limit = 10, agency, category }) {
     try {
-      // Generate query embedding if using OpenAI
-      const queryEmbedding = await this.generateEmbedding(query);
-
       // Build where clause for filtering
       let whereClause = {};
       if (agency || category) {
@@ -237,15 +221,9 @@ class IndexerService {
       // Prepare query parameters
       const queryParams = {
         nResults: limit,
-        where: Object.keys(whereClause).length > 0 ? whereClause : undefined
+        where: Object.keys(whereClause).length > 0 ? whereClause : undefined,
+        queryTexts: [query] // Always use query text, let Chroma handle embeddings
       };
-
-      // Add query text or embedding
-      if (queryEmbedding) {
-        queryParams.queryEmbeddings = [queryEmbedding];
-      } else {
-        queryParams.queryTexts = [query];
-      }
 
       // Perform search
       const results = await this.collection.query(queryParams);
@@ -253,7 +231,7 @@ class IndexerService {
       // Transform results
       const datasets = [];
       const { ids, documents, metadatas, distances } = results;
-      
+
       if (ids && ids[0]) {
         for (let i = 0; i < ids[0].length; i++) {
           const metadata = metadatas[0][i];
