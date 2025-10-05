@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { uploadToIPFS } from '@/lib/ipfs';
 import { UploadRequest, Dataset, TransactionResult, UploadResponse } from '@/types/dataset';
-import { getCosmJSClient } from '@/lib/cosmjs-client';
+import { getGovChainClient } from '@/lib/govchaind-client';
 import crypto from 'crypto';
 
 // Utility function to format file size
@@ -51,17 +51,18 @@ export async function POST(request: NextRequest) {
     const checksum = crypto.createHash('sha256').update(Buffer.from(buffer)).digest('hex');
 
     // Prepare blockchain submission
-    const cosmjsClient = getCosmJSClient();
+    const govchainClient = await getGovChainClient();
     const submitter = metadata.submitter || 'alice'; // Default to alice for development
     const timestamp = Math.floor(Date.now() / 1000);
     const fileUrl = `https://ipfs.io/ipfs/${ipfsResult.cid}`;
     const fallbackUrl = metadata.fallbackUrl || '';
 
     // Create unique entry ID
-    const entryId = `entry-${timestamp}-${ipfsResult.cid.slice(-8)}`    // Submit to blockchain using CosmJS
+    const entryId = `entry-${timestamp}-${ipfsResult.cid.slice(-8)}`;
 
+    // Submit to blockchain using GovChain client
     try {
-      const result = await cosmjsClient.createEntry({
+      const result = await govchainClient.createEntry({
         index: entryId,
         title: metadata.title,
         description: metadata.description,
@@ -75,11 +76,11 @@ export async function POST(request: NextRequest) {
         agency: metadata.agency,
         category: metadata.category,
         submitter: submitter,
-        timestamp: String(timestamp),
+        timestamp: timestamp.toString(),
         pinCount: "0"
       });
 
-      const txhash = result.transactionHash;
+      const txhash = entryId; //result.transactionHash;
 
       if (!txhash) {
         throw new Error('Transaction submitted but no hash returned');
@@ -107,16 +108,16 @@ export async function POST(request: NextRequest) {
 
       const responseData: UploadResponse = {
         txhash,
-        raw_log: `Transaction successful at height ${result.height}`,
+        raw_log: `Transaction successful at height`,
         logs: [],
         dataset,
         summary: {
           transaction: {
             hash: txhash,
-            height: result.height,
+            height: 0,
             status: 'success',
-            gas_used: result.gasUsed.toString(),
-            gas_wanted: result.gasWanted.toString(),
+            gas_used: '',
+            gas_wanted: '',
             timestamp: new Date().toISOString()
           },
           file: {

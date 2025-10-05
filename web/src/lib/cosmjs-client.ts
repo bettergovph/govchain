@@ -1,3 +1,5 @@
+// Deprecated. Do not use anymore.
+
 import { SigningStargateClient, StargateClient, GasPrice } from "@cosmjs/stargate";
 import { DirectSecp256k1HdWallet, OfflineSigner } from "@cosmjs/proto-signing";
 import { Coin } from "@cosmjs/amino";
@@ -265,16 +267,20 @@ export class CosmJSClient {
     // Broadcast the transaction
     const txBytes = TxRaw.encode(txRaw).finish();
 
+    const payload = JSON.stringify({
+      tx_bytes: Buffer.from(txBytes).toString('base64'),
+      mode: 'BROADCAST_MODE_SYNC'
+    })
+
+    console.log('Broadcasting transaction via RPC...', payload)
+
     // Use REST API to broadcast
     const response = await fetch(`${restEndpoint}/cosmos/tx/v1beta1/txs`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({
-        tx_bytes: Buffer.from(txBytes).toString('base64'),
-        mode: 'BROADCAST_MODE_SYNC'
-      })
+      body: payload
     });
 
     if (!response.ok) {

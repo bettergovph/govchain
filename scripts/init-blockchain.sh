@@ -115,7 +115,7 @@ ignite scaffold module datasets --yes
 git add . && git commit -m "Add datasets module" || echo "⚠️  No changes to commit for datasets module"
 
 echo "🔧 Adding Entry map with CRUD operations..."
-ignite scaffold map entry \
+ignite scaffold list entry \
     title:string \
     description:string \
     ipfsCid:string \
