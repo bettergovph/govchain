@@ -92,7 +92,7 @@ export class CosmJSClient {
       if (!this.wallet) {
         throw new Error('Wallet not initialized');
       }
-      
+
       this.client = await SigningStargateClient.connectWithSigner(
         this.config.rpcEndpoint,
         this.wallet,
@@ -119,7 +119,7 @@ export class CosmJSClient {
     if (!this.wallet) {
       await this.initializeWallet();
     }
-    
+
     const accounts = await this.wallet!.getAccounts();
     return accounts.map(account => account.address);
   }
@@ -135,7 +135,7 @@ export class CosmJSClient {
   async createEntry(entryData: Omit<CreateEntryMessage['value'], 'creator'>): Promise<TransactionResponse> {
     debugLog('🚀 Starting entry creation...');
     debugLog('Input entry data:', entryData);
-    
+
     const creator = await this.getFirstAccount();
     debugLog(`✅ Creator address: ${creator}`);
 
@@ -147,39 +147,39 @@ export class CosmJSClient {
       creator,
       ...entryData,
     };
-    
+
     debugLog('📋 Complete message value:', messageValue);
 
-    try {
-      // Use standard RPC interface with proper message encoding
-      debugLog('🌐 Using standard RPC interface for transaction broadcasting');
-      
-      const result = await this.broadcastTxRPC(createTypeUrl, messageValue, creator);
-      debugLog('🎉 Entry creation completed successfully!');
-      return result;
-    } catch (rpcError) {
-      debugLog('⚠️ RPC broadcast failed, trying CLI fallback:', rpcError);
-      
-      // Fallback to CLI only if RPC fails
-      try {
-        const fallbackResult = await this.broadcastTxCLI(messageValue, creator);
-        debugLog('✅ CLI fallback successful');
-        return fallbackResult;
-      } catch (cliError) {
-        debugLog('❌ Both RPC and CLI failed');
-        throw new Error(`Transaction failed: RPC (${rpcError instanceof Error ? rpcError.message : String(rpcError)}), CLI (${cliError instanceof Error ? cliError.message : String(cliError)})`);
-      }
-    }
+    // try {
+    // Use standard RPC interface with proper message encoding
+    debugLog('🌐 Using standard RPC interface for transaction broadcasting');
+
+    const result = await this.broadcastTxRPC(createTypeUrl, messageValue, creator);
+    debugLog('🎉 Entry creation completed successfully!');
+    return result;
+    // } catch (rpcError) {
+    //   debugLog('⚠️ RPC broadcast failed, trying CLI fallback:', rpcError);
+
+    //   // Fallback to CLI only if RPC fails
+    //   try {
+    //     const fallbackResult = await this.broadcastTxCLI(messageValue, creator);
+    //     debugLog('✅ CLI fallback successful');
+    //     return fallbackResult;
+    //   } catch (cliError) {
+    //     debugLog('❌ Both RPC and CLI failed');
+    //     throw new Error(`Transaction failed: RPC (${rpcError instanceof Error ? rpcError.message : String(rpcError)}), CLI (${cliError instanceof Error ? cliError.message : String(cliError)})`);
+    //   }
+    // }
   }
 
   private async broadcastTxRPC(typeUrl: string, messageValue: any, creator: string): Promise<TransactionResponse> {
     debugLog('📡 Broadcasting transaction via RPC...');
-    
+
     // Get account info via REST API instead of StargateClient to avoid prefix issues
     const restEndpoint = this.config.rpcEndpoint.replace('26657', '1317');
     let accountNumber = 0;
     let sequence = 0;
-    
+
     try {
       debugLog('📄 Fetching account info via REST API...');
       const accountResponse = await fetch(`${restEndpoint}/cosmos/auth/v1beta1/accounts/${creator}`);
@@ -200,7 +200,7 @@ export class CosmJSClient {
       typeUrl: typeUrl,
       value: this.encodeCustomMessage(messageValue)
     };
-    
+
     debugLog('📦 Encoded message:', messageAny);
 
     // Create transaction body
@@ -224,7 +224,7 @@ export class CosmJSClient {
     if (!this.wallet) {
       await this.initializeWallet();
     }
-    
+
     const accounts = await this.wallet!.getAccounts();
     const signerAccount = accounts.find(acc => acc.address === creator);
     if (!signerAccount) {
@@ -254,7 +254,7 @@ export class CosmJSClient {
     // Sign the transaction
     const directSigner = this.wallet as DirectSecp256k1HdWallet;
     const signature = await directSigner.signDirect(creator, signDoc);
-    
+
     // Create the raw transaction
     const txRaw = TxRaw.fromPartial({
       bodyBytes: signature.signed.bodyBytes,
@@ -264,7 +264,7 @@ export class CosmJSClient {
 
     // Broadcast the transaction
     const txBytes = TxRaw.encode(txRaw).finish();
-    
+
     // Use REST API to broadcast
     const response = await fetch(`${restEndpoint}/cosmos/tx/v1beta1/txs`, {
       method: 'POST',
@@ -308,11 +308,11 @@ export class CosmJSClient {
 
   private async broadcastTxCLI(messageValue: any, creator: string): Promise<TransactionResponse> {
     debugLog('🖥️ Using CLI fallback for transaction broadcast...');
-    
+
     const { exec } = require('child_process');
     const { promisify } = require('util');
     const execAsync = promisify(exec);
-    
+
     // Build CLI command - need to include the index as first parameter
     // Use key name instead of address for CLI commands
     const command = `govchaind tx datasets create-entry \
@@ -338,17 +338,17 @@ export class CosmJSClient {
       --gas-adjustment 1.5 \
       --yes \
       --output json`;
-    
+
     debugLog('🔧 CLI command:', command);
-    
+
     try {
       const { stdout } = await execAsync(`timeout 30s ${command}`);
       const result = JSON.parse(stdout);
-      
+
       if (result.code !== 0) {
         throw new Error(`CLI transaction failed: ${result.raw_log}`);
       }
-      
+
       return {
         transactionHash: result.txhash,
         height: parseInt(result.height || '0'),
@@ -376,7 +376,7 @@ export class CosmJSClient {
 
   async queryAllEntries(limit = 100, offset = 0): Promise<any> {
     const client = await this.getQueryClient();
-    
+
     try {
       // Fallback to REST API for list queries
       const restEndpoint = this.config.rpcEndpoint.replace('26657', '1317');
@@ -414,11 +414,11 @@ export function getCosmJSClient(): CosmJSClient {
 export async function createTestAccount(): Promise<string> {
   const client = getCosmJSClient();
   const accounts = await client.getAccounts();
-  
+
   if (accounts.length === 0) {
     throw new Error('No accounts available - check mnemonic configuration');
   }
-  
+
   return accounts[0];
 }
 
@@ -426,13 +426,13 @@ export async function createTestAccount(): Promise<string> {
 export const POSSIBLE_TYPE_URL_PATTERNS = {
   // Standard Cosmos SDK patterns
   CREATE_ENTRY_V1: '/govchain.datasets.v1.MsgCreateEntry',
-  CREATE_ENTRY: '/govchain.datasets.MsgCreateEntry', 
+  CREATE_ENTRY: '/govchain.datasets.MsgCreateEntry',
   CREATE_ENTRY_V1BETA1: '/govchain.datasets.v1beta1.MsgCreateEntry',
-  
+
   // Ignite CLI generated patterns
   CREATE_ENTRY_IGNITE: '/govchain.datasets.v1.create-entry',
   CREATE_ENTRY_IGNITE_SIMPLE: '/govchain.datasets.create-entry',
-  
+
   // Other possible patterns
   CREATE_DATASET: '/govchain.datasets.MsgCreateDataset',
   CREATE_STORED_DATASET: '/govchain.datasets.MsgCreateStoredDataset',
@@ -455,9 +455,9 @@ export async function discoverActualTypeUrls(): Promise<{ [key: string]: string 
   const config = getCosmJSConfig();
   const restEndpoint = config.rpcEndpoint.replace('26657', '1317');
   debugLog(`🌐 REST endpoint: ${restEndpoint}`);
-  
+
   const discoveredUrls: { [key: string]: string } = {};
-  
+
   try {
     debugLog('📡 Method 1: Trying to get type registry from blockchain...');
     // Method 1: Try to get type registry from blockchain
@@ -466,10 +466,10 @@ export async function discoverActualTypeUrls(): Promise<{ [key: string]: string 
       const registryData = await registryResponse.json();
       debugLog('📋 Registry data received:', registryData);
       // Parse available types from registry
-      const datasetTypes = registryData.types?.filter((type: string) => 
+      const datasetTypes = registryData.types?.filter((type: string) =>
         type.includes('datasets') || type.includes('Dataset') || type.includes('Entry')
       );
-      
+
       if (datasetTypes?.length > 0) {
         debugLog('✅ Found dataset types:', datasetTypes);
         datasetTypes.forEach((type: string, index: number) => {
@@ -483,7 +483,7 @@ export async function discoverActualTypeUrls(): Promise<{ [key: string]: string 
   } catch (error) {
     debugLog('⚠️ Could not fetch type registry:', error);
   }
-  
+
   try {
     debugLog('🧪 Method 2: Testing each possible pattern...');
     // Method 2: Test each possible pattern by trying to simulate
@@ -514,14 +514,14 @@ export async function discoverActualTypeUrls(): Promise<{ [key: string]: string 
           },
           signatures: []
         };
-        
+
         // Try to validate the transaction structure
         const response = await fetch(`${restEndpoint}/cosmos/tx/v1beta1/simulate`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ tx: testTx }),
         });
-        
+
         // If we get a response that's not "unknown message type", the URL might be valid
         const responseText = await response.text();
         debugLog(`Response for ${typeUrl}:`, responseText.substring(0, 200));
@@ -540,7 +540,7 @@ export async function discoverActualTypeUrls(): Promise<{ [key: string]: string 
   } catch (error) {
     debugLog('❌ Type URL discovery failed:', error);
   }
-  
+
   // If no URLs discovered, return the most likely candidates
   if (Object.keys(discoveredUrls).length === 0) {
     debugLog('⚠️ No URLs discovered, using fallbacks');
@@ -549,7 +549,7 @@ export async function discoverActualTypeUrls(): Promise<{ [key: string]: string 
       'CREATE_ENTRY_V1_LIKELY': '/govchain.datasets.v1.MsgCreateEntry',
     };
   }
-  
+
   VALIDATED_TYPE_URLS = discoveredUrls;
   debugLog('🎯 Final discovered URLs:', discoveredUrls);
   return discoveredUrls;
@@ -558,26 +558,26 @@ export async function discoverActualTypeUrls(): Promise<{ [key: string]: string 
 export async function validateTypeUrls(): Promise<{ [key: string]: boolean }> {
   const discoveredUrls = await discoverActualTypeUrls();
   const results: { [key: string]: boolean } = {};
-  
+
   // Test each discovered URL
   for (const [name, typeUrl] of Object.entries(discoveredUrls)) {
     results[name] = true; // If discovered, it's likely valid
   }
-  
+
   return results;
 }
 
 export async function getAvailableEndpoints(): Promise<{ [key: string]: string }> {
   const config = getCosmJSConfig();
   const restEndpoint = config.rpcEndpoint.replace('26657', '1317');
-  
+
   const discoveredEndpoints: { [key: string]: string } = {};
-  
+
   // Test possible endpoint patterns
   const endpointPatterns = [
     '/govchain/datasets/entry',
   ];
-  
+
   // Test each endpoint pattern
   for (const pattern of endpointPatterns) {
     try {
@@ -585,17 +585,17 @@ export async function getAvailableEndpoints(): Promise<{ [key: string]: string }
         method: 'GET',
         headers: { 'Accept': 'application/json' },
       });
-      
+
       if (response.ok) {
         // Try to parse the response to see if it looks like our data
         const data = await response.json();
-        
+
         // Check if response has expected structure
         if (data.entry || data.entries || data.stored_dataset || data.dataset) {
           const key = pattern.split('/').pop()?.toUpperCase() || 'UNKNOWN';
           discoveredEndpoints[`LIST_${key}`] = pattern;
           discoveredEndpoints[`SHOW_${key}`] = `${pattern}/{id}`;
-          
+
           // Add filter endpoints if they might exist
           discoveredEndpoints[`${key}_BY_AGENCY`] = `${pattern}_by_agency/{agency}`;
           discoveredEndpoints[`${key}_BY_CATEGORY`] = `${pattern}_by_category/{category}`;
@@ -606,7 +606,7 @@ export async function getAvailableEndpoints(): Promise<{ [key: string]: string }
       continue;
     }
   }
-  
+
   // If no endpoints discovered, return educated guesses
   if (Object.keys(discoveredEndpoints).length === 0) {
     return {
@@ -617,6 +617,6 @@ export async function getAvailableEndpoints(): Promise<{ [key: string]: string }
       'ENTRIES_BY_MIMETYPE_GUESS': '/govchain/datasets/entries_by_mimetype/{mimeType}',
     };
   }
-  
+
   return discoveredEndpoints;
 }
