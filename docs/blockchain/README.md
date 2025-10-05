@@ -148,4 +148,4 @@ This project is open source and available under the MIT License. See LICENSE fil
 
 ---
 
-**GovChain**: Empowering transparency through decentralized government data.
+**GovChain by BetterGov.ph**: Empowering transparency through decentralized government data.

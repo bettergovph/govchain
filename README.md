@@ -1,13 +1,31 @@
 # GovChain: Decentralized Government Transparency Platform
 
-[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
 [![Status](https://img.shields.io/badge/Status-Pre--launch-yellow.svg)]()
 
-> **Trustless, censorship-resistant government dataset repository powered by blockchain, IPFS, and AI search**
+A tokenless, public good blockchain for government data transparency and accountability.
 
 ## 🎯 Mission
 
-Enable any citizen to access, verify, and trust government datasets through decentralized infrastructure operated by volunteers worldwide.
+GovChain is a decentralized blockchain network designed to store and manage government datasets with complete transparency. Our mission is to create an open, accessible platform where government data can be stored immutably and accessed by all citizens.
+
+## 🌟 Key Features
+
+### Tokenless Architecture
+- **No Economic Barriers**: Anyone can participate without purchasing tokens
+- **Volunteer-Operated**: Community-driven validator network
+- **Public Good Focus**: Designed for transparency, not profit
+
+### Government Data Management
+- **Immutable Records**: Government datasets stored permanently on blockchain
+- **IPFS Integration**: Efficient file storage with content addressing
+- **Rich Metadata**: Comprehensive dataset information and categorization
+- **Query Capabilities**: Search by agency, category, and file type
+
+### Decentralized Network
+- **Cosmos SDK**: Built on proven blockchain technology
+- **Validator Network**: Volunteer nodes secure the network
+- **Consensus Driven**: Community governance model
+- **Open Source**: Fully transparent and auditable code
 
 ## 🏗️ Architecture
 
@@ -21,14 +39,14 @@ GovChain combines three powerful technologies:
 
 ```
 ┌─────────────┐     ┌──────────────┐     ┌─────────────┐
-│   Next.js   │────▶│   Indexer    │────▶│  Blockchain │
-│  (Web UI)   │     │ (REST API)   │     │ (Metadata) │
+│             │────▶│   Indexer    │────▶│  Blockchain │
+│  (Web UI)   │     │ (REST API)   │     │ (Metadata)  │
 └─────────────┘     └──────────────┘     └─────────────┘
        │                    │                    │
        ▼                    ▼                    ▼
 ┌─────────────┐     ┌──────────────┐     ┌─────────────┐
-│    IPFS     │     │   ChromaDB    │     │    IPFS    │
-│  (Storage) │◀────│  (Vectors)  │     │  (Storage) │
+│    IPFS     │     │   ChromaDB   │     │    IPFS     │
+│  (Storag e) │◀────│  (Vectors)   │     │  (Storage)  │
 └─────────────┘     └──────────────┘     └─────────────┘
 ```
 
@@ -243,3 +261,11 @@ GovChain:
 Version: 1.0.0  
 Status: Pre-launch Development  
 Last Updated: 2025-10-04
+
+## 📜 License
+
+This project is open source and available under the MIT License. See LICENSE file for details.
+
+---
+
+**GovChain by BetterGov.ph**: Empowering transparency through decentralized government data.
