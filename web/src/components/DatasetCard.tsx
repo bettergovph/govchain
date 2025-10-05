@@ -80,10 +80,10 @@ export default function DatasetCard({ dataset }: DatasetCardProps) {
               src={dataset.file_url} 
               alt={dataset.title}
               className="w-full h-full object-cover hover:scale-105 transition-transform duration-200"
-              onError={(e) => {
-                const target = e.target as HTMLImageElement;
-                target.src = dataset.fallback_url || '/placeholder-image.png';
-              }}
+              // onError={(e) => {
+              //   const target = e.target as HTMLImageElement;
+              //   target.src = dataset.fallback_url || '/placeholder-image.png';
+              // }}
             />
             
             {/* Image overlay with type badge */}

@@ -3,7 +3,6 @@ import { Button } from '@/components/ui/button';
 import UploadSection from '@/components/UploadSection';
 import SearchSection from '@/components/SearchSection';
 import DatasetList from '@/components/DatasetList';
-import ImageGallery from '@/components/ImageGallery';
 import { FileImage } from 'lucide-react';
 import Link from 'next/link';
 
@@ -33,20 +32,16 @@ export default function Home() {
 
       <main className="container mx-auto px-4 py-8">
         <Tabs defaultValue="search" className="w-full">
-          <TabsList className="grid w-full grid-cols-3">
+          <TabsList className="grid w-full grid-cols-3 mb-8">
             <TabsTrigger value="search">Search</TabsTrigger>
+            <TabsTrigger value="datasets">Browse</TabsTrigger>
             <TabsTrigger value="upload">Upload Dataset</TabsTrigger>
-            <TabsTrigger value="datasets">All Datasets</TabsTrigger>
           </TabsList>
           
           <TabsContent value="search" className="mt-6">
             <SearchSection />
           </TabsContent>
-          
-          <TabsContent value="gallery" className="mt-6">
-            <ImageGallery />
-          </TabsContent>
-          
+
           <TabsContent value="upload" className="mt-6">
             <UploadSection />
           </TabsContent>
