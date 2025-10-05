@@ -32,7 +32,7 @@ export default function Home() {
 
       <main className="container mx-auto px-4 py-8">
         <Tabs defaultValue="search" className="w-full">
-          <TabsList className="grid w-full grid-cols-3 mb-8">
+          <TabsList className="grid grid-cols-3">
             <TabsTrigger value="search">Search</TabsTrigger>
             <TabsTrigger value="datasets">Browse</TabsTrigger>
             <TabsTrigger value="upload">Upload Dataset</TabsTrigger>

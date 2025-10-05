@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Dataset, isImageMimeType } from '@/types/dataset';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -134,8 +134,11 @@ export default function ImageGallery({ datasets = [], loading = false }: ImageGa
   const [selectedAgency, setSelectedAgency] = useState<string>('');
   const [selectedImage, setSelectedImage] = useState<Dataset | null>(null);
 
-  // Filter images from datasets
-  const imageDatasets = datasets.filter(dataset => isImageMimeType(dataset.mime_type));
+  // Filter images from datasets (memoized to prevent infinite re-renders)
+  const imageDatasets = useMemo(() => 
+    datasets.filter(dataset => isImageMimeType(dataset.mime_type)),
+    [datasets]
+  );
 
   // Get unique categories and agencies
   const categories = [...new Set(imageDatasets.map(d => d.category))];
@@ -260,11 +263,7 @@ export default function ImageGallery({ datasets = [], loading = false }: ImageGa
                   <img 
                     src={dataset.file_url} 
                     alt={dataset.title}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200"
-                    onError={(e) => {
-                      const target = e.target as HTMLImageElement;
-                      target.src = dataset.fallback_url || '/placeholder-image.png';
-                    }}
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200"                   
                   />
                   
                   {/* Hover overlay */}

@@ -87,7 +87,7 @@ export default function SearchSection() {
   };
 
   return (
-    <div className="max-w-6xl mx-auto space-y-6">
+    <div className="mx-auto space-y-6">
       {/* Search Form */}
       <Card>
         <CardHeader>
