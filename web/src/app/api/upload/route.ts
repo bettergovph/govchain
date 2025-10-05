@@ -36,7 +36,7 @@ export async function POST(request: NextRequest) {
     const metadata: UploadRequest = JSON.parse(metadataStr);
 
     // Validate required fields
-    if (!metadata.title || !metadata.description || !metadata.agency || !metadata.category) {
+    if (!metadata.title || !metadata.description) {
       return NextResponse.json(
         { error: 'Missing required fields: title, description, agency, category' },
         { status: 400 }
@@ -45,7 +45,7 @@ export async function POST(request: NextRequest) {
 
     // Upload to IPFS
     const ipfsResult = await uploadToIPFS(file);
-    
+
     // Calculate file checksum
     const buffer = await file.arrayBuffer();
     const checksum = crypto.createHash('sha256').update(Buffer.from(buffer)).digest('hex');
@@ -56,11 +56,10 @@ export async function POST(request: NextRequest) {
     const timestamp = Math.floor(Date.now() / 1000);
     const fileUrl = `https://ipfs.io/ipfs/${ipfsResult.cid}`;
     const fallbackUrl = metadata.fallbackUrl || '';
-    
-    // Create unique entry ID
-    const entryId = `entry-${timestamp}-${ipfsResult.cid.slice(-8)}`;
 
-    // Submit to blockchain using CosmJS
+    // Create unique entry ID
+    const entryId = `entry-${timestamp}-${ipfsResult.cid.slice(-8)}`    // Submit to blockchain using CosmJS
+
     try {
       const result = await cosmjsClient.createEntry({
         index: entryId,
@@ -76,12 +75,12 @@ export async function POST(request: NextRequest) {
         agency: metadata.agency,
         category: metadata.category,
         submitter: submitter,
-        timestamp: timestamp.toString(),
+        timestamp: String(timestamp),
         pinCount: "0"
       });
 
       const txhash = result.transactionHash;
-      
+
       if (!txhash) {
         throw new Error('Transaction submitted but no hash returned');
       }
@@ -160,9 +159,9 @@ export async function POST(request: NextRequest) {
 
   } catch (error) {
     console.error('Upload failed:', error);
-    
+
     return NextResponse.json(
-      { 
+      {
         error: 'Upload failed',
         details: error instanceof Error ? error.message : 'Unknown error'
       },

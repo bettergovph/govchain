@@ -132,7 +132,7 @@ export default function UploadSection() {
       return;
     }
 
-    if (!form.title || !form.description || !form.agency || !form.category) {
+    if (!form.title || !form.description) {
       setError('Please fill in all required fields');
       return;
     }
@@ -325,7 +325,7 @@ export default function UploadSection() {
 
               {/* Agency */}
               <div className="space-y-2">
-                <Label htmlFor="agency">Agency *</Label>
+                <Label htmlFor="agency">Agency</Label>
                 <Select
                   value={form.agency}
                   onValueChange={(value) => setForm({ ...form, agency: value })}
@@ -376,17 +376,6 @@ export default function UploadSection() {
                     ))}
                   </SelectContent>
                 </Select>
-              </div>
-
-              {/* Submitter */}
-              <div className="space-y-2">
-                <Label htmlFor="submitter">Submitter Key</Label>
-                <Input
-                  id="submitter"
-                  value={form.submitter}
-                  onChange={(e) => setForm({ ...form, submitter: e.target.value })}
-                  placeholder="alice"
-                />
               </div>
             </div>
 

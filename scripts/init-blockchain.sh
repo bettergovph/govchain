@@ -123,13 +123,13 @@ ignite scaffold map entry \
     fileName:string \
     fileUrl:string \
     fallbackUrl:string \
-    fileSize:uint \
+    fileSize:string \
     checksumSha256:string \
     agency:string \
     category:string \
     submitter:string \
-    timestamp:int \
-    pinCount:uint \
+    timestamp:string \
+    pinCount:string \
     --module datasets \
     --yes
 git add . && git commit -m "Add Entry map with CRUD operations" || echo "⚠️  No changes to commit for Entry map"
