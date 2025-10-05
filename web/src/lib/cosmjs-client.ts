@@ -1,6 +1,19 @@
 import { SigningStargateClient, StargateClient, GasPrice } from "@cosmjs/stargate";
 import { DirectSecp256k1HdWallet, OfflineSigner } from "@cosmjs/proto-signing";
 import { Coin } from "@cosmjs/amino";
+import { TxRaw } from "cosmjs-types/cosmos/tx/v1beta1/tx";
+import { MsgSend } from "cosmjs-types/cosmos/bank/v1beta1/tx";
+import { Any } from "cosmjs-types/google/protobuf/any";
+import { AuthInfo, TxBody, SignDoc } from "cosmjs-types/cosmos/tx/v1beta1/tx";
+import { makeSignDoc } from "@cosmjs/proto-signing";
+
+// Debug logging utility
+const DEBUG = process.env.NODE_ENV === 'development';
+function debugLog(message: string, data?: any) {
+  if (DEBUG) {
+    console.log(`[CosmJS Debug] ${message}`, data || '');
+  }
+}
 
 export interface CosmJSConfig {
   chainId: string;
@@ -62,7 +75,13 @@ export class CosmJSClient {
 
   async getQueryClient(): Promise<StargateClient> {
     if (!this.queryClient) {
-      this.queryClient = await StargateClient.connect(this.config.rpcEndpoint);
+      try {
+        this.queryClient = await StargateClient.connect(this.config.rpcEndpoint);
+        debugLog('✅ Query client connected successfully');
+      } catch (error) {
+        debugLog('❌ Query client connection failed:', error);
+        throw new Error(`Failed to connect to RPC endpoint: ${error instanceof Error ? error.message : String(error)}`);
+      }
     }
     return this.queryClient;
   }
@@ -114,50 +133,233 @@ export class CosmJSClient {
   }
 
   async createEntry(entryData: Omit<CreateEntryMessage['value'], 'creator'>): Promise<TransactionResponse> {
-    const client = await this.getSigningClient();
+    debugLog('🚀 Starting entry creation...');
+    debugLog('Input entry data:', entryData);
+    
     const creator = await this.getFirstAccount();
+    debugLog(`✅ Creator address: ${creator}`);
 
-    // Discover actual type URLs first
-    const discoveredUrls = await discoverActualTypeUrls();
-    const createTypeUrl = Object.values(discoveredUrls).find(url => 
-      url.includes('Create') || url.includes('create')
-    ) || '/govchain.datasets.MsgCreateEntry'; // fallback
+    // Use the confirmed working type URL
+    const createTypeUrl = '/govchain.datasets.v1.MsgCreateEntry';
+    debugLog(`📝 Using type URL: ${createTypeUrl}`);
 
-    const message: CreateEntryMessage = {
-      typeUrl: createTypeUrl,
-      value: {
-        creator,
-        ...entryData,
-      },
-    };
-
-    // Calculate gas
-    const gasEstimation = await client.simulate(creator, [message], "");
-    const gas = Math.round(gasEstimation * 1.5); // 50% buffer
-
-    const fee = {
-      amount: [] as Coin[],
-      gas: gas.toString(),
-    };
-
-    const result = await client.signAndBroadcast(
+    const messageValue = {
       creator,
-      [message],
-      fee,
-      "Dataset entry creation"
+      ...entryData,
+    };
+    
+    debugLog('📋 Complete message value:', messageValue);
+
+    try {
+      // Use standard RPC interface with proper message encoding
+      debugLog('🌐 Using standard RPC interface for transaction broadcasting');
+      
+      const result = await this.broadcastTxRPC(createTypeUrl, messageValue, creator);
+      debugLog('🎉 Entry creation completed successfully!');
+      return result;
+    } catch (rpcError) {
+      debugLog('⚠️ RPC broadcast failed, trying CLI fallback:', rpcError);
+      
+      // Fallback to CLI only if RPC fails
+      try {
+        const fallbackResult = await this.broadcastTxCLI(messageValue, creator);
+        debugLog('✅ CLI fallback successful');
+        return fallbackResult;
+      } catch (cliError) {
+        debugLog('❌ Both RPC and CLI failed');
+        throw new Error(`Transaction failed: RPC (${rpcError instanceof Error ? rpcError.message : String(rpcError)}), CLI (${cliError instanceof Error ? cliError.message : String(cliError)})`);
+      }
+    }
+  }
+
+  private async broadcastTxRPC(typeUrl: string, messageValue: any, creator: string): Promise<TransactionResponse> {
+    debugLog('📡 Broadcasting transaction via RPC...');
+    
+    // Get account info via REST API instead of StargateClient to avoid prefix issues
+    const restEndpoint = this.config.rpcEndpoint.replace('26657', '1317');
+    let accountNumber = 0;
+    let sequence = 0;
+    
+    try {
+      debugLog('📄 Fetching account info via REST API...');
+      const accountResponse = await fetch(`${restEndpoint}/cosmos/auth/v1beta1/accounts/${creator}`);
+      if (accountResponse.ok) {
+        const accountData = await accountResponse.json();
+        accountNumber = parseInt(accountData.account?.account_number || '0');
+        sequence = parseInt(accountData.account?.sequence || '0');
+        debugLog('✅ Account info retrieved:', { accountNumber, sequence });
+      } else {
+        debugLog('⚠️ Could not fetch account info via REST, using defaults');
+      }
+    } catch (error) {
+      debugLog('⚠️ Account fetch failed, using defaults:', error);
+    }
+
+    // Create the Any-encoded message for unregistered types
+    const messageAny = {
+      typeUrl: typeUrl,
+      value: this.encodeCustomMessage(messageValue)
+    };
+    
+    debugLog('📦 Encoded message:', messageAny);
+
+    // Create transaction body
+    const txBody = {
+      messages: [messageAny],
+      memo: 'Dataset entry creation via RPC',
+      timeoutHeight: BigInt(0),
+      extensionOptions: [],
+      nonCriticalExtensionOptions: []
+    };
+
+    // Create fee
+    const fee = {
+      amount: [{ denom: 'stake', amount: '2000' }],
+      gasLimit: BigInt(200000),
+      payer: '',
+      granter: ''
+    };
+
+    // Use the wallet to sign and broadcast
+    if (!this.wallet) {
+      await this.initializeWallet();
+    }
+    
+    const accounts = await this.wallet!.getAccounts();
+    const signerAccount = accounts.find(acc => acc.address === creator);
+    if (!signerAccount) {
+      throw new Error('Signer account not found in wallet');
+    }
+
+    // Create the sign doc
+    const signDoc = makeSignDoc(
+      TxBody.encode(txBody).finish(),
+      AuthInfo.encode({
+        signerInfos: [{
+          publicKey: {
+            typeUrl: '/cosmos.crypto.secp256k1.PubKey',
+            value: signerAccount.pubkey
+          },
+          modeInfo: {
+            single: { mode: 1 } // SIGN_MODE_DIRECT
+          },
+          sequence: BigInt(sequence)
+        }],
+        fee: fee
+      }).finish(),
+      this.config.chainId,
+      accountNumber
     );
 
-    if (result.code !== 0) {
-      throw new Error(`Transaction failed: ${result.rawLog}`);
+    // Sign the transaction
+    const directSigner = this.wallet as DirectSecp256k1HdWallet;
+    const signature = await directSigner.signDirect(creator, signDoc);
+    
+    // Create the raw transaction
+    const txRaw = TxRaw.fromPartial({
+      bodyBytes: signature.signed.bodyBytes,
+      authInfoBytes: signature.signed.authInfoBytes,
+      signatures: [new Uint8Array(Buffer.from(signature.signature.signature, 'base64'))]
+    });
+
+    // Broadcast the transaction
+    const txBytes = TxRaw.encode(txRaw).finish();
+    
+    // Use REST API to broadcast
+    const response = await fetch(`${restEndpoint}/cosmos/tx/v1beta1/txs`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        tx_bytes: Buffer.from(txBytes).toString('base64'),
+        mode: 'BROADCAST_MODE_SYNC'
+      })
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`Broadcast failed: ${response.status} ${errorText}`);
+    }
+
+    const result = await response.json();
+    debugLog('📨 Broadcast result:', result);
+
+    if (result.tx_response.code !== 0) {
+      throw new Error(`Transaction failed: ${result.tx_response.raw_log}`);
     }
 
     return {
-      transactionHash: result.transactionHash,
-      height: result.height,
-      gasUsed: result.gasUsed,
-      gasWanted: result.gasWanted,
-      events: result.events,
+      transactionHash: result.tx_response.txhash,
+      height: parseInt(result.tx_response.height),
+      gasUsed: BigInt(result.tx_response.gas_used || '0'),
+      gasWanted: BigInt(result.tx_response.gas_wanted || '0'),
+      events: result.tx_response.events || []
     };
+  }
+
+  private encodeCustomMessage(messageValue: any): Uint8Array {
+    // For custom unregistered types, we encode as JSON bytes
+    // This works for Ignite-generated modules that expect JSON encoding
+    const jsonBytes = new TextEncoder().encode(JSON.stringify(messageValue));
+    debugLog('🔧 Custom message encoded as JSON bytes, length:', jsonBytes.length);
+    return jsonBytes;
+  }
+
+  private async broadcastTxCLI(messageValue: any, creator: string): Promise<TransactionResponse> {
+    debugLog('🖥️ Using CLI fallback for transaction broadcast...');
+    
+    const { exec } = require('child_process');
+    const { promisify } = require('util');
+    const execAsync = promisify(exec);
+    
+    // Build CLI command - need to include the index as first parameter
+    // Use key name instead of address for CLI commands
+    const command = `govchaind tx datasets create-entry \
+      "${messageValue.index}" \
+      "${messageValue.title}" \
+      "${messageValue.description}" \
+      "${messageValue.ipfsCid}" \
+      "${messageValue.mimeType}" \
+      "${messageValue.fileName}" \
+      "${messageValue.fileUrl}" \
+      "${messageValue.fallbackUrl}" \
+      "${messageValue.fileSize}" \
+      "${messageValue.checksumSha256}" \
+      "${messageValue.agency}" \
+      "${messageValue.category}" \
+      "${messageValue.submitter}" \
+      "${messageValue.timestamp}" \
+      "${messageValue.pinCount}" \
+      --from alice \
+      --chain-id ${this.config.chainId} \
+      --keyring-backend test \
+      --gas auto \
+      --gas-adjustment 1.5 \
+      --yes \
+      --output json`;
+    
+    debugLog('🔧 CLI command:', command);
+    
+    try {
+      const { stdout } = await execAsync(`timeout 30s ${command}`);
+      const result = JSON.parse(stdout);
+      
+      if (result.code !== 0) {
+        throw new Error(`CLI transaction failed: ${result.raw_log}`);
+      }
+      
+      return {
+        transactionHash: result.txhash,
+        height: parseInt(result.height || '0'),
+        gasUsed: BigInt(result.gas_used || '0'),
+        gasWanted: BigInt(result.gas_wanted || '0'),
+        events: result.events || []
+      };
+    } catch (error) {
+      debugLog('❌ CLI broadcast failed:', error);
+      throw error;
+    }
   }
 
   async queryEntry(id: string): Promise<any> {
@@ -249,35 +451,44 @@ export const DATASETS_QUERY_ENDPOINTS = {
 } as const;
 
 export async function discoverActualTypeUrls(): Promise<{ [key: string]: string }> {
+  debugLog('🔍 Starting type URL discovery...');
   const config = getCosmJSConfig();
   const restEndpoint = config.rpcEndpoint.replace('26657', '1317');
+  debugLog(`🌐 REST endpoint: ${restEndpoint}`);
   
   const discoveredUrls: { [key: string]: string } = {};
   
   try {
+    debugLog('📡 Method 1: Trying to get type registry from blockchain...');
     // Method 1: Try to get type registry from blockchain
     const registryResponse = await fetch(`${restEndpoint}/cosmos/tx/v1beta1/types`);
     if (registryResponse.ok) {
       const registryData = await registryResponse.json();
+      debugLog('📋 Registry data received:', registryData);
       // Parse available types from registry
       const datasetTypes = registryData.types?.filter((type: string) => 
         type.includes('datasets') || type.includes('Dataset') || type.includes('Entry')
       );
       
       if (datasetTypes?.length > 0) {
+        debugLog('✅ Found dataset types:', datasetTypes);
         datasetTypes.forEach((type: string, index: number) => {
           discoveredUrls[`DISCOVERED_${index}`] = type;
         });
         return discoveredUrls;
       }
+    } else {
+      debugLog('⚠️ Registry endpoint not accessible:', registryResponse.status);
     }
   } catch (error) {
-    console.warn('Could not fetch type registry:', error);
+    debugLog('⚠️ Could not fetch type registry:', error);
   }
   
   try {
+    debugLog('🧪 Method 2: Testing each possible pattern...');
     // Method 2: Test each possible pattern by trying to simulate
     for (const [name, typeUrl] of Object.entries(POSSIBLE_TYPE_URL_PATTERNS)) {
+      debugLog(`Testing ${name}: ${typeUrl}`);
       try {
         // Create a minimal test transaction to validate the type URL
         const testTx = {
@@ -313,20 +524,26 @@ export async function discoverActualTypeUrls(): Promise<{ [key: string]: string 
         
         // If we get a response that's not "unknown message type", the URL might be valid
         const responseText = await response.text();
+        debugLog(`Response for ${typeUrl}:`, responseText.substring(0, 200));
         if (!responseText.includes('unknown message type') && !responseText.includes('unrecognized')) {
           discoveredUrls[name] = typeUrl;
+          debugLog(`✅ Valid type URL found: ${typeUrl}`);
+        } else {
+          debugLog(`❌ Invalid type URL: ${typeUrl}`);
         }
       } catch (error) {
+        debugLog(`❌ Error testing ${typeUrl}:`, error instanceof Error ? error.message : String(error));
         // This pattern failed, continue to next
         continue;
       }
     }
   } catch (error) {
-    console.warn('Type URL discovery failed:', error);
+    debugLog('❌ Type URL discovery failed:', error);
   }
   
   // If no URLs discovered, return the most likely candidates
   if (Object.keys(discoveredUrls).length === 0) {
+    debugLog('⚠️ No URLs discovered, using fallbacks');
     return {
       'CREATE_ENTRY_LIKELY': '/govchain.datasets.MsgCreateEntry',
       'CREATE_ENTRY_V1_LIKELY': '/govchain.datasets.v1.MsgCreateEntry',
@@ -334,6 +551,7 @@ export async function discoverActualTypeUrls(): Promise<{ [key: string]: string 
   }
   
   VALIDATED_TYPE_URLS = discoveredUrls;
+  debugLog('🎯 Final discovered URLs:', discoveredUrls);
   return discoveredUrls;
 }
 

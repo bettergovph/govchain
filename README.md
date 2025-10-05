@@ -60,13 +60,19 @@ source ~/.bashrc
 ```bash
 # Terminal 1: Start blockchain
 cd ~/govchain-blockchain
+
+ignite chain build # Build/rebuild the blockchain binary
 ignite chain serve
 
 # Terminal 2: Start IPFS
 ipfs init
 ipfs daemon
+```
 
-# Terminal 3: Start indexer
+### Run Web Application Manually
+
+```bash
+# Terminal 3: Start indexer (optional)
 cd indexer-node
 npm install
 npm start
@@ -75,6 +81,12 @@ npm start
 cd web
 npm install
 npm run dev
+```
+
+### Run Web Application using Docker
+
+```bash
+docker compose up -d
 ```
 
 Visit `http://localhost:3000` to access the web interface.
@@ -93,10 +105,6 @@ Visit `http://localhost:3000` to access the web interface.
 
 ```
 govchain/
-├── govchain-blockchain/   # Cosmos blockchain (created by init script)
-│   ├── x/datasets/        # Custom datasets module
-│   ├── proto/             # Protocol buffers
-│   └── cmd/               # CLI binaries
 ├── indexer-node/          # Vector search service
 │   └── src/               # Node.js application
 ├── web/                   # Next.js frontend
@@ -104,6 +112,10 @@ govchain/
 │   └── src/components/    # React components
 ├── scripts/               # Helper scripts
 └── docs/                  # Documentation
+govchain-blockchain/   # Cosmos blockchain (created by init script)
+├── x/datasets/        # Custom datasets module
+├── proto/             # Protocol buffers
+└── cmd/               # CLI binaries
 ```
 
 ### Key Technologies

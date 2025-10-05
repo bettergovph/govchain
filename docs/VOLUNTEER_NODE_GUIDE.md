@@ -56,28 +56,6 @@ By running a GovChain node, you:
 
 ## Quick Setup
 
-### Option 1: Automated Setup (Recommended)
-
-```bash
-# Clone repository
-git clone https://github.com/govchain/govchain.git
-cd govchain
-
-# Run automated setup
-chmod +x scripts/quick-setup.sh
-./scripts/quick-setup.sh
-```
-
-The script will:
-1. Install all dependencies
-2. Build the blockchain binary
-3. Initialize your node
-4. Download genesis file
-5. Configure peers
-6. Create systemd service
-
-### Option 2: Manual Setup
-
 #### Step 1: Install Dependencies
 
 ```bash
@@ -103,8 +81,8 @@ go version
 
 ```bash
 # Clone repository
-git clone https://github.com/govchain/govchain.git
-cd govchain/govchain
+git clone https://github.com/govchain/govchaind.git
+cd govchaind
 
 # Build binary
 ignite chain build
@@ -120,7 +98,7 @@ govchaind version
 govchaind init my-node --chain-id govchain-1
 
 # Download genesis file
-wget https://raw.githubusercontent.com/govchain/govchain/main/genesis.json \
+wget https://raw.githubusercontent.com/bettergovph/govchaind/main/genesis.json \
   -O ~/.govchain/config/genesis.json
 
 # Verify genesis
@@ -208,7 +186,7 @@ Request tokens in Discord #faucet channel:
 ```
 
 **Mainnet:**
-Purchase or receive tokens from another user.
+Request tokens from the agency or organization
 
 ### Step 3: Create Validator
 
@@ -279,7 +257,7 @@ sudo systemctl enable ipfs
 sudo systemctl start ipfs
 ```
 
-### Step 3: Pin Datasets
+### Step 3: Pin Datasets (WIP)
 
 ```bash
 # Query blockchain for datasets
@@ -292,7 +270,7 @@ ipfs pin add QmXxx...
 govchaind tx datasets pin-dataset 1 --from validator --chain-id govchain-1
 ```
 
-### Step 4: Automate Pinning
+### Step 4: Automate Pinning (WIP)
 
 Create a script to automatically pin new datasets:
 
@@ -376,7 +354,7 @@ sudo apt install grafana
 sudo systemctl stop govchaind
 
 # Pull latest code
-cd ~/govchain/govchain
+cd ~/govchaind
 git pull
 
 # Rebuild
