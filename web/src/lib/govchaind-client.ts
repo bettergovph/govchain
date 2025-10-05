@@ -19,7 +19,6 @@ export interface GovChainConfig {
 }
 
 export interface CreateEntryParams {
-  index: string;
   title: string;
   description: string;
   ipfsCid: string;

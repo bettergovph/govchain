@@ -31,16 +31,16 @@ export default function Home() {
       </header>
 
       <main className="container mx-auto px-4 py-8">
-        <Tabs defaultValue="search" className="w-full">
-          <TabsList className="grid grid-cols-3">
-            <TabsTrigger value="search">Search</TabsTrigger>
+        <Tabs defaultValue="datasets" className="w-full">
+          <TabsList className="grid grid-cols-2 w-1/2">
+            {/* <TabsTrigger value="search">Search</TabsTrigger> */}
             <TabsTrigger value="datasets">Browse</TabsTrigger>
             <TabsTrigger value="upload">Upload Dataset</TabsTrigger>
           </TabsList>
           
-          <TabsContent value="search" className="mt-6">
+          {/* <TabsContent value="search" className="mt-6">
             <SearchSection />
-          </TabsContent>
+          </TabsContent> */}
 
           <TabsContent value="upload" className="mt-6">
             <UploadSection />

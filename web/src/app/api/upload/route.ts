@@ -63,7 +63,6 @@ export async function POST(request: NextRequest) {
     // Submit to blockchain using GovChain client
     try {
       const result = await govchainClient.createEntry({
-        index: entryId,
         title: metadata.title,
         description: metadata.description,
         ipfsCid: ipfsResult.cid,
