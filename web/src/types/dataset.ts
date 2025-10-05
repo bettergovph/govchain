@@ -98,9 +98,13 @@ export interface UploadRequest {
 
 export const MIME_TYPE_PREVIEWS = {
   'image/jpeg': 'image',
+  'image/jpg': 'image',
   'image/png': 'image',
   'image/gif': 'image',
   'image/webp': 'image',
+  'image/svg+xml': 'image',
+  'image/bmp': 'image',
+  'image/tiff': 'image',
   'text/csv': 'csv',
   'application/json': 'json',
   'text/plain': 'text',
@@ -111,3 +115,13 @@ export const MIME_TYPE_PREVIEWS = {
 } as const;
 
 export type PreviewType = typeof MIME_TYPE_PREVIEWS[keyof typeof MIME_TYPE_PREVIEWS] | 'unknown';
+
+// Helper function to check if a mime type is an image
+export function isImageMimeType(mimeType: string): boolean {
+  return mimeType.startsWith('image/');
+}
+
+// Helper function to get supported image formats
+export function getSupportedImageFormats(): string[] {
+  return Object.keys(MIME_TYPE_PREVIEWS).filter(mime => MIME_TYPE_PREVIEWS[mime as keyof typeof MIME_TYPE_PREVIEWS] === 'image');
+}

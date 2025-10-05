@@ -22,7 +22,7 @@ import {
   Image,
   FileType
 } from 'lucide-react';
-import { Dataset, MIME_TYPE_PREVIEWS, PreviewType } from '@/types/dataset';
+import { Dataset, MIME_TYPE_PREVIEWS, PreviewType, isImageMimeType } from '@/types/dataset';
 import { formatDistanceToNow } from 'date-fns';
 
 interface DatasetCardProps {
@@ -72,7 +72,46 @@ export default function DatasetCard({ dataset }: DatasetCardProps) {
 
   return (
     <>
-      <Card className="hover:shadow-md transition-shadow">
+      <Card className="hover:shadow-md transition-shadow overflow-hidden">
+        {/* Image Preview for image files */}
+        {isImageMimeType(dataset.mime_type) && (
+          <div className="aspect-video relative overflow-hidden bg-gray-100">
+            <img 
+              src={dataset.file_url} 
+              alt={dataset.title}
+              className="w-full h-full object-cover hover:scale-105 transition-transform duration-200"
+              onError={(e) => {
+                const target = e.target as HTMLImageElement;
+                target.src = dataset.fallback_url || '/placeholder-image.png';
+              }}
+            />
+            
+            {/* Image overlay with type badge */}
+            <div className="absolute top-2 right-2">
+              <Badge variant="secondary" className="bg-black/50 text-white border-none">
+                <Image className="h-3 w-3 mr-1" />
+                {dataset.mime_type.split('/')[1].toUpperCase()}
+              </Badge>
+            </div>
+            
+            {/* Quick action overlay */}
+            <div className="absolute bottom-2 right-2 opacity-0 hover:opacity-100 transition-opacity duration-200">
+              <Button 
+                size="sm" 
+                variant="secondary"
+                className="bg-black/50 text-white border-none hover:bg-black/70"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  window.open(dataset.file_url, '_blank');
+                }}
+              >
+                <Eye className="h-3 w-3 mr-1" />
+                View
+              </Button>
+            </div>
+          </div>
+        )}
+        
         <CardHeader className="pb-4">
           <div className="flex items-start justify-between">
             <div className="flex-1">
@@ -83,9 +122,11 @@ export default function DatasetCard({ dataset }: DatasetCardProps) {
                 {dataset.description}
               </CardDescription>
             </div>
-            <div className="flex items-center gap-1 text-muted-foreground ml-4">
-              {getFileIcon(dataset.mime_type)}
-            </div>
+            {!isImageMimeType(dataset.mime_type) && (
+              <div className="flex items-center gap-1 text-muted-foreground ml-4">
+                {getFileIcon(dataset.mime_type)}
+              </div>
+            )}
           </div>
           
           <div className="flex flex-wrap gap-2 mt-3">
