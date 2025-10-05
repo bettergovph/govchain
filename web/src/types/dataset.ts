@@ -45,6 +45,48 @@ export interface TransactionResult {
   }>;
 }
 
+export interface UploadResponse extends TransactionResult {
+  dataset: Dataset;
+  summary?: {
+    transaction: {
+      hash: string;
+      height: number;
+      status: string;
+      gas_used: string;
+      gas_wanted: string;
+      timestamp: string;
+    };
+    file: {
+      name: string;
+      size: number;
+      size_formatted: string;
+      mime_type: string;
+      checksum: string;
+    };
+    ipfs: {
+      cid: string;
+      gateway_url: string;
+      pinned: boolean;
+      size: number;
+    };
+    blockchain: {
+      entry_id: string;
+      chain_id: string;
+      module: string;
+      message_type: string;
+      creator: string;
+    };
+    metadata: {
+      title: string;
+      description: string;
+      agency: string;
+      category: string;
+      submitter: string;
+      timestamp: number;
+    };
+  };
+}
+
 export interface UploadRequest {
   title: string;
   description: string;

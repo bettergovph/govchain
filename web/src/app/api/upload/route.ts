@@ -1,8 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { uploadToIPFS } from '@/lib/ipfs';
-import { UploadRequest, Dataset, TransactionResult } from '@/types/dataset';
+import { UploadRequest, Dataset, TransactionResult, UploadResponse } from '@/types/dataset';
 import { getCosmJSClient } from '@/lib/cosmjs-client';
 import crypto from 'crypto';
+
+// Utility function to format file size
+function formatFileSize(bytes: number): string {
+  if (bytes === 0) return '0 Bytes';
+  const k = 1024;
+  const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
+  const i = Math.floor(Math.log(bytes) / Math.log(k));
+  return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+}
 
 export async function POST(request: NextRequest) {
   try {
@@ -97,11 +106,49 @@ export async function POST(request: NextRequest) {
         creator: submitter,
       };
 
-      const responseData: TransactionResult & { dataset: Dataset } = {
+      const responseData: UploadResponse = {
         txhash,
         raw_log: `Transaction successful at height ${result.height}`,
         logs: [],
         dataset,
+        summary: {
+          transaction: {
+            hash: txhash,
+            height: result.height,
+            status: 'success',
+            gas_used: result.gasUsed.toString(),
+            gas_wanted: result.gasWanted.toString(),
+            timestamp: new Date().toISOString()
+          },
+          file: {
+            name: file.name,
+            size: ipfsResult.size,
+            size_formatted: formatFileSize(ipfsResult.size),
+            mime_type: file.type || 'application/octet-stream',
+            checksum: checksum
+          },
+          ipfs: {
+            cid: ipfsResult.cid,
+            gateway_url: fileUrl,
+            pinned: true,
+            size: ipfsResult.size
+          },
+          blockchain: {
+            entry_id: entryId,
+            chain_id: 'govchain',
+            module: 'datasets',
+            message_type: '/govchain.datasets.v1.MsgCreateEntry',
+            creator: submitter
+          },
+          metadata: {
+            title: metadata.title,
+            description: metadata.description,
+            agency: metadata.agency,
+            category: metadata.category,
+            submitter: submitter,
+            timestamp: timestamp
+          }
+        }
       };
 
       return NextResponse.json(responseData);
