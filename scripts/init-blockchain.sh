@@ -140,8 +140,8 @@ ignite scaffold query entries-by-category category:string --module datasets --ye
 ignite scaffold query entries-by-mimetype mimeType:string --module datasets --yes
 git add . && git commit -m "Add dataset queries" || echo "⚠️  No changes to commit for queries"
 
-# Copy essential project files from the setup directory
-echo "📋 Copying project documentation and scripts..."
+# Copy essential blockchain-specific files from the docs/blockchain directory
+echo "📋 Copying blockchain-specific documentation and scripts..."
 # Get the original govchain project directory (where the script was run from)
 if [ -n "$GOVCHAIN_PROJECT_DIR" ]; then
     SETUP_DIR="$GOVCHAIN_PROJECT_DIR"
@@ -153,10 +153,10 @@ fi
 
 echo "📁 Copying from: $SETUP_DIR"
 
-# Copy documentation and scripts only (Docker services stay in original project)
-cp "$SETUP_DIR/README.md" .
-cp "$SETUP_DIR/GETTING_STARTED.md" .
-cp "$SETUP_DIR/TECHNICAL_IMPLEMENTATION.md" .
+# Copy blockchain-specific documentation (Docker services stay in original project)
+cp "$SETUP_DIR/docs/blockchain/README.md" .
+cp "$SETUP_DIR/docs/blockchain/GETTING_STARTED.md" .
+cp "$SETUP_DIR/docs/blockchain/TECHNICAL_IMPLEMENTATION.md" .
 
 # Copy scripts (make them relative to blockchain directory)
 mkdir -p scripts
@@ -419,7 +419,7 @@ echo "✅ Tokenless Blockchain Setup Complete!"
 echo "================================"
 echo ""
 echo "📍 Current location: $(pwd)"
-echo "📁 Project files available: documentation, scripts/"
+echo "📁 Project files available: blockchain documentation, scripts/"
 echo "🐳 Docker services remain in: $GOVCHAIN_PROJECT_DIR"
 echo ""
 echo "🌐 Tokenless Network Features:"
