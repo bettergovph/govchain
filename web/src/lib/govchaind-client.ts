@@ -89,9 +89,9 @@ export class GovChainClient {
    */
   static async fromMnemonic(mnemonic: string, config?: Partial<GovChainConfig>): Promise<GovChainClient> {
     const fullConfig = { ...getGovChainConfig(), ...config };
-    
+
     const wallet = await DirectSecp256k1HdWallet.fromMnemonic(mnemonic, {
-      prefix: fullConfig.prefix // Ensure custom prefix is used
+      prefix: 'cosmos'// fullConfig.prefix // Ensure custom prefix is used
     });
 
     return new GovChainClient(fullConfig, wallet);
