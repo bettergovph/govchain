@@ -13,6 +13,7 @@
     "cf-typegen": "wrangler types --env-interface CloudflareEnv cloudflare-env.d.ts"
   },
   "dependencies": {
+    "@bettergov/govchain-ts": "^0.0.1",
     "@cosmjs/encoding": "^0.36.1",
     "@cosmjs/proto-signing": "^0.36.1",
     "@cosmjs/stargate": "^0.36.1",

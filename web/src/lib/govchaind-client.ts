@@ -1,4 +1,4 @@
-import { Client } from './ts-client';
+import { Client } from '@bettergov/govchain-ts';
 import { DirectSecp256k1HdWallet, OfflineSigner } from '@cosmjs/proto-signing';
 import { StdFee } from '@cosmjs/stargate';
 
