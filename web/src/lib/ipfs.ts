@@ -22,8 +22,8 @@ let heliaFS: UnixFS | null = null;
 
 export function getIPFSConfig(): IPFSConfig {
   return {
-    gatewayUrl: process.env.NEXT_PUBLIC_IPFS_GATEWAY || 'https://ipfs.io',
-    publicGateway: process.env.NEXT_PUBLIC_IPFS_GATEWAY || 'https://ipfs.io',
+    gatewayUrl: process.env.IPFS_GATEWAY_URL || 'https://ipfs.io',
+    publicGateway: process.env.IPFS_GATEWAY_URL || 'https://ipfs.io',
   };
 }
 
