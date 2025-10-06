@@ -81,7 +81,7 @@ go version
 
 ```bash
 # Clone repository
-git clone https://github.com/govchain/govchaind.git
+git clone https://github.com/bettergov/govchaind.git
 cd govchaind
 
 # Build binary

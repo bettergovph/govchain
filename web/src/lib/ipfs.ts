@@ -50,28 +50,28 @@ async function createHeliaInstance(): Promise<{ helia: Helia; fs: UnixFS }> {
 export async function uploadToIPFS(file: File): Promise<IPFSUploadResult> {
   try {
     console.log(`Starting IPFS upload for file: ${file.name} (${file.size} bytes)`);
-    
+
     // Create or get Helia instance
-    const { helia, fs } = await createHeliaInstance();
-    
+    const { fs } = await createHeliaInstance();
+
     // Convert File to Uint8Array
     const buffer = await file.arrayBuffer();
     const uint8Array = new Uint8Array(buffer);
-    
+
     // Add file to IPFS
     const cid = await fs.addBytes(uint8Array, {
       cidVersion: 1, // Use CIDv1 for better compatibility
     });
-    
+
     const cidString = cid.toString();
     const config = getIPFSConfig();
-    
+
     console.log(`File uploaded to IPFS successfully. CID: ${cidString}`);
-    
+
     // Create URLs
     const ipfsUrl = `ipfs://${cidString}`;
     const gatewayUrl = `${config.publicGateway}/ipfs/${cidString}`;
-    
+
     return {
       cid: cidString,
       size: file.size,
@@ -97,7 +97,7 @@ export async function checkIPFSStatus(): Promise<boolean> {
       console.log(`Helia status: Connected to ${peers.length} peers`);
       return true;
     }
-    
+
     // Try to create a new instance
     await createHeliaInstance();
     return true;
@@ -113,21 +113,21 @@ export async function getFromIPFS(cidString: string): Promise<Uint8Array> {
     const { fs } = await createHeliaInstance();
     const cid = CID.parse(cidString);
     const chunks: Uint8Array[] = [];
-    
+
     for await (const chunk of fs.cat(cid)) {
       chunks.push(chunk);
     }
-    
+
     // Combine all chunks into a single Uint8Array
     const totalLength = chunks.reduce((acc, chunk) => acc + chunk.length, 0);
     const result = new Uint8Array(totalLength);
     let offset = 0;
-    
+
     for (const chunk of chunks) {
       result.set(chunk, offset);
       offset += chunk.length;
     }
-    
+
     return result;
   } catch (error) {
     console.error('Failed to retrieve from IPFS:', error);
@@ -138,9 +138,9 @@ export async function getFromIPFS(cidString: string): Promise<Uint8Array> {
 // Helper function to pin content (optional for web usage)
 export async function pinToIPFS(cidString: string): Promise<void> {
   try {
-    const { helia } = await createHeliaInstance();
-    const cid = CID.parse(cidString);
-    
+    // const { helia } = await createHeliaInstance();
+    // const cid = CID.parse(cidString);
+
     // In Helia, content is automatically pinned when added
     // This function is mainly for compatibility
     console.log(`Content automatically pinned: ${cidString}`);

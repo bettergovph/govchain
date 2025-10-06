@@ -105,7 +105,7 @@ export default function DatasetList() {
           comparison = a.agency.localeCompare(b.agency);
           break;
         case 'fileSize':
-          comparison = a.fileSize - b.fileSize;
+          comparison = a.file_size - b.file_size;
           break;
       }
       

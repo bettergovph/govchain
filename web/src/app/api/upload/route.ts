@@ -16,15 +16,8 @@ function formatFileSize(bytes: number): string {
 export async function POST(request: NextRequest) {
   try {
     const formData = await request.formData();
-    const file = formData.get('file') as File;
+    const file = formData.get('file') as File | null;
     const metadataStr = formData.get('metadata') as string;
-
-    if (!file) {
-      return NextResponse.json(
-        { error: 'No file provided' },
-        { status: 400 }
-      );
-    }
 
     if (!metadataStr) {
       return NextResponse.json(
@@ -43,34 +36,48 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Upload to IPFS
-    const ipfsResult = await uploadToIPFS(file);
+    // Handle file upload and checksum (if file provided)
+    let ipfsResult: { cid: string; size: number } | null = null;
+    let checksum = '';
+    let fileUrl = '';
+    let mimeType = 'text/plain';
+    let fileName = 'No file';
+    let fileSize = 0;
 
-    // Calculate file checksum
-    const buffer = await file.arrayBuffer();
-    const checksum = crypto.createHash('sha256').update(Buffer.from(buffer)).digest('hex');
+    if (file) {
+      // Upload to IPFS
+      ipfsResult = await uploadToIPFS(file);
+
+      // Calculate file checksum
+      const buffer = await file.arrayBuffer();
+      checksum = crypto.createHash('sha256').update(Buffer.from(buffer)).digest('hex');
+
+      fileUrl = `https://ipfs.io/ipfs/${ipfsResult.cid}`;
+      mimeType = file.type || 'application/octet-stream';
+      fileName = file.name;
+      fileSize = ipfsResult.size;
+    }
 
     // Prepare blockchain submission
     const govchainClient = await getGovChainClient();
     const submitter = metadata.submitter || 'alice'; // Default to alice for development
     const timestamp = Math.floor(Date.now() / 1000);
-    const fileUrl = `https://ipfs.io/ipfs/${ipfsResult.cid}`;
     const fallbackUrl = metadata.fallbackUrl || '';
 
     // Create unique entry ID
-    const entryId = `entry-${timestamp}-${ipfsResult.cid.slice(-8)}`;
+    const entryId = file ? `entry-${timestamp}-${ipfsResult!.cid.slice(-8)}` : `entry-${timestamp}-${Math.random().toString(36).substr(2, 8)}`;
 
     // Submit to blockchain using GovChain client
     try {
       const result = await govchainClient.createEntry({
         title: metadata.title,
         description: metadata.description,
-        ipfsCid: ipfsResult.cid,
-        mimeType: file.type || 'application/octet-stream',
-        fileName: file.name,
+        ipfsCid: ipfsResult?.cid || '',
+        mimeType: mimeType,
+        fileName: fileName,
         fileUrl: fileUrl,
         fallbackUrl: fallbackUrl,
-        fileSize: ipfsResult.size.toString(),
+        fileSize: fileSize.toString(),
         checksumSha256: checksum,
         agency: metadata.agency,
         category: metadata.category,
@@ -79,7 +86,7 @@ export async function POST(request: NextRequest) {
         pinCount: "0"
       });
 
-      const txhash = entryId; //result.transactionHash;
+      const txhash = result.transactionHash;
 
       if (!txhash) {
         throw new Error('Transaction submitted but no hash returned');
@@ -87,15 +94,15 @@ export async function POST(request: NextRequest) {
 
       // Prepare response dataset object
       const dataset: Dataset = {
-        index: entryId,
+        index: txhash,
         title: metadata.title,
         description: metadata.description,
-        ipfs_cid: ipfsResult.cid,
-        mime_type: file.type || 'application/octet-stream',
-        file_name: file.name,
+        ipfs_cid: ipfsResult?.cid || '',
+        mime_type: mimeType,
+        file_name: fileName,
         file_url: fileUrl,
         fallback_url: fallbackUrl,
-        file_size: ipfsResult.size,
+        file_size: fileSize,
         checksum_sha_256: checksum,
         agency: metadata.agency,
         category: metadata.category,
@@ -120,17 +127,17 @@ export async function POST(request: NextRequest) {
             timestamp: new Date().toISOString()
           },
           file: {
-            name: file.name,
-            size: ipfsResult.size,
-            size_formatted: formatFileSize(ipfsResult.size),
-            mime_type: file.type || 'application/octet-stream',
+            name: fileName,
+            size: fileSize,
+            size_formatted: formatFileSize(fileSize),
+            mime_type: mimeType,
             checksum: checksum
           },
           ipfs: {
-            cid: ipfsResult.cid,
+            cid: ipfsResult?.cid || '',
             gateway_url: fileUrl,
-            pinned: true,
-            size: ipfsResult.size
+            pinned: !!ipfsResult,
+            size: fileSize
           },
           blockchain: {
             entry_id: entryId,

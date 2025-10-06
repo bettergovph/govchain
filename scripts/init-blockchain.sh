@@ -157,6 +157,7 @@ echo "📁 Copying from: $SETUP_DIR"
 cp "$SETUP_DIR/docs/blockchain/README.md" .
 cp "$SETUP_DIR/docs/blockchain/GETTING_STARTED.md" .
 cp "$SETUP_DIR/docs/blockchain/TECHNICAL_IMPLEMENTATION.md" .
+cp "$SETUP_DIR/docs/blockchain/VOLUNTEER_NODE_GUIDE.md" .
 
 # Copy scripts (make them relative to blockchain directory)
 mkdir -p scripts

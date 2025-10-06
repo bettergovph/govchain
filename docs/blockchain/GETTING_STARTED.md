@@ -43,7 +43,7 @@ cd ~/govchain-blockchain
 # Build the blockchain
 ignite chain build
 
-# This creates: ./build/govchaind
+# This creates: govchaind
 ```
 
 ## 🚀 Quick Start
@@ -67,7 +67,7 @@ If joining an existing GovChain network:
 ./join-as-volunteer.sh my-node-name https://example.com/genesis.json
 
 # Start your node
-./build/govchaind start
+govchaind start
 ```
 
 ## 📝 Basic Operations
@@ -78,10 +78,10 @@ If joining an existing GovChain network:
 ignite chain serve
 
 # Production mode
-./build/govchaind start
+govchaind start
 
 # With custom configuration
-./build/govchaind start --home ~/.govchain
+govchaind start --home ~/.govchain
 ```
 
 ### Creating Your First Dataset Entry
@@ -98,19 +98,19 @@ ignite chain serve
 ### Querying Data
 ```bash
 # List all entries
-./build/govchaind query datasets list-entry
+govchaind query datasets list-entry
 
 # Show specific entry
-./build/govchaind query datasets show-entry 1
+govchaind query datasets show-entry 1
 
 # Query by agency
-./build/govchaind query datasets entries-by-agency treasury
+govchaind query datasets entries-by-agency treasury
 
 # Query by category
-./build/govchaind query datasets entries-by-category finance
+govchaind query datasets entries-by-category finance
 
 # Query by file type
-./build/govchaind query datasets entries-by-mimetype text/csv
+govchaind query datasets entries-by-mimetype text/csv
 ```
 
 ## 🏛️ Government Agency Setup
@@ -121,16 +121,16 @@ Government agencies can set up their own nodes or use existing infrastructure:
 #### 1. Department Node Setup
 ```bash
 # Initialize department node
-./build/govchaind init dept-treasury --chain-id govchain
+govchaind init dept-treasury --chain-id govchain
 
 # Create department keys
-./build/govchaind keys add treasury-admin --keyring-backend test
+govchaind keys add treasury-admin --keyring-backend test
 
 # Join the network (get genesis from main network)
 curl -s https://your-network.com/genesis.json > ~/.govchain/config/genesis.json
 
 # Start your department node
-./build/govchaind start
+govchaind start
 ```
 
 #### 2. Dataset Submission Workflow
@@ -147,7 +147,7 @@ curl -s https://your-network.com/genesis.json > ~/.govchain/config/genesis.json
   "budget"
 
 # 3. Verify submission
-./build/govchaind query datasets entries-by-agency treasury
+govchaind query datasets entries-by-agency treasury
 ```
 
 ## 🔧 Advanced Configuration
@@ -195,9 +195,9 @@ For production deployments:
 ### Becoming a Validator
 ```bash
 # Create validator transaction
-./build/govchaind tx staking create-validator \
+govchaind tx staking create-validator \
   --amount=1000000stake \
-  --pubkey=$(./build/govchaind tendermint show-validator) \
+  --pubkey=$(govchaind tendermint show-validator) \
   --moniker="my-validator" \
   --chain-id=govchain \
   --commission-rate="0.05" \
@@ -211,7 +211,7 @@ For production deployments:
 ### Node Maintenance
 ```bash
 # Check node status
-./build/govchaind status
+govchaind status
 
 # View logs
 journalctl -u govchaind -f
@@ -220,7 +220,7 @@ journalctl -u govchaind -f
 cp ~/.govchain/config/priv_validator_key.json ~/backup/
 
 # Check synchronization
-./build/govchaind status | jq .sync_info
+govchaind status | jq .sync_info
 ```
 
 ## 🚨 Troubleshooting
@@ -240,7 +240,7 @@ go mod download
 #### Node Sync Issues
 ```bash
 # Reset node data (CAUTION: This deletes all data)
-./build/govchaind unsafe-reset-all
+govchaind unsafe-reset-all
 
 # Re-download genesis
 curl -s https://your-network.com/genesis.json > ~/.govchain/config/genesis.json
@@ -249,10 +249,10 @@ curl -s https://your-network.com/genesis.json > ~/.govchain/config/genesis.json
 #### Transaction Failures
 ```bash
 # Check account balance
-./build/govchaind query bank balances $(./build/govchaind keys show validator -a --keyring-backend test)
+govchaind query bank balances $(govchaind keys show validator -a --keyring-backend test)
 
 # Check transaction
-./build/govchaind query tx <transaction-hash>
+govchaind query tx <transaction-hash>
 ```
 
 ### Getting Help

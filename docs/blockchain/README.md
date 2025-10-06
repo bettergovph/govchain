@@ -44,17 +44,19 @@ GovChain is a decentralized blockchain network designed to store and manage gove
 ### For Node Operators
 See [GETTING_STARTED.md](./GETTING_STARTED.md) for detailed setup instructions.
 
-### Quick Setup
+### Quick Setup (Local development only)
 ```bash
 # Setup blockchain environment
 ./setup-env.sh
 
+# Build the chain binary
+ignite chain build
+
 # Start the blockchain
 ignite chain serve
-
-# Upload a dataset
-./scripts/upload-dataset.sh <file> <title> <description> <agency> <category>
 ```
+
+---
 
 ### For Volunteer Validators
 ```bash
@@ -62,7 +64,62 @@ ignite chain serve
 ./join-as-volunteer.sh <node-name> <genesis-url>
 
 # Start your validator node
-./build/govchaind start
+govchaind start
+
+# Configure your node
+nano ~/.govchain/config/config.toml
+```
+
+### Configure Volunteer Node
+
+```toml
+# Persistent peers (seed nodes)
+persistent_peers = "node1@ip1:26656,node2@ip2:26656"
+
+# External address (your public IP)
+external_address = "tcp://YOUR_PUBLIC_IP:26656"
+
+# Prometheus metrics
+prometheus = true
+```
+
+### Systemd Service
+
+```bash
+sudo tee /etc/systemd/system/govchaind.service > /dev/null <<EOF
+[Unit]
+Description=GovChain Node
+After=network-online.target
+
+[Service]
+User=$USER
+ExecStart=$(which govchaind) start
+Restart=on-failure
+RestartSec=3
+LimitNOFILE=4096
+
+[Install]
+WantedBy=multi-user.target
+EOF
+
+# Enable and start service
+sudo systemctl daemon-reload
+sudo systemctl enable govchaind
+sudo systemctl start govchaind
+```
+
+
+### Verify Node is Running
+
+```bash
+# Check status
+sudo systemctl status govchaind
+
+# View logs
+sudo journalctl -u govchaind -f
+
+# Check sync status
+govchaind status | jq .SyncInfo
 ```
 
 ## 📊 Network Statistics

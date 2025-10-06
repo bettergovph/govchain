@@ -219,7 +219,7 @@ export default function SearchSection() {
             ) : (
               <div className="grid gap-4">
                 {results.map((dataset) => (
-                  <DatasetCard key={dataset.id} dataset={dataset} />
+                  <DatasetCard key={dataset.timestamp} dataset={dataset} />
                 ))}
               </div>
             )}

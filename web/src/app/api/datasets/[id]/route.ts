@@ -5,11 +5,11 @@ const BLOCKCHAIN_API = process.env.BLOCKCHAIN_API || 'http://localhost:1317';
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id } = params;
-    
+    const { id } = await params;
+
     const response = await fetch(
       `${BLOCKCHAIN_API}/govchain/datasets/v1/entry/${id}`,
       {
@@ -31,7 +31,7 @@ export async function GET(
     }
 
     const data = await response.json();
-    
+
     return NextResponse.json({
       dataset: data.StoredDataset || data.Dataset || data,
     });
