@@ -46,7 +46,7 @@ GovChain combines three powerful technologies:
        ▼                    ▼                    ▼
 ┌─────────────┐     ┌──────────────┐     ┌─────────────┐
 │    IPFS     │     │   ChromaDB   │     │    IPFS     │
-│  (Storag e) │◀────│  (Vectors)   │     │  (Storage)  │
+│  (Storage)  │◀───│  (Vectors)   │     │  (Storage)  │
 └─────────────┘     └──────────────┘     └─────────────┘
 ```
 
@@ -219,30 +219,20 @@ We welcome contributions! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for guid
 - **Access**: Public read access, verified agency uploads
 - **Privacy**: No personal data on-chain
 
-Report security issues to: security@govchain.io
-
-## 📈 Success Metrics
-
-**Year 1 Goals:**
-- 10+ government agencies
-- 10,000+ datasets indexed
-- 30+ volunteer nodes
-- 99.9%+ uptime
+Report security issues to: volunteers@bettergov.ph
 
 ## 📄 License
 
-- Blockchain code: Apache 2.0
+- Blockchain code: CC0 1.0 Universal
 - Indexer: MIT
 - Web interface: MIT
 - Documentation: Creative Commons
 
 ## 🌐 Community
 
-- **Website**: https://govchain.io (TBD)
-- **GitHub**: https://github.com/govchain
-- **Discord**: https://discord.gg/govchain (TBD)
-- **Twitter**: @govchain (TBD)
-- **Email**: contact@govchain.io
+- **Website**: https://bettergov.ph
+- **GitHub**: https://github.com/bettergovph/govchain
+- **Discord**: https://discord.gg/bettergovph
 
 ## 💡 Why GovChain?
 
@@ -262,13 +252,9 @@ GovChain:
 
 **Built with ❤️ for democratic accountability in the digital age**
 
-Version: 1.0.0  
-Status: Pre-launch Development  
-Last Updated: 2025-10-04
-
 ## 📜 License
 
-This project is open source and available under the MIT License. See LICENSE file for details.
+This project is open source and available under the CC0 1.0 Universal License. See LICENSE file for details.
 
 ---
 
