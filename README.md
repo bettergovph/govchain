@@ -52,6 +52,10 @@ GovChain combines three powerful technologies:
 
 ## 🚀 Quick Start
 
+This repository only includes the setup script for creating a new chain and a sample web application to browse and interact with the chain.
+
+For running a node, please check https://github.com/bettergovph/govchaind
+
 ### Prerequisites
 
 - Ubuntu 20.04+ / macOS / WSL2
@@ -62,7 +66,7 @@ GovChain combines three powerful technologies:
 
 ```bash
 # Clone the repository
-git clone https://github.com/govchain/govchain.git
+git clone https://github.com/bettergov/govchain.git
 cd govchain
 
 # Install prerequisites
