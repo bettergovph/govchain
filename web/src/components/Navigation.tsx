@@ -30,48 +30,49 @@ export default function Navigation() {
     <nav className="sticky top-0 z-50 w-full bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b">
       <div className="container mx-auto px-4">
         <div className="flex h-16 md:h-24 items-center justify-between">
-          {/* Logo Section */}
-          <Link href="/" className="flex items-center gap-3" onClick={closeMobileMenu}>
-            <Image 
-              src="/logo.png" 
-              alt="BetterGov" 
-              height={40}
-              width={140}
-              className="md:h-12 md:w-40"
-            />           
-          </Link>
+          <div className="flex gap-6">
+            {/* Logo Section */}
+            <Link href="/" className="flex items-center" onClick={closeMobileMenu}>
+              <Image
+                src="/logo.png"
+                alt="BetterGov"
+                height={64}
+                width={200}
+              />
+            </Link>
 
-          {/* Desktop Navigation Links */}
-          <ul className="hidden md:flex items-center gap-4">
-            {navItems.map((item) => {
-              const Icon = item.icon;
-              const isActive = pathname === item.href;
-              
-              return (
-                <li key={item.href}>
-                  <Link
-                    href={item.href}
-                    className={`
+            {/* Desktop Navigation Links */}
+            <ul className="hidden md:flex items-center gap-4">
+              {navItems.map((item) => {
+                const Icon = item.icon;
+                const isActive = pathname === item.href;
+
+                return (
+                  <li key={item.href}>
+                    <Link
+                      href={item.href}
+                      className={`
                       flex items-center gap-2 px-3 py-2 rounded-lg transition-colors text-sm font-medium
-                      ${isActive 
-                        ? 'bg-primary text-primary-foreground' 
-                        : 'text-muted-foreground hover:bg-accent hover:text-accent-foreground'
-                      }
+                      ${isActive
+                          ? 'bg-primary text-primary-foreground'
+                          : 'text-muted-foreground hover:bg-accent hover:text-accent-foreground'
+                        }
                     `}
-                  >
-                    <Icon className="h-4 w-4" />
-                    <span>{item.label}</span>
-                  </Link>
-                </li>
-              );
-            })}
-          </ul>
+                    >
+                      <Icon className="h-4 w-4" />
+                      <span>{item.label}</span>
+                    </Link>
+                  </li>
+                );
+              })}
+            </ul>
+          </div>
 
           {/* Desktop Right Side Actions */}
           <div className="hidden md:flex items-center gap-3">
-            <a 
-              href="https://discord.gg/bettergovph" 
-              target="_blank" 
+            <a
+              href="https://discord.gg/bettergovph"
+              target="_blank"
               rel="noopener noreferrer"
             >
               <Button variant="outline" size="sm" className="gap-2">
@@ -79,9 +80,9 @@ export default function Navigation() {
                 <span className="hidden lg:inline">Join us on Discord</span>
               </Button>
             </a>
-            <a 
-              href="https://github.com/bettergovph/govchain" 
-              target="_blank" 
+            <a
+              href="https://github.com/bettergovph/govchain"
+              target="_blank"
               rel="noopener noreferrer"
             >
               <Button variant="outline" size="sm" className="gap-2">
@@ -111,7 +112,7 @@ export default function Navigation() {
               {navItems.map((item) => {
                 const Icon = item.icon;
                 const isActive = pathname === item.href;
-                
+
                 return (
                   <Link
                     key={item.href}
@@ -119,8 +120,8 @@ export default function Navigation() {
                     onClick={closeMobileMenu}
                     className={`
                       flex items-center gap-3 px-3 py-3 rounded-lg transition-colors text-base font-medium w-full
-                      ${isActive 
-                        ? 'bg-primary text-primary-foreground' 
+                      ${isActive
+                        ? 'bg-primary text-primary-foreground'
                         : 'text-foreground hover:bg-accent hover:text-accent-foreground'
                       }
                     `}
@@ -130,12 +131,12 @@ export default function Navigation() {
                   </Link>
                 );
               })}
-              
+
               {/* Mobile Social Links */}
               <div className="pt-4 border-t space-y-2">
-                <a 
-                  href="https://discord.gg/bettergovph" 
-                  target="_blank" 
+                <a
+                  href="https://discord.gg/bettergovph"
+                  target="_blank"
                   rel="noopener noreferrer"
                   onClick={closeMobileMenu}
                   className="flex items-center gap-3 px-3 py-3 text-muted-foreground hover:text-foreground hover:bg-accent rounded-lg transition-colors w-full"
@@ -143,9 +144,9 @@ export default function Navigation() {
                   <MessageCircle className="h-5 w-5" />
                   <span>Join us on Discord</span>
                 </a>
-                <a 
-                  href="https://github.com/bettergovph/govchain" 
-                  target="_blank" 
+                <a
+                  href="https://github.com/bettergovph/govchain"
+                  target="_blank"
                   rel="noopener noreferrer"
                   onClick={closeMobileMenu}
                   className="flex items-center gap-3 px-3 py-3 text-muted-foreground hover:text-foreground hover:bg-accent rounded-lg transition-colors w-full"
