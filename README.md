@@ -114,12 +114,10 @@ docker compose up -d
 Visit `http://localhost:3000` to access the web interface.
 
 ## 📚 Documentation
-
-- [Project Overview](PROJECT.md) - Complete project specification
-- [Technical Implementation](TECHNICAL_IMPLEMENTATION.md) - Development guide
-- [API Reference](docs/API_REFERENCE.md) - REST API documentation
-- [Volunteer Node Guide](docs/VOLUNTEER_NODE_GUIDE.md) - Run a node
-- [Agency Upload Guide](docs/AGENCY_GUIDE.md) - Submit datasets
+- [Getting Started](docs/blockchain/GETTING_STARTED.md)
+- [Chain README](docs/blockchain/README.md)
+- [Technical Implementation](docs/blockchain/TECHNICAL_IMPLEMENTATION.md) - Development guide
+- [Volunteer Node Guide](docs/blockchain/VOLUNTEER_NODE_GUIDE.md) - Run a node
 
 ## 🛠️ Development
 
@@ -185,32 +183,6 @@ We welcome contributions! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for guid
 3. Make your changes
 4. Add tests
 5. Submit a pull request
-
-## 📊 Roadmap
-
-### Phase 1: Testnet & Pilot (Months 1-6)
-- [x] Project specification
-- [x] Entry-based blockchain structure
-- [x] Next.js web application
-- [x] IPFS integration
-- [ ] Deploy Cosmos blockchain testnet
-- [ ] Launch IPFS cluster
-- [ ] Partner with pilot agencies
-- [ ] Recruit 20-30 volunteers
-
-### Phase 2: Public Beta (Months 7-12)
-- [ ] Expand to 20-30 validators
-- [ ] Launch grant program
-- [ ] Onboard 5-10 agencies
-- [ ] Advanced search features
-- [ ] Mobile app
-
-### Phase 3: Mainnet Launch (Year 2)
-- [ ] Launch mainnet (50+ validators)
-- [ ] 100+ IPFS pinners
-- [ ] Full API documentation
-- [ ] Developer grants program
-- [ ] 10+ government partnerships
 
 ## 🔒 Security
 
