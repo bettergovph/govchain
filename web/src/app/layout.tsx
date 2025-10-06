@@ -10,7 +10,7 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "GovChain - Decentralized Government Transparency Platform",
+  title: "GovChain by BetterGov - Decentralized Government Transparency Platform",
   description: "A tokenless, public good blockchain for government data transparency and accountability.",
 };
 

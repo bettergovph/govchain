@@ -89,7 +89,7 @@ export default function Footer() {
         {/* Bottom Bar */}
         <div className="mt-8 pt-8 border-t border-border text-center text-sm text-muted-foreground">
           <p>Built with ❤️ for democratic accountability in the digital age</p>
-          <p className="mt-2">© {new Date().getFullYear()} BetterGov.ph. All rights reserved.</p>
+          <p className="mt-2">{new Date().getFullYear()} BetterGov.ph.</p>
         </div>
       </div>
     </footer>
