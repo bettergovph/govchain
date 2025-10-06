@@ -19,6 +19,7 @@ export interface GovChainConfig {
 }
 
 export interface CreateEntryParams {
+  id: string;
   title: string;
   description: string;
   ipfsCid: string;
@@ -166,8 +167,8 @@ export class GovChainClient {
       // Note: The actual module name will be determined once ts-client is generated
       const result = await this.client.GovchainDatasetsV_1.tx.sendMsgCreateEntry({
         value: {
+          ...params,
           creator,
-          ...params
         },
         fee: fee || {
           amount: [{ amount: '2000', denom: 'stake' }],
