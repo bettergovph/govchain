@@ -16,7 +16,7 @@ Before you begin, ensure you have:
 ### Step 1: Clone Repository
 
 ```bash
-git clone https://github.com/govchain/govchain.git
+git clone https://github.com/bettergovph/govchain.git
 cd govchain
 ```
 
@@ -429,14 +429,14 @@ For production deployment, see:
 ### Community
 
 - **Discord**: https://discord.gg/govchain
-- **GitHub**: https://github.com/govchain/govchain
+- **GitHub**: https://github.com/bettergovph/govchain
 - **Forum**: https://forum.govchain.io
 - **Twitter**: @govchain
 
 ### Support
 
 - **Email**: support@govchain.io
-- **GitHub Issues**: https://github.com/govchain/govchain/issues
+- **GitHub Issues**: https://github.com/bettergovph/govchain/issues
 - **Discord #help**: Real-time support
 
 ## FAQ

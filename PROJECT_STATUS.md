@@ -279,7 +279,7 @@ None yet - project just started!
 
 - **Email**: contact@govchain.io
 - **Discord**: https://discord.gg/govchain (TBD)
-- **GitHub**: https://github.com/govchain/govchain
+- **GitHub**: https://github.com/bettergovph/govchain
 - **Twitter**: @govchain (TBD)
 
 ## 🙏 Acknowledgments

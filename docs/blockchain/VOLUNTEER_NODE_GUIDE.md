@@ -481,7 +481,7 @@ sudo apt update && sudo apt upgrade -y
 
 - **Discord**: https://discord.gg/govchain
 - **Forum**: https://forum.govchain.io
-- **GitHub Issues**: https://github.com/govchain/govchain/issues
+- **GitHub Issues**: https://github.com/bettergovph/govchain/issues
 - **Email**: support@govchain.io
 
 ### Community Calls

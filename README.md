@@ -66,7 +66,7 @@ For running a node, please check https://github.com/bettergovph/govchaind
 
 ```bash
 # Clone the repository
-git clone https://github.com/bettergov/govchain.git
+git clone https://github.com/bettergovph/govchain.git
 cd govchain
 
 # Install prerequisites
@@ -176,14 +176,6 @@ govchain-blockchain/   # Cosmos blockchain (created by init script)
 
 We welcome contributions! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
 
-### Development Workflow
-
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Add tests
-5. Submit a pull request
-
 ## 🔒 Security
 
 - **Blockchain**: Tendermint BFT consensus, 2/3+ validator agreement
@@ -192,13 +184,6 @@ We welcome contributions! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for guid
 - **Privacy**: No personal data on-chain
 
 Report security issues to: volunteers@bettergov.ph
-
-## 📄 License
-
-- Blockchain code: CC0 1.0 Universal
-- Indexer: MIT
-- Web interface: MIT
-- Documentation: Creative Commons
 
 ## 🌐 Community
 
