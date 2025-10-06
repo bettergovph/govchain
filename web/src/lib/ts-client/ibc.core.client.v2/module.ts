@@ -9,31 +9,31 @@ import { Api } from "./rest";
 import { MsgRegisterCounterparty } from "./types/ibc/core/client/v2/tx";
 import { MsgUpdateClientConfig } from "./types/ibc/core/client/v2/tx";
 
-import { Config as typeConfig} from "./types"
-import { CounterpartyInfo as typeCounterpartyInfo} from "./types"
-import { GenesisCounterpartyInfo as typeGenesisCounterpartyInfo} from "./types"
+import { Config as typeConfig } from "./types"
+import { CounterpartyInfo as typeCounterpartyInfo } from "./types"
+import { GenesisCounterpartyInfo as typeGenesisCounterpartyInfo } from "./types"
 
 export { MsgRegisterCounterparty, MsgUpdateClientConfig };
 
 type sendMsgRegisterCounterpartyParams = {
-  value: MsgRegisterCounterparty,
-  fee?: StdFee,
-  memo?: string
+	value: MsgRegisterCounterparty,
+	fee?: StdFee,
+	memo?: string
 };
 
 type sendMsgUpdateClientConfigParams = {
-  value: MsgUpdateClientConfig,
-  fee?: StdFee,
-  memo?: string
+	value: MsgUpdateClientConfig,
+	fee?: StdFee,
+	memo?: string
 };
 
 
 type msgRegisterCounterpartyParams = {
-  value: MsgRegisterCounterparty,
+	value: MsgRegisterCounterparty,
 };
 
 type msgUpdateClientConfigParams = {
-  value: MsgUpdateClientConfig,
+	value: MsgUpdateClientConfig,
 };
 
 
@@ -44,7 +44,7 @@ type Field = {
 	type: unknown;
 }
 function getStructure(template) {
-	const structure: {fields: Field[]} = { fields: [] }
+	const structure: { fields: Field[] } = { fields: [] }
 	for (let [key, value] of Object.entries(template)) {
 		let field = { name: key, type: typeof value }
 		structure.fields.push(field)
@@ -52,107 +52,107 @@ function getStructure(template) {
 	return structure
 }
 const defaultFee = {
-  amount: [],
-  gas: "200000",
+	amount: [],
+	gas: "200000",
 };
 
 interface TxClientOptions {
-  addr: string
+	addr: string
 	prefix: string
 	signer?: OfflineSigner
 }
 
 export const txClient = ({ signer, prefix, addr }: TxClientOptions = { addr: "http://localhost:26657", prefix: "cosmos" }) => {
 
-  return {
-		
+	return {
+
 		async sendMsgRegisterCounterparty({ value, fee, memo }: sendMsgRegisterCounterpartyParams): Promise<DeliverTxResponse> {
 			if (!signer) {
-					throw new Error('TxClient:sendMsgRegisterCounterparty: Unable to sign Tx. Signer is not present.')
+				throw new Error('TxClient:sendMsgRegisterCounterparty: Unable to sign Tx. Signer is not present.')
 			}
-			try {			
-				const { address } = (await signer.getAccounts())[0]; 
-				const signingClient = await SigningStargateClient.connectWithSigner(addr,signer,{registry});
+			try {
+				const { address } = (await signer.getAccounts())[0];
+				const signingClient = await SigningStargateClient.connectWithSigner(addr, signer, { registry });
 				let msg = this.msgRegisterCounterparty({ value: MsgRegisterCounterparty.fromPartial(value) })
 				return await signingClient.signAndBroadcast(address, [msg], fee ? fee : defaultFee, memo)
 			} catch (e: any) {
-				throw new Error('TxClient:sendMsgRegisterCounterparty: Could not broadcast Tx: '+ e.message)
+				throw new Error('TxClient:sendMsgRegisterCounterparty: Could not broadcast Tx: ' + e.message)
 			}
 		},
-		
+
 		async sendMsgUpdateClientConfig({ value, fee, memo }: sendMsgUpdateClientConfigParams): Promise<DeliverTxResponse> {
 			if (!signer) {
-					throw new Error('TxClient:sendMsgUpdateClientConfig: Unable to sign Tx. Signer is not present.')
+				throw new Error('TxClient:sendMsgUpdateClientConfig: Unable to sign Tx. Signer is not present.')
 			}
-			try {			
-				const { address } = (await signer.getAccounts())[0]; 
-				const signingClient = await SigningStargateClient.connectWithSigner(addr,signer,{registry});
+			try {
+				const { address } = (await signer.getAccounts())[0];
+				const signingClient = await SigningStargateClient.connectWithSigner(addr, signer, { registry });
 				let msg = this.msgUpdateClientConfig({ value: MsgUpdateClientConfig.fromPartial(value) })
 				return await signingClient.signAndBroadcast(address, [msg], fee ? fee : defaultFee, memo)
 			} catch (e: any) {
-				throw new Error('TxClient:sendMsgUpdateClientConfig: Could not broadcast Tx: '+ e.message)
+				throw new Error('TxClient:sendMsgUpdateClientConfig: Could not broadcast Tx: ' + e.message)
 			}
 		},
-		
-		
+
+
 		msgRegisterCounterparty({ value }: msgRegisterCounterpartyParams): EncodeObject {
 			try {
-				return { typeUrl: "/ibc.core.client.v2.MsgRegisterCounterparty", value: MsgRegisterCounterparty.fromPartial( value ) }  
+				return { typeUrl: "/ibc.core.client.v2.MsgRegisterCounterparty", value: MsgRegisterCounterparty.fromPartial(value) }
 			} catch (e: any) {
 				throw new Error('TxClient:MsgRegisterCounterparty: Could not create message: ' + e.message)
 			}
 		},
-		
+
 		msgUpdateClientConfig({ value }: msgUpdateClientConfigParams): EncodeObject {
 			try {
-				return { typeUrl: "/ibc.core.client.v2.MsgUpdateClientConfig", value: MsgUpdateClientConfig.fromPartial( value ) }  
+				return { typeUrl: "/ibc.core.client.v2.MsgUpdateClientConfig", value: MsgUpdateClientConfig.fromPartial(value) }
 			} catch (e: any) {
 				throw new Error('TxClient:MsgUpdateClientConfig: Could not create message: ' + e.message)
 			}
 		},
-		
+
 	}
 };
 
 interface QueryClientOptions {
-  addr: string
+	addr: string
 }
 
 export const queryClient = ({ addr: addr }: QueryClientOptions = { addr: "http://localhost:1317" }) => {
-  return new Api({ baseURL: addr });
+	return new Api({ baseURL: addr });
 };
 
 class SDKModule {
 	public query: ReturnType<typeof queryClient>;
 	public tx: ReturnType<typeof txClient>;
-	public structure: Record<string,unknown>;
-	public registry: Array<[string, GeneratedType]> = [];
+	public structure: Record<string, unknown>;
+	public registry: Array<[string, any]> = [];
 
-	constructor(client: IgniteClient) {		
-	
-		this.query = queryClient({ addr: client.env.apiURL });		
+	constructor(client: IgniteClient) {
+
+		this.query = queryClient({ addr: client.env.apiURL });
 		this.updateTX(client);
-		this.structure =  {
-						Config: getStructure(typeConfig.fromPartial({})),
-						CounterpartyInfo: getStructure(typeCounterpartyInfo.fromPartial({})),
-						GenesisCounterpartyInfo: getStructure(typeGenesisCounterpartyInfo.fromPartial({})),
-						
+		this.structure = {
+			Config: getStructure(typeConfig.fromPartial({})),
+			CounterpartyInfo: getStructure(typeCounterpartyInfo.fromPartial({})),
+			GenesisCounterpartyInfo: getStructure(typeGenesisCounterpartyInfo.fromPartial({})),
+
 		};
-		client.on('signer-changed',(signer) => {			
-		 this.updateTX(client);
+		client.on('signer-changed', (signer) => {
+			this.updateTX(client);
 		})
 	}
 	updateTX(client: IgniteClient) {
-    const methods = txClient({
-        signer: client.signer,
-        addr: client.env.rpcURL,
-        prefix: client.env.prefix ?? "cosmos",
-    })
-	
-    this.tx = methods;
-    for (let m in methods) {
-        this.tx[m] = methods[m].bind(this.tx);
-    }
+		const methods = txClient({
+			signer: client.signer,
+			addr: client.env.rpcURL,
+			prefix: client.env.prefix ?? "cosmos",
+		})
+
+		this.tx = methods;
+		for (let m in methods) {
+			this.tx[m] = methods[m].bind(this.tx);
+		}
 	}
 };
 
@@ -162,6 +162,6 @@ const IgntModule = (test: IgniteClient) => {
 			IbcCoreClientV_2: new SDKModule(test)
 		},
 		registry: msgTypes
-  }
+	}
 }
 export default IgntModule;

@@ -5,13 +5,13 @@ import { MsgConnectionOpenAck } from "./types/ibc/core/connection/v1/tx";
 import { MsgConnectionOpenConfirm } from "./types/ibc/core/connection/v1/tx";
 import { MsgUpdateParams } from "./types/ibc/core/connection/v1/tx";
 
-const msgTypes: Array<[string, GeneratedType]>  = [
+const msgTypes: Array<[string, any]> = [
     ["/ibc.core.connection.v1.MsgConnectionOpenInit", MsgConnectionOpenInit],
     ["/ibc.core.connection.v1.MsgConnectionOpenTry", MsgConnectionOpenTry],
     ["/ibc.core.connection.v1.MsgConnectionOpenAck", MsgConnectionOpenAck],
     ["/ibc.core.connection.v1.MsgConnectionOpenConfirm", MsgConnectionOpenConfirm],
     ["/ibc.core.connection.v1.MsgUpdateParams", MsgUpdateParams],
-    
+
 ];
 
 export { msgTypes }

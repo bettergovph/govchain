@@ -18,10 +18,10 @@ const defaultFee = {
 };
 
 export class IgniteClient extends EventEmitter {
-	static plugins: IgntModule[] = [];
+  static plugins: IgntModule[] = [];
   env: Env;
   signer?: OfflineSigner;
-  registry: Array<[string, GeneratedType]> = [];
+  registry: Array<[string, any]> = [];
   static plugin<T extends IgntModule | IgntModule[]>(plugin: T) {
     const currentPlugins = this.plugins;
 
@@ -31,7 +31,7 @@ export class IgniteClient extends EventEmitter {
 
     if (Array.isArray(plugin)) {
       type Extension = UnionToIntersection<Return<T>['module']>
-      return AugmentedClient as typeof IgniteClient & Constructor<Extension>;  
+      return AugmentedClient as typeof IgniteClient & Constructor<Extension>;
     }
 
     type Extension = Return<T>['module']
@@ -60,15 +60,15 @@ export class IgniteClient extends EventEmitter {
       if (this.registry) {
         this.registry = this.registry.concat(pluginInstance.registry)
       }
-		});		
+    });
   }
-  useSigner(signer: OfflineSigner) {    
-      this.signer = signer;
-      this.emit("signer-changed", this.signer);
+  useSigner(signer: OfflineSigner) {
+    this.signer = signer;
+    this.emit("signer-changed", this.signer);
   }
-  removeSigner() {    
-      this.signer = undefined;
-      this.emit("signer-changed", this.signer);
+  removeSigner() {
+    this.signer = undefined;
+    this.emit("signer-changed", this.signer);
   }
   async useKeplr(keplrChainInfo: Partial<ChainInfo> = {}) {
     // Using queryClients directly because BaseClient has no knowledge of the modules at this stage
@@ -115,10 +115,10 @@ export class IgniteClient extends EventEmitter {
         }) ?? [];
 
       let stakeCurrency = {
-              coinDenom: staking.params?.bond_denom?.toUpperCase() ?? "",
-              coinMinimalDenom: staking.params?.bond_denom ?? "",
-              coinDecimals: 0,
-            };
+        coinDenom: staking.params?.bond_denom?.toUpperCase() ?? "",
+        coinMinimalDenom: staking.params?.bond_denom ?? "",
+        coinDecimals: 0,
+      };
 
       let feeCurrencies =
         tokens.supply?.map((x) => {

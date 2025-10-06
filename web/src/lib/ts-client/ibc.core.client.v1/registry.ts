@@ -8,7 +8,7 @@ import { MsgIBCSoftwareUpgrade } from "./types/ibc/core/client/v1/tx";
 import { MsgUpdateParams } from "./types/ibc/core/client/v1/tx";
 import { MsgDeleteClientCreator } from "./types/ibc/core/client/v1/tx";
 
-const msgTypes: Array<[string, GeneratedType]>  = [
+const msgTypes: Array<[string, any]> = [
     ["/ibc.core.client.v1.MsgCreateClient", MsgCreateClient],
     ["/ibc.core.client.v1.MsgUpdateClient", MsgUpdateClient],
     ["/ibc.core.client.v1.MsgUpgradeClient", MsgUpgradeClient],
@@ -17,7 +17,7 @@ const msgTypes: Array<[string, GeneratedType]>  = [
     ["/ibc.core.client.v1.MsgIBCSoftwareUpgrade", MsgIBCSoftwareUpgrade],
     ["/ibc.core.client.v1.MsgUpdateParams", MsgUpdateParams],
     ["/ibc.core.client.v1.MsgDeleteClientCreator", MsgDeleteClientCreator],
-    
+
 ];
 
 export { msgTypes }

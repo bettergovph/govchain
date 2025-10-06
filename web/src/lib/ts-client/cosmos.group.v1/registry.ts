@@ -14,7 +14,7 @@ import { MsgVote } from "./types/cosmos/group/v1/tx";
 import { MsgExec } from "./types/cosmos/group/v1/tx";
 import { MsgLeaveGroup } from "./types/cosmos/group/v1/tx";
 
-const msgTypes: Array<[string, GeneratedType]>  = [
+const msgTypes: Array<[string, any]> = [
     ["/cosmos.group.v1.MsgCreateGroup", MsgCreateGroup],
     ["/cosmos.group.v1.MsgUpdateGroupMembers", MsgUpdateGroupMembers],
     ["/cosmos.group.v1.MsgUpdateGroupAdmin", MsgUpdateGroupAdmin],
@@ -29,7 +29,7 @@ const msgTypes: Array<[string, GeneratedType]>  = [
     ["/cosmos.group.v1.MsgVote", MsgVote],
     ["/cosmos.group.v1.MsgExec", MsgExec],
     ["/cosmos.group.v1.MsgLeaveGroup", MsgLeaveGroup],
-    
+
 ];
 
 export { msgTypes }

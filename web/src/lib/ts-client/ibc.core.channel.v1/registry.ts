@@ -10,7 +10,7 @@ import { MsgTimeout } from "./types/ibc/core/channel/v1/tx";
 import { MsgTimeoutOnClose } from "./types/ibc/core/channel/v1/tx";
 import { MsgAcknowledgement } from "./types/ibc/core/channel/v1/tx";
 
-const msgTypes: Array<[string, GeneratedType]>  = [
+const msgTypes: Array<[string, any]> = [
     ["/ibc.core.channel.v1.MsgChannelOpenInit", MsgChannelOpenInit],
     ["/ibc.core.channel.v1.MsgChannelOpenTry", MsgChannelOpenTry],
     ["/ibc.core.channel.v1.MsgChannelOpenAck", MsgChannelOpenAck],
@@ -21,7 +21,7 @@ const msgTypes: Array<[string, GeneratedType]>  = [
     ["/ibc.core.channel.v1.MsgTimeout", MsgTimeout],
     ["/ibc.core.channel.v1.MsgTimeoutOnClose", MsgTimeoutOnClose],
     ["/ibc.core.channel.v1.MsgAcknowledgement", MsgAcknowledgement],
-    
+
 ];
 
 export { msgTypes }

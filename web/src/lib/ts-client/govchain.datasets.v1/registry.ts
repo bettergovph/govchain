@@ -4,12 +4,12 @@ import { MsgCreateEntry } from "./types/govchain/datasets/v1/tx";
 import { MsgUpdateEntry } from "./types/govchain/datasets/v1/tx";
 import { MsgDeleteEntry } from "./types/govchain/datasets/v1/tx";
 
-const msgTypes: Array<[string, GeneratedType]>  = [
+const msgTypes: Array<[string, any]> = [
     ["/govchain.datasets.v1.MsgUpdateParams", MsgUpdateParams],
     ["/govchain.datasets.v1.MsgCreateEntry", MsgCreateEntry],
     ["/govchain.datasets.v1.MsgUpdateEntry", MsgUpdateEntry],
     ["/govchain.datasets.v1.MsgDeleteEntry", MsgDeleteEntry],
-    
+
 ];
 
 export { msgTypes }

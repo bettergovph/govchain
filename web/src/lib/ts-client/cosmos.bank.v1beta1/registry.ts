@@ -4,12 +4,12 @@ import { MsgMultiSend } from "./types/cosmos/bank/v1beta1/tx";
 import { MsgUpdateParams } from "./types/cosmos/bank/v1beta1/tx";
 import { MsgSetSendEnabled } from "./types/cosmos/bank/v1beta1/tx";
 
-const msgTypes: Array<[string, GeneratedType]>  = [
+const msgTypes: Array<[string, any]> = [
     ["/cosmos.bank.v1beta1.MsgSend", MsgSend],
     ["/cosmos.bank.v1beta1.MsgMultiSend", MsgMultiSend],
     ["/cosmos.bank.v1beta1.MsgUpdateParams", MsgUpdateParams],
     ["/cosmos.bank.v1beta1.MsgSetSendEnabled", MsgSetSendEnabled],
-    
+
 ];
 
 export { msgTypes }

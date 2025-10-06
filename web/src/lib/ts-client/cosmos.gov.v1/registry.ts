@@ -7,7 +7,7 @@ import { MsgDeposit } from "./types/cosmos/gov/v1/tx";
 import { MsgUpdateParams } from "./types/cosmos/gov/v1/tx";
 import { MsgCancelProposal } from "./types/cosmos/gov/v1/tx";
 
-const msgTypes: Array<[string, GeneratedType]>  = [
+const msgTypes: Array<[string, any]> = [
     ["/cosmos.gov.v1.MsgSubmitProposal", MsgSubmitProposal],
     ["/cosmos.gov.v1.MsgExecLegacyContent", MsgExecLegacyContent],
     ["/cosmos.gov.v1.MsgVote", MsgVote],
@@ -15,7 +15,7 @@ const msgTypes: Array<[string, GeneratedType]>  = [
     ["/cosmos.gov.v1.MsgDeposit", MsgDeposit],
     ["/cosmos.gov.v1.MsgUpdateParams", MsgUpdateParams],
     ["/cosmos.gov.v1.MsgCancelProposal", MsgCancelProposal],
-    
+
 ];
 
 export { msgTypes }
