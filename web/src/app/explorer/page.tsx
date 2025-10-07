@@ -37,6 +37,9 @@ interface BlockchainStats {
   chainId: string;
   validators: number;
   blockTime: number;
+  source?: string;
+  uniqueAgencies?: number;
+  uniqueCategories?: number;
 }
 
 interface Transaction {
@@ -84,7 +87,7 @@ export default function ExplorerPage() {
     fetchTransactions();
     fetchBlocks();
 
-    // Auto-refresh every 10 seconds
+    // Auto-refresh every 5 seconds for more real-time stats
     const interval = setInterval(() => {
       fetchStats();
       if (activeTab === 'transactions') {
@@ -92,7 +95,7 @@ export default function ExplorerPage() {
       } else if (activeTab === 'blocks') {
         fetchBlocks();
       }
-    }, 10000);
+    }, 5000);
 
     return () => clearInterval(interval);
   }, [activeTab, currentPage]);
@@ -106,9 +109,12 @@ export default function ExplorerPage() {
           totalTransactions: data.totalTransactions,
           source: data.source,
           uniqueAgencies: data.uniqueAgencies,
-          uniqueCategories: data.uniqueCategories
+          uniqueCategories: data.uniqueCategories,
+          rawData: data // Log full data for debugging
         });
         setStats(data);
+      } else {
+        console.error('Failed to fetch stats:', response.status, response.statusText);
       }
     } catch (error) {
       console.error('Error fetching stats:', error);
@@ -277,8 +283,16 @@ export default function ExplorerPage() {
               <TrendingUp className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{stats.totalTransactions?.toLocaleString() || '0'}</div>
+              <div className="text-2xl font-bold">
+                {stats.totalTransactions !== undefined 
+                  ? stats.totalTransactions.toLocaleString() 
+                  : '0'
+                }
+              </div>
               <p className="text-xs text-muted-foreground">Total entries on chain</p>
+              {stats.source && (
+                <p className="text-xs text-blue-600">Source: {stats.source}</p>
+              )}
             </CardContent>
           </Card>
 

@@ -12,6 +12,10 @@ export async function GET(request: NextRequest) {
     const paginationLimit = searchParams.get('pagination.limit');
     const paginationKey = searchParams.get('pagination.key');
     const paginationReverse = searchParams.get('pagination.reverse');
+    
+    // Handle sorting parameters
+    const sortBy = searchParams.get('sortBy') || 'timestamp';
+    const sortOrder = searchParams.get('sortOrder') || 'desc';
 
     // Fallback to old parameters
     const limit = parseInt(paginationLimit || searchParams.get('limit') || '20');
@@ -79,6 +83,32 @@ export async function GET(request: NextRequest) {
         d.agency.toLowerCase().includes(lowercaseQuery) ||
         d.category.toLowerCase().includes(lowercaseQuery)
       );
+    }
+
+    // Apply sorting (only if not using blockchain's native reverse sort for timestamp)
+    if (sortBy !== 'timestamp' || paginationReverse !== 'true') {
+      datasets = datasets.sort((a: Dataset, b: Dataset) => {
+        let comparison = 0;
+        
+        switch (sortBy) {
+          case 'title':
+            comparison = a.title.localeCompare(b.title);
+            break;
+          case 'timestamp':
+            comparison = a.timestamp - b.timestamp;
+            break;
+          case 'agency':
+            comparison = a.agency.localeCompare(b.agency);
+            break;
+          case 'fileSize':
+            comparison = a.file_size - b.file_size;
+            break;
+          default:
+            comparison = a.timestamp - b.timestamp;
+        }
+        
+        return sortOrder === 'asc' ? comparison : -comparison;
+      });
     }
 
     return NextResponse.json({

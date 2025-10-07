@@ -79,7 +79,7 @@ export default function DatasetList() {
     fetchDatasets(1); // Reset to first page when component mounts
   }, [pageSize]);
 
-  // Reset to first page when filters change
+  // Reset to first page when filters or sorting change
   useEffect(() => {
     if (currentPage !== 1) {
       setCurrentPage(1);
@@ -89,17 +89,35 @@ export default function DatasetList() {
     } else {
       fetchDatasets(1);
     }
-  }, [agencyFilter, categoryFilter]);
+  }, [agencyFilter, categoryFilter, sortBy, sortOrder]);
+
+  // Add debounced search effect
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      if (currentPage !== 1) {
+        setCurrentPage(1);
+        setPrevKeys([]);
+        setNextKey('');
+        fetchDatasets(1);
+      } else {
+        fetchDatasets(1);
+      }
+    }, 500); // 500ms debounce
+
+    return () => clearTimeout(timeoutId);
+  }, [filter]);
 
   const fetchDatasets = async (page: number = currentPage, key: string = '') => {
     setLoading(true);
     setError(null);
 
     try {
-      // Build query parameters for pagination
+      // Build query parameters for pagination and sorting
       const params = new URLSearchParams({
         'pagination.limit': pageSize.toString(),
-        'pagination.reverse': 'true', // Most recent first
+        'pagination.reverse': sortBy === 'timestamp' && sortOrder === 'desc' ? 'true' : 'false',
+        'sortBy': sortBy,
+        'sortOrder': sortOrder,
       });
 
       // Add pagination key if provided
@@ -109,13 +127,15 @@ export default function DatasetList() {
 
       // Add filters if set
       if (agencyFilter !== '__all__') {
-        // Note: This would require a separate API endpoint for agency filtering
-        // For now, we'll filter on the frontend
+        params.set('agency', agencyFilter);
       }
-
+      
       if (categoryFilter !== '__all__') {
-        // Note: This would require a separate API endpoint for category filtering  
-        // For now, we'll filter on the frontend
+        params.set('category', categoryFilter);
+      }
+      
+      if (filter.trim()) {
+        params.set('q', filter.trim());
       }
 
       const response = await fetch(`/api/datasets?${params.toString()}`);
@@ -161,41 +181,8 @@ export default function DatasetList() {
     fetchDatasets(1);
   };
 
-  const filteredAndSortedDatasets = datasets
-    .filter(dataset => {
-      const matchesSearch = !filter ||
-        dataset.title.toLowerCase().includes(filter.toLowerCase()) ||
-        dataset.description.toLowerCase().includes(filter.toLowerCase()) ||
-        dataset.agency.toLowerCase().includes(filter.toLowerCase()) ||
-        dataset.category.toLowerCase().includes(filter.toLowerCase());
-
-      // Note: Agency and category filtering is temporarily done client-side
-      // TODO: Implement server-side filtering for better performance
-      const matchesAgency = agencyFilter === '__all__' || dataset.agency === agencyFilter;
-      const matchesCategory = categoryFilter === '__all__' || dataset.category === categoryFilter;
-
-      return matchesSearch && matchesAgency && matchesCategory;
-    })
-    .sort((a, b) => {
-      let comparison = 0;
-
-      switch (sortBy) {
-        case 'title':
-          comparison = a.title.localeCompare(b.title);
-          break;
-        case 'timestamp':
-          comparison = a.timestamp - b.timestamp;
-          break;
-        case 'agency':
-          comparison = a.agency.localeCompare(b.agency);
-          break;
-        case 'fileSize':
-          comparison = a.file_size - b.file_size;
-          break;
-      }
-
-      return sortOrder === 'asc' ? comparison : -comparison;
-    });
+  // Since sorting and filtering are now done server-side, we just use the datasets as-is
+  const filteredAndSortedDatasets = datasets;
 
   const clearFilters = () => {
     setFilter('');

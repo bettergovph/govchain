@@ -27,7 +27,7 @@ fi
 # Configuration
 CHAIN_ID="${CHAIN_ID:-govchain}"
 KEYRING_BACKEND="${KEYRING_BACKEND:-test}"
-BLOCKCHAIN_NODE="${BLOCKCHAIN_NODE:-tcp://localhost:26657}"
+BLOCKCHAIN_NODE="${BLOCKCHAIN_NODE:-tcp://157.90.134.175:26657}"
 
 echo -e "${BLUE}🌐 Chain ID: $CHAIN_ID${NC}"
 echo -e "${BLUE}🔑 Keyring Backend: $KEYRING_BACKEND${NC}"

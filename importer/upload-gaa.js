@@ -35,6 +35,7 @@ const ERROR_LOG = path.join(LOG_DIR, 'upload-errors.log');
 const BLOCKCHAIN_NODE = process.env.BLOCKCHAIN_NODE || 'tcp://localhost:26657';
 const CHAIN_ID = process.env.CHAIN_ID || 'govchain';
 const KEYRING_BACKEND = process.env.KEYRING_BACKEND || 'test';
+const TRANSACTION_DELAY = parseInt(process.env.TRANSACTION_DELAY || '2'); // Default 2 seconds
 
 /**
  * Print colored message
@@ -244,7 +245,7 @@ class JSONArrayStreamer extends Transform {
 }
 
 /**
- * Process large JSON file using streaming
+ * Process large JSON file using streaming with sequential processing
  */
 async function processLargeJSONFile(filePath, submitter, sessionId, startFromIndex = 0) {
   return new Promise((resolve, reject) => {
@@ -252,45 +253,77 @@ async function processLargeJSONFile(filePath, submitter, sessionId, startFromInd
     let successCount = 0;
     let failCount = 0;
     let processedCount = 0;
+    const recordQueue = [];
+    let isProcessingQueue = false;
+    let streamEnded = false;
 
     const fileStream = fs.createReadStream(filePath);
     const jsonStreamer = new JSONArrayStreamer();
 
-    jsonStreamer.on('data', async ({ record, index }) => {
-      // Skip records before startFromIndex
-      if (index < startFromIndex) {
+    // Process records sequentially from queue
+    const processQueue = async () => {
+      if (isProcessingQueue || recordQueue.length === 0) {
         return;
       }
+      
+      isProcessingQueue = true;
+      
+      while (recordQueue.length > 0) {
+        const { record, index } = recordQueue.shift();
+        
+        // Skip records before startFromIndex
+        if (index < startFromIndex) {
+          continue;
+        }
 
-      try {
-        log(`\n🔄 Processing ${index + 1} (${((index + 1) / (index + 1) * 100).toFixed(1)}%)`, 'blue');
+        try {
+          log(`\n🔄 Processing ${index + 1} (streaming mode)`, 'blue');
 
-        const result = await processGAARecord(record, index, submitter, sessionId);
-        results.push(result);
-        successCount++;
-        processedCount++;
+          const result = await processGAARecord(record, index, submitter, sessionId);
+          results.push(result);
+          successCount++;
+          processedCount++;
 
-        // Small delay between records to avoid sequence conflicts and overwhelming the system
-        log('⏱️  Waiting 2 seconds before next transaction...', 'blue');
-        await new Promise(resolve => setTimeout(resolve, 2000));
+          // Apply delay after successful processing
+          log(`⏱️  Waiting ${TRANSACTION_DELAY} seconds before next transaction...`, 'blue');
+          await new Promise(resolve => setTimeout(resolve, TRANSACTION_DELAY * 1000));
 
-      } catch (error) {
-        log(`❌ Failed to process record ${index + 1}: ${error.message}`, 'red');
-        results.push({
-          success: false,
-          error: error.message,
-          index: index
-        });
-        failCount++;
-        processedCount++;
+        } catch (error) {
+          log(`❌ Failed to process record ${index + 1}: ${error.message}`, 'red');
+          results.push({
+            success: false,
+            error: error.message,
+            index: index
+          });
+          failCount++;
+          processedCount++;
 
-        // Continue processing other records instead of stopping
-        log('⚠️  Continuing with next record...', 'yellow');
+          // Continue processing other records instead of stopping
+          log('⚠️  Continuing with next record...', 'yellow');
+          
+          // Also apply delay after errors to prevent rapid retries
+          log(`⏱️  Waiting ${TRANSACTION_DELAY} seconds before next transaction...`, 'blue');
+          await new Promise(resolve => setTimeout(resolve, TRANSACTION_DELAY * 1000));
+        }
       }
+      
+      isProcessingQueue = false;
+      
+      // Check if stream ended and queue is empty
+      if (streamEnded && recordQueue.length === 0) {
+        resolve({ results, successCount, failCount, processedCount, startFromIndex });
+      }
+    };
+
+    jsonStreamer.on('data', ({ record, index }) => {
+      recordQueue.push({ record, index });
+      processQueue(); // Start processing if not already running
     });
 
     jsonStreamer.on('end', () => {
-      resolve({ results, successCount, failCount, processedCount, startFromIndex });
+      streamEnded = true;
+      // Process any remaining items in queue
+      processQueue();
     });
 
     jsonStreamer.on('error', (error) => {
@@ -354,12 +387,23 @@ function getAccountSequence(account) {
     });
 
     const accountInfo = JSON.parse(result);
-    const sequence = parseInt(accountInfo.account?.sequence || '0');
-    log(`📋 Current account sequence for ${account}: ${sequence}`, 'blue');
+    // Handle different response formats
+    let sequence = 0;
+    if (accountInfo.account && accountInfo.account.sequence) {
+      sequence = parseInt(accountInfo.account.sequence);
+    } else if (accountInfo.sequence) {
+      sequence = parseInt(accountInfo.sequence);
+    } else {
+      // If sequence is not present, it means it's 0 (new account)
+      sequence = 0;
+    }
+    
+    log(`📋 Current account sequence for ${account} (${address}): ${sequence}`, 'blue');
     return sequence;
   } catch (error) {
     log(`⚠️  Warning: Could not fetch account sequence for ${account}: ${error.message}`, 'yellow');
-    return null;
+    log('📋 Using sequence 0 as fallback', 'yellow');
+    return 0; // Fallback to 0, let blockchain auto-determine
   }
 }
 
@@ -385,16 +429,9 @@ function submitToBlockchain(params) {
 
   log('⛓️  Submitting to blockchain...', 'yellow');
 
-  // Get current account sequence for proper transaction ordering
-  const currentSequence = getAccountSequence(submitter);
-  let sequenceFlag = '';
-
-  if (currentSequence !== null) {
-    sequenceFlag = `--sequence ${currentSequence}`;
-    log(`🔢 Using sequence number: ${currentSequence}`, 'blue');
-  } else {
-    log('⚠️  Proceeding without explicit sequence (blockchain will auto-determine)', 'yellow');
-  }
+  // For reliable batch uploads, let blockchain auto-determine sequence
+  // This prevents sequence mismatch errors in rapid transaction submission
+  log('🔢 Using auto-sequence mode for batch upload reliability', 'blue');
 
   try {
     const command = `govchaind tx datasets create-entry \
@@ -416,7 +453,6 @@ function submitToBlockchain(params) {
       --node ${escapeShellArg(BLOCKCHAIN_NODE)} \
       --chain-id ${escapeShellArg(CHAIN_ID)} \
       --keyring-backend ${escapeShellArg(KEYRING_BACKEND)} \
-      ${sequenceFlag} \
       --gas auto \
       --gas-adjustment 1.5 \
       --yes \
@@ -708,8 +744,8 @@ async function main() {
 
         // Small delay between records to avoid sequence conflicts and overwhelming the system
         if (i < records.length - 1) {
-          log('⏱️  Waiting 2 seconds before next transaction...', 'blue');
-          await new Promise(resolve => setTimeout(resolve, 2000));
+          log(`⏱️  Waiting ${TRANSACTION_DELAY} seconds before next transaction...`, 'blue');
+          await new Promise(resolve => setTimeout(resolve, TRANSACTION_DELAY * 1000));
         }
       } catch (error) {
         log(`❌ Failed to process record ${i + 1}: ${error.message}`, 'red');

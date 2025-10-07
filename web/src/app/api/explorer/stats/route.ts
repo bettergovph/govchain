@@ -26,7 +26,13 @@ export async function GET() {
     // Get total entries and recent data from the entry endpoint
     try {
       const entriesResponse = await fetch(
-        `${BLOCKCHAIN_API}/govchain/datasets/v1/entry?pagination.limit=10&pagination.reverse=true`
+        `${BLOCKCHAIN_API}/govchain/datasets/v1/entry?pagination.limit=10&pagination.reverse=true`,
+        {
+          cache: 'no-store', // Ensure fresh data
+          headers: {
+            'Cache-Control': 'no-cache'
+          }
+        }
       );
 
       if (entriesResponse.ok) {
@@ -37,7 +43,13 @@ export async function GET() {
         totalEntries = parseInt(pagination.total || '0');
         recentEntries = entries;
 
-        console.log(`Found ${totalEntries} total entries, ${entries.length} recent entries`);
+        console.log(`📊 Stats API: Found ${totalEntries} total entries, ${entries.length} recent entries`);
+        console.log(`🔍 Pagination data:`, pagination);
+        console.log(`🔍 Sample entries:`, entries.slice(0, 2));
+      } else {
+        console.error(`Failed to fetch entries for stats: ${entriesResponse.status} ${entriesResponse.statusText}`);
+        const errorText = await entriesResponse.text();
+        console.error('Error response body:', errorText);
       }
     } catch (error) {
       console.error('Error fetching entries for stats:', error);
