@@ -42,15 +42,16 @@ export default function AboutPage() {
           </Badge>
         </div>
         <p className="text-xl text-muted-foreground">
-          A tokenless, public good blockchain for government data transparency
-          and accountability.
+          A base blockchain platform for government transparency, designed to be
+          extended with tokenomics, governance, and additional utilities as needed.
         </p>
 
         <p>
             GovChain is a decentralized blockchain network designed to store and
-            manage government datasets with complete transparency. Our mission
-            is to create an open, accessible platform where government data can
-            be stored immutably and accessed by all citizens.          
+            manage government datasets with complete transparency. Built as a
+            <strong> foundational platform</strong>, agencies can extend it with
+            custom modules for tokenomics, governance, financial transactions,
+            and other blockchain utilities based on their specific needs.
         </p>
 
         <h2 className="text-xl font-bold">
@@ -126,26 +127,25 @@ export default function AboutPage() {
           <Card>
             <CardHeader>
               <Network className="h-8 w-8 text-primary mb-2" />
-              <CardTitle>Tokenless Architecture</CardTitle>
+              <CardTitle>Flexible Architecture</CardTitle>
             </CardHeader>
             <CardContent className="space-y-2">
               <div className="flex items-start gap-2">
                 <CheckCircle2 className="h-4 w-4 text-green-500 mt-1 flex-shrink-0" />
                 <p className="text-sm text-muted-foreground">
-                  No Economic Barriers - Anyone can participate without
-                  purchasing tokens
+                  Tokenless by Default - No economic barriers to start
                 </p>
               </div>
               <div className="flex items-start gap-2">
                 <CheckCircle2 className="h-4 w-4 text-green-500 mt-1 flex-shrink-0" />
                 <p className="text-sm text-muted-foreground">
-                  Volunteer-Operated - Community-driven validator network
+                  Optional Tokenomics - Add custom tokens when needed
                 </p>
               </div>
               <div className="flex items-start gap-2">
                 <CheckCircle2 className="h-4 w-4 text-green-500 mt-1 flex-shrink-0" />
                 <p className="text-sm text-muted-foreground">
-                  Public Good Focus - Designed for transparency, not profit
+                  Extensible Design - Built on Cosmos SDK for easy customization
                 </p>
               </div>
             </CardContent>
@@ -387,56 +387,69 @@ export default function AboutPage() {
         </CardContent>
       </Card>
 
-      {/* Why GovChain */}
+      {/* Extensibility */}
       <Card>
         <CardHeader>
-          <CardTitle>Why GovChain?</CardTitle>
+          <CardTitle>Extensible Platform</CardTitle>
+          <CardDescription>
+            GovChain is a base platform - agencies can extend it with additional modules
+          </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="grid gap-6 md:grid-cols-2">
-            <div className="space-y-3">
-              <h3 className="font-semibold text-destructive">
-                Traditional Government Data Portals
+          <div className="grid gap-4 md:grid-cols-2">
+            <div className="space-y-2 p-4 border rounded-lg">
+              <h3 className="font-semibold flex items-center gap-2">
+                <Code className="h-5 w-5 text-primary" />
+                Governance Module
               </h3>
-              <ul className="space-y-2">
-                <li className="flex items-start gap-2 text-sm text-muted-foreground">
-                  <span className="text-destructive">❌</span>
-                  Can be censored or taken offline
-                </li>
-                <li className="flex items-start gap-2 text-sm text-muted-foreground">
-                  <span className="text-destructive">❌</span>
-                  Can be tampered with
-                </li>
-                <li className="flex items-start gap-2 text-sm text-muted-foreground">
-                  <span className="text-destructive">❌</span>
-                  Have single points of failure
-                </li>
-                <li className="flex items-start gap-2 text-sm text-muted-foreground">
-                  <span className="text-destructive">❌</span>
-                  Require trust in centralized operators
-                </li>
-              </ul>
+              <p className="text-sm text-muted-foreground">
+                Add on-chain voting, proposals, and democratic decision-making
+              </p>
             </div>
-            <div className="space-y-3">
-              <h3 className="font-semibold text-green-600">GovChain</h3>
-              <ul className="space-y-2">
-                <li className="flex items-start gap-2 text-sm text-muted-foreground">
-                  <CheckCircle2 className="h-4 w-4 text-green-500 mt-0.5 flex-shrink-0" />
-                  Cannot be censored (distributed worldwide)
-                </li>
-                <li className="flex items-start gap-2 text-sm text-muted-foreground">
-                  <CheckCircle2 className="h-4 w-4 text-green-500 mt-0.5 flex-shrink-0" />
-                  Cannot be tampered with (cryptographic verification)
-                </li>
-                <li className="flex items-start gap-2 text-sm text-muted-foreground">
-                  <CheckCircle2 className="h-4 w-4 text-green-500 mt-0.5 flex-shrink-0" />
-                  Cannot go offline (redundant copies)
-                </li>
-                <li className="flex items-start gap-2 text-sm text-muted-foreground">
-                  <CheckCircle2 className="h-4 w-4 text-green-500 mt-0.5 flex-shrink-0" />
-                  Requires no trust (open-source, verifiable)
-                </li>
-              </ul>
+            <div className="space-y-2 p-4 border rounded-lg">
+              <h3 className="font-semibold flex items-center gap-2">
+                <Code className="h-5 w-5 text-primary" />
+                Token Economics
+              </h3>
+              <p className="text-sm text-muted-foreground">
+                Introduce custom tokens for incentives, staking, or utility
+              </p>
+            </div>
+            <div className="space-y-2 p-4 border rounded-lg">
+              <h3 className="font-semibold flex items-center gap-2">
+                <Code className="h-5 w-5 text-primary" />
+                Financial Transactions
+              </h3>
+              <p className="text-sm text-muted-foreground">
+                Enable payments, transfers, and financial operations
+              </p>
+            </div>
+            <div className="space-y-2 p-4 border rounded-lg">
+              <h3 className="font-semibold flex items-center gap-2">
+                <Code className="h-5 w-5 text-primary" />
+                Smart Contracts
+              </h3>
+              <p className="text-sm text-muted-foreground">
+                Deploy custom logic and automated workflows
+              </p>
+            </div>
+            <div className="space-y-2 p-4 border rounded-lg">
+              <h3 className="font-semibold flex items-center gap-2">
+                <Code className="h-5 w-5 text-primary" />
+                Identity & Access
+              </h3>
+              <p className="text-sm text-muted-foreground">
+                Add authentication, permissions, and role-based access
+              </p>
+            </div>
+            <div className="space-y-2 p-4 border rounded-lg">
+              <h3 className="font-semibold flex items-center gap-2">
+                <Code className="h-5 w-5 text-primary" />
+                Custom Modules
+              </h3>
+              <p className="text-sm text-muted-foreground">
+                Build agency-specific features using Cosmos SDK
+              </p>
             </div>
           </div>
         </CardContent>
