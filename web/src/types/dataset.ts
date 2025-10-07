@@ -15,7 +15,7 @@ export interface Dataset {
   timestamp: number;
   pinCount: number;
   creator: string;
-  tx_hash: string;
+  tx_hash?: string;
 }
 
 export interface BlockchainResponse {
