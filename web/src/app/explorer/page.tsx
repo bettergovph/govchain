@@ -102,6 +102,12 @@ export default function ExplorerPage() {
       const response = await fetch('/api/explorer/stats');
       if (response.ok) {
         const data = await response.json();
+        console.log('📊 Explorer stats received:', {
+          totalTransactions: data.totalTransactions,
+          source: data.source,
+          uniqueAgencies: data.uniqueAgencies,
+          uniqueCategories: data.uniqueCategories
+        });
         setStats(data);
       }
     } catch (error) {
@@ -176,7 +182,44 @@ export default function ExplorerPage() {
   const getMessageType = (msg: any) => {
     if (!msg['@type']) return 'Unknown';
     const parts = msg['@type'].split('.');
-    return parts[parts.length - 1].replace('Msg', '');
+    const msgType = parts[parts.length - 1].replace('Msg', '');
+    
+    // For dataset entries, show more descriptive type
+    if (msgType === 'CreateEntry') {
+      return 'Dataset Entry';
+    }
+    
+    return msgType;
+  };
+
+  const getEntryTitle = (tx: Transaction) => {
+    // If this is from entry data, show the title
+    if ((tx as any).entry_data?.title) {
+      return (tx as any).entry_data.title;
+    }
+    
+    // Try to extract from message
+    const msg = tx.tx?.body?.messages?.[0];
+    if (msg?.title) {
+      return msg.title;
+    }
+    
+    return null;
+  };
+
+  const getEntryAgency = (tx: Transaction) => {
+    // If this is from entry data, show the agency
+    if ((tx as any).entry_data?.agency) {
+      return (tx as any).entry_data.agency;
+    }
+    
+    // Try to extract from message
+    const msg = tx.tx?.body?.messages?.[0];
+    if (msg?.agency) {
+      return msg.agency;
+    }
+    
+    return null;
   };
 
   return (
@@ -230,12 +273,12 @@ export default function ExplorerPage() {
 
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Total Transactions</CardTitle>
+              <CardTitle className="text-sm font-medium">Dataset Entries</CardTitle>
               <TrendingUp className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{stats.totalTransactions.toLocaleString()}</div>
-              <p className="text-xs text-muted-foreground">All time</p>
+              <div className="text-2xl font-bold">{stats.totalTransactions?.toLocaleString() || '0'}</div>
+              <p className="text-xs text-muted-foreground">Total entries on chain</p>
             </CardContent>
           </Card>
 
@@ -281,30 +324,45 @@ export default function ExplorerPage() {
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  {transactions.slice(0, 5).map((tx) => (
-                    <Link
-                      key={tx.txhash}
-                      href={`/explorer/tx/${tx.txhash}`}
-                      className="flex items-center justify-between p-3 border rounded-lg hover:bg-accent transition-colors"
-                    >
-                      <div className="flex items-center gap-3">
-                        {tx.code === 0 ? (
-                          <CheckCircle2 className="h-5 w-5 text-green-500" />
-                        ) : (
-                          <XCircle className="h-5 w-5 text-red-500" />
-                        )}
-                        <div>
-                          <div className="font-mono text-sm">{truncateHash(tx.txhash)}</div>
-                          <div className="text-xs text-muted-foreground">
-                            Block #{tx.height}
+                  {transactions.slice(0, 5).map((tx) => {
+                    const entryTitle = getEntryTitle(tx);
+                    const entryAgency = getEntryAgency(tx);
+                    
+                    return (
+                      <Link
+                        key={tx.txhash}
+                        href={`/explorer/tx/${tx.txhash}`}
+                        className="flex items-center justify-between p-3 border rounded-lg hover:bg-accent transition-colors"
+                      >
+                        <div className="flex items-center gap-3">
+                          {tx.code === 0 ? (
+                            <CheckCircle2 className="h-5 w-5 text-green-500" />
+                          ) : (
+                            <XCircle className="h-5 w-5 text-red-500" />
+                          )}
+                          <div>
+                            <div className="font-mono text-sm">{truncateHash(tx.txhash)}</div>
+                            {entryTitle && (
+                              <div className="text-xs text-muted-foreground font-medium">
+                                📄 {entryTitle}
+                              </div>
+                            )}
+                            {entryAgency && (
+                              <div className="text-xs text-blue-600">
+                                🏛️ {entryAgency}
+                              </div>
+                            )}
+                            <div className="text-xs text-muted-foreground">
+                              Block #{tx.height || 'N/A'}
+                            </div>
                           </div>
                         </div>
-                      </div>
-                      <Badge variant={tx.code === 0 ? 'default' : 'destructive'}>
-                        {tx.code === 0 ? 'Success' : 'Failed'}
-                      </Badge>
-                    </Link>
-                  ))}
+                        <Badge variant={tx.code === 0 ? 'default' : 'destructive'}>
+                          {tx.code === 0 ? 'Success' : 'Failed'}
+                        </Badge>
+                      </Link>
+                    );
+                  })}
                 </div>
                 <Button
                   variant="outline"
@@ -361,8 +419,11 @@ export default function ExplorerPage() {
         <TabsContent value="transactions" className="mt-6">
           <Card>
             <CardHeader>
-              <CardTitle>Transactions</CardTitle>
-              <CardDescription>All transactions on the blockchain</CardDescription>
+              <CardTitle>Dataset Transactions</CardTitle>
+              <CardDescription>
+                Dataset entries and their transaction details - showing data from 
+                <code className="bg-muted px-1 rounded text-sm">/govchain/datasets/v1/entry</code>
+              </CardDescription>
             </CardHeader>
             <CardContent>
               {loading ? (
@@ -376,10 +437,10 @@ export default function ExplorerPage() {
                       <TableHeader>
                         <TableRow>
                           <TableHead>Status</TableHead>
-                          <TableHead>Tx Hash</TableHead>
+                          <TableHead>Tx Hash / Entry</TableHead>
                           <TableHead>Block</TableHead>
                           <TableHead>Type</TableHead>
-                          <TableHead>Gas Used</TableHead>
+                          <TableHead>Agency</TableHead>
                           <TableHead>Time</TableHead>
                         </TableRow>
                       </TableHeader>

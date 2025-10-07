@@ -1,135 +1,82 @@
 import { NextRequest, NextResponse } from 'next/server';
 
 const BLOCKCHAIN_API = process.env.BLOCKCHAIN_API || 'http://localhost:1317';
-const BLOCKCHAIN_RPC = process.env.BLOCKCHAIN_NODE || 'http://localhost:26657';
 
-// Helper to decode base64 tx and get hash
-function getTxHash(txBytes: string): string {
-  // For display purposes, we'll use a truncated version of the base64
-  // In production, you'd properly hash this with SHA256
-  return txBytes.substring(0, 64);
-}
-
+/**
+ * Fetch transactions from dataset entries using the REST endpoint
+ * This gives us actual dataset-related transactions with tx_hash from entries
+ */
 export async function GET(request: NextRequest) {
   try {
     const searchParams = request.nextUrl.searchParams;
     const page = parseInt(searchParams.get('page') || '1');
     const limit = parseInt(searchParams.get('limit') || '20');
-    const height = searchParams.get('height');
-
-    let transactions: any[] = [];
-    let totalCount = 0;
-    let latestHeight = 0;
-
-    // Get latest block height
-    const statusResponse = await fetch(`${BLOCKCHAIN_RPC}/status`);
-    if (statusResponse.ok) {
-      const statusData = await statusResponse.json();
-      latestHeight = parseInt(statusData.result?.sync_info?.latest_block_height || '0');
-    }
-
-    // Try REST API first (if tx indexing is enabled)
     const offset = (page - 1) * limit;
-    try {
-      const txsResponse = await fetch(
-        `${BLOCKCHAIN_API}/cosmos/tx/v1beta1/txs?pagination.limit=${limit}&pagination.offset=${offset}&order_by=ORDER_BY_DESC`
+
+    console.log(`Fetching entries with limit=${limit}, offset=${offset}`);
+
+    // Query dataset entries directly from blockchain REST API
+    const entriesResponse = await fetch(
+      `${BLOCKCHAIN_API}/govchain/datasets/v1/entry?pagination.limit=${limit}&pagination.offset=${offset}&pagination.reverse=true`
+    );
+
+    if (!entriesResponse.ok) {
+      console.error('Failed to fetch entries:', entriesResponse.status, entriesResponse.statusText);
+      return NextResponse.json(
+        { error: 'Failed to fetch entries from blockchain' },
+        { status: 500 }
       );
-
-      if (txsResponse.ok) {
-        const txsData = await txsResponse.json();
-        transactions = txsData.tx_responses || [];
-        totalCount = parseInt(txsData.pagination?.total || '0');
-        
-        // If we got transactions from the index, return them
-        if (transactions.length > 0) {
-          return NextResponse.json({
-            transactions,
-            pagination: {
-              page,
-              limit,
-              total: totalCount,
-              totalPages: Math.ceil(totalCount / limit),
-            },
-            latestHeight,
-            source: 'index',
-          });
-        }
-      }
-    } catch (error) {
-      console.log('Transaction index not available, falling back to block scanning');
     }
 
-    // Fallback: Scan recent blocks for transactions
-    console.log('Scanning blocks for transactions...');
-    const blocksToScan = Math.min(limit, 50); // Scan up to 50 blocks
-    const startHeight = Math.max(1, latestHeight - (page - 1) * blocksToScan);
-    const endHeight = Math.max(1, startHeight - blocksToScan + 1);
+    const entriesData = await entriesResponse.json();
+    console.log('Entries response:', {
+      entryCount: entriesData.entry?.length || 0,
+      paginationTotal: entriesData.pagination?.total || 0
+    });
 
-    for (let h = startHeight; h >= endHeight && h > 0; h--) {
-      try {
-        const blockResponse = await fetch(`${BLOCKCHAIN_RPC}/block?height=${h}`);
-        if (!blockResponse.ok) continue;
+    const entries = entriesData.entry || [];
+    const pagination = entriesData.pagination || {};
 
-        const blockData = await blockResponse.json();
-        const block = blockData.result?.block;
-        const txs = block?.data?.txs || [];
-
-        // Process each transaction in the block
-        for (const txBase64 of txs) {
-          try {
-            // Decode the transaction using the REST API
-            const decodeTxResponse = await fetch(
-              `${BLOCKCHAIN_API}/cosmos/tx/v1beta1/txs/decode`,
-              {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ tx_bytes: txBase64 }),
-              }
-            );
-
-            if (decodeTxResponse.ok) {
-              const decodedData = await decodeTxResponse.json();
-              
-              // Try to get the actual tx hash by searching for it
-              const searchResponse = await fetch(
-                `${BLOCKCHAIN_API}/cosmos/tx/v1beta1/txs?events=tx.height=${h}`
-              );
-              
-              let txhash = getTxHash(txBase64);
-              let txResponse: any = null;
-              
-              if (searchResponse.ok) {
-                const searchData = await searchResponse.json();
-                const matchingTx = searchData.tx_responses?.find((tx: any) => 
-                  tx.height === h.toString()
-                );
-                if (matchingTx) {
-                  txhash = matchingTx.txhash;
-                  txResponse = matchingTx;
-                }
-              }
-
-              transactions.push({
-                txhash,
-                height: h.toString(),
-                code: txResponse?.code || 0,
-                timestamp: block.header?.time || new Date().toISOString(),
-                tx: decodedData.tx || { body: { messages: [], memo: '' } },
-                gas_used: txResponse?.gas_used || '0',
-                gas_wanted: txResponse?.gas_wanted || '0',
-                raw_log: txResponse?.raw_log || '',
-              });
-            }
-          } catch (txError) {
-            console.error(`Error processing tx in block ${h}:`, txError);
+    // Transform entries to transaction-like objects for the explorer
+    const transactions = entries.map((entry: any) => {
+      // Use actual transaction hash if available, otherwise create a meaningful identifier
+      const txHash = entry.tx_hash || entry.txHash || entry.index || `entry-${entry.timestamp || Date.now()}`;
+      
+      return {
+        txhash: txHash,
+        height: entry.block_height || entry.height || '0', // Use actual block height if available
+        code: 0, // Assume success since entry exists
+        timestamp: entry.timestamp ? new Date(parseInt(entry.timestamp) * 1000).toISOString() : new Date().toISOString(),
+        tx: {
+          body: {
+            messages: [{
+              '@type': '/govchain.datasets.v1.MsgCreateEntry',
+              title: entry.title,
+              description: entry.description,
+              agency: entry.agency,
+              category: entry.category,
+              submitter: entry.submitter,
+              ipfs_cid: entry.ipfs_cid,
+              mime_type: entry.mime_type,
+              file_name: entry.file_name,
+              file_url: entry.file_url,
+              fallback_url: entry.fallback_url,
+              file_size: entry.file_size,
+              checksum_sha_256: entry.checksum_sha_256,
+              pin_count: entry.pin_count
+            }],
+            memo: `Dataset Entry: ${entry.title}`
           }
-        }
-      } catch (blockError) {
-        console.error(`Error fetching block ${h}:`, blockError);
-      }
-    }
+        },
+        gas_used: entry.gas_used || '0',
+        gas_wanted: entry.gas_wanted || '0',
+        raw_log: entry.raw_log || `Dataset entry created: ${entry.title}`,
+        entry_data: entry // Include the full entry data for reference
+      };
+    });
 
-    totalCount = latestHeight; // Approximate total
+    const totalCount = parseInt(pagination.total || '0');
+    const totalPages = Math.ceil(totalCount / limit);
 
     return NextResponse.json({
       transactions,
@@ -137,15 +84,19 @@ export async function GET(request: NextRequest) {
         page,
         limit,
         total: totalCount,
-        totalPages: Math.ceil(totalCount / blocksToScan),
+        totalPages,
       },
-      latestHeight,
-      source: 'blocks',
+      latestHeight: 0, // We don't track height from entries
+      source: 'entries',
+      success: true
     });
   } catch (error) {
-    console.error('Error fetching transactions:', error);
+    console.error('Error fetching entry transactions:', error);
     return NextResponse.json(
-      { error: 'Failed to fetch transactions', details: error instanceof Error ? error.message : String(error) },
+      { 
+        error: 'Failed to fetch entry transactions', 
+        details: error instanceof Error ? error.message : String(error) 
+      },
       { status: 500 }
     );
   }

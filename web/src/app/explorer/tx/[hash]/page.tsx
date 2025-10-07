@@ -42,6 +42,7 @@ interface TransactionDetail {
       };
     };
     events: any[];
+    entry_data?: any; // Optional entry data for dataset transactions
   };
 }
 
@@ -62,13 +63,48 @@ export default function TransactionDetailPage() {
   const fetchTransaction = async () => {
     try {
       setLoading(true);
+      
+      // First try to get the actual transaction from the blockchain
       const response = await fetch(`/api/explorer/transaction/${hash}`);
+      
       if (response.ok) {
         const data = await response.json();
         setTransaction(data);
+      } else {
+        // If the transaction is not found, it might be an entry-based pseudo tx
+        // Try to get it from our transaction list (which includes entry data)
+        const txListResponse = await fetch('/api/explorer/transactions?limit=1000');
+        
+        if (txListResponse.ok) {
+          const txListData = await txListResponse.json();
+          const foundTx = txListData.transactions?.find((tx: any) => tx.txhash === hash);
+          
+          if (foundTx) {
+            // Transform entry-based tx to match the expected format
+            setTransaction({
+              tx_response: {
+                txhash: foundTx.txhash,
+                height: foundTx.height,
+                code: foundTx.code,
+                timestamp: foundTx.timestamp,
+                raw_log: foundTx.raw_log,
+                gas_used: foundTx.gas_used,
+                gas_wanted: foundTx.gas_wanted,
+                tx: foundTx.tx,
+                events: foundTx.events || [],
+                entry_data: foundTx.entry_data // Include entry data for display
+              }
+            });
+          } else {
+            setTransaction(null);
+          }
+        } else {
+          setTransaction(null);
+        }
       }
     } catch (error) {
       console.error('Error fetching transaction:', error);
+      setTransaction(null);
     } finally {
       setLoading(false);
     }
@@ -224,6 +260,46 @@ export default function TransactionDetailPage() {
           </div>
         </CardContent>
       </Card>
+
+      {/* Dataset Entry Information */}
+      {tx.entry_data && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Dataset Entry Details</CardTitle>
+            <CardDescription>Information about the dataset entry created by this transaction</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <div className="text-sm font-medium text-muted-foreground mb-1">Title</div>
+                <div className="font-semibold">{tx.entry_data.title || 'N/A'}</div>
+              </div>
+              <div>
+                <div className="text-sm font-medium text-muted-foreground mb-1">Agency</div>
+                <div className="font-semibold">{tx.entry_data.agency || 'N/A'}</div>
+              </div>
+              <div>
+                <div className="text-sm font-medium text-muted-foreground mb-1">Category</div>
+                <div className="font-semibold">{tx.entry_data.category || 'N/A'}</div>
+              </div>
+              <div>
+                <div className="text-sm font-medium text-muted-foreground mb-1">IPFS CID</div>
+                <div className="font-mono text-sm">{tx.entry_data.ipfs_cid || 'N/A'}</div>
+              </div>
+              {tx.entry_data.description && (
+                <div className="md:col-span-2">
+                  <div className="text-sm font-medium text-muted-foreground mb-1">Description</div>
+                  <div className="text-sm bg-muted p-2 rounded max-h-32 overflow-y-auto">
+                    {tx.entry_data.description.length > 200 
+                      ? tx.entry_data.description.substring(0, 200) + '...' 
+                      : tx.entry_data.description}
+                  </div>
+                </div>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Messages */}
       <Card>
