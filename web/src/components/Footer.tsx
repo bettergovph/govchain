@@ -16,9 +16,9 @@ export default function Footer() {
           {/* About Section */}
           <div className="lg:col-span-2">
             <div className="flex items-center gap-3 mb-4">
-              <img 
-                src="/logo.png" 
-                alt="GovChain Logo" 
+              <img
+                src="/logo.png"
+                alt="GovChain Logo"
                 className="rounded-lg h-12"
               />
               <h3 className="text-lg font-bold">GovChain</h3>
@@ -27,15 +27,7 @@ export default function Footer() {
               BetterGov.ph is an open-source #civictech movement that aims to provide citizen-driven innovation by building sites and apps to promote good design, usability, accessibility, and data transparency.
             </p>
             <div className="flex items-center gap-2 text-xs text-muted-foreground">
-              <span>Licensed under</span>
-              <a 
-                href="https://creativecommons.org/publicdomain/zero/1.0/" 
-                target="_blank" 
-                rel="noopener noreferrer"
-                className="underline hover:text-foreground"
-              >
-                CC0 1.0 Universal
-              </a>
+              <span>MIT License</span>
             </div>
           </div>
 
