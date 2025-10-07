@@ -4,10 +4,10 @@ const BLOCKCHAIN_API = process.env.BLOCKCHAIN_API || 'http://localhost:1317';
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { hash: string } }
+  { params }: { params: Promise<{ hash: string }> }
 ) {
   try {
-    const { hash } = params;
+    const { hash } = await params;
 
     const response = await fetch(`${BLOCKCHAIN_API}/cosmos/tx/v1beta1/txs/${hash}`);
     
