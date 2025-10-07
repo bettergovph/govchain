@@ -2,13 +2,14 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Home, Info, Users, FileImage, Github, MessageCircle, Menu, X } from 'lucide-react';
+import { Home, Info, Users, FileImage, Github, MessageCircle, Menu, X, Activity } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import Image from 'next/image';
 import { useState } from 'react';
 
 const navItems = [
   { href: '/', label: 'Home', icon: Home },
+  { href: '/explorer', label: 'Explorer', icon: Activity },
   { href: '/about', label: 'About', icon: Info },
   { href: '/volunteer', label: 'Become a Validator', icon: Users },
   { href: '/gallery', label: 'Gallery', icon: FileImage },
