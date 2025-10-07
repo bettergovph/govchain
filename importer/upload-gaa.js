@@ -25,6 +25,11 @@ const colors = {
 const CATEGORY = 'GAA';
 const MIME_TYPE = 'text/plain';
 
+// Blockchain node configuration
+const BLOCKCHAIN_NODE = process.env.BLOCKCHAIN_NODE || 'tcp://localhost:26657';
+const CHAIN_ID = process.env.CHAIN_ID || 'govchain';
+const KEYRING_BACKEND = process.env.KEYRING_BACKEND || 'test';
+
 /**
  * Print colored message
  */
@@ -93,8 +98,9 @@ function submitToBlockchain(params) {
       "${timestamp}" \
       "0" \
       --from "${submitter}" \
-      --chain-id govchain \
-      --keyring-backend test \
+      --node "${BLOCKCHAIN_NODE}" \
+      --chain-id "${CHAIN_ID}" \
+      --keyring-backend "${KEYRING_BACKEND}" \
       --gas auto \
       --gas-adjustment 1.5 \
       --yes \
@@ -187,6 +193,10 @@ async function main() {
   console.log('================================');
   console.log('GovChain GAA Upload Tool');
   console.log('================================\n');
+  
+  log(`🌐 Blockchain Node: ${BLOCKCHAIN_NODE}`, 'yellow');
+  log(`⛓️  Chain ID: ${CHAIN_ID}`, 'yellow');
+  console.log('');
   
   // Parse arguments
   const args = process.argv.slice(2);
