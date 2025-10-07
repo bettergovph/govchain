@@ -299,7 +299,7 @@ export default function VolunteerPage() {
                   </div>
                   <div>
                     wget
-                    https://raw.githubusercontent.com/bettergovph/govchaind/main/genesis.json
+                    https://govchain.bettergov.ph/genesis.json
                     \
                   </div>
                   <div> -O ~/.govchain/config/genesis.json</div>
