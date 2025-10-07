@@ -1,4 +1,4 @@
-# GovChain .gitignore
+G# GovChain .gitignore
 
 # Blockchain data
 govchain/.ignite/
@@ -62,3 +62,6 @@ Thumbs.db
 importer/logs
 importer/samples
 importer/temp
+scripts/remote-node-config.sh
+scripts/test-remote-connection.sh
+docs/dev/**

@@ -14,9 +14,9 @@ NC='\033[0m' # No Color
 
 # Configuration
 CHAIN_ID="${CHAIN_ID:-govchain}"
-NODE_URL="${NODE_URL:-tcp://localhost:26657}"
-API_URL="${API_URL:-http://localhost:1317}"
-INDEXER_URL="${INDEXER_URL:-http://localhost:9002}"
+NODE_URL="${NODE_URL:-${BLOCKCHAIN_NODE:-tcp://localhost:26657}}"
+API_URL="${API_URL:-${BLOCKCHAIN_API:-http://localhost:1317}}"
+INDEXER_URL="${INDEXER_URL:-http://localhost:3001}"
 IPFS_API="${IPFS_API:-http://localhost:5001}"
 IPFS_GATEWAY="${IPFS_GATEWAY:-http://localhost:8080}"
 BLOCKCHAIN_BINARY="${BLOCKCHAIN_BINARY:-~/govchain-blockchain/govchaind}"

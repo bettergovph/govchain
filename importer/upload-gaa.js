@@ -166,16 +166,16 @@ class JSONArrayStreamer extends Transform {
 
   processBuffer() {
     let pos = 0;
-    
+
     while (pos < this.buffer.length) {
       const char = this.buffer[pos];
-      
+
       if (!this.inArray && char === '[') {
         this.inArray = true;
         pos++;
         continue;
       }
-      
+
       if (this.inArray) {
         if (char === '{') {
           // Start of a record
@@ -183,29 +183,29 @@ class JSONArrayStreamer extends Transform {
           let recordBrackets = 0;
           let inString = false;
           let escaped = false;
-          
+
           for (let i = pos; i < this.buffer.length; i++) {
             const c = this.buffer[i];
-            
+
             if (escaped) {
               escaped = false;
               continue;
             }
-            
+
             if (c === '\\') {
               escaped = true;
               continue;
             }
-            
+
             if (c === '"') {
               inString = !inString;
               continue;
             }
-            
+
             if (!inString) {
               if (c === '{') recordBrackets++;
               if (c === '}') recordBrackets--;
-              
+
               if (recordBrackets === 0) {
                 // Found complete record
                 const recordJson = this.buffer.slice(recordStart, i + 1);
@@ -216,11 +216,11 @@ class JSONArrayStreamer extends Transform {
                   log(`⚠️  Skipping malformed record at index ${this.recordIndex}: ${e.message}`, 'yellow');
                   this.recordIndex++;
                 }
-                
+
                 // Update buffer and position
                 this.buffer = this.buffer.slice(i + 1);
                 pos = 0;
-                
+
                 // Skip comma and whitespace
                 while (pos < this.buffer.length && /[,\s]/.test(this.buffer[pos])) {
                   pos++;
@@ -230,14 +230,14 @@ class JSONArrayStreamer extends Transform {
               }
             }
           }
-          
+
           if (recordBrackets > 0) {
             // Incomplete record, need more data
             break;
           }
         }
       }
-      
+
       pos++;
     }
   }
@@ -252,27 +252,28 @@ async function processLargeJSONFile(filePath, submitter, sessionId, startFromInd
     let successCount = 0;
     let failCount = 0;
     let processedCount = 0;
-    
+
     const fileStream = fs.createReadStream(filePath);
     const jsonStreamer = new JSONArrayStreamer();
-    
+
     jsonStreamer.on('data', async ({ record, index }) => {
       // Skip records before startFromIndex
       if (index < startFromIndex) {
         return;
       }
-      
+
       try {
         log(`\n🔄 Processing ${index + 1} (${((index + 1) / (index + 1) * 100).toFixed(1)}%)`, 'blue');
-        
+
         const result = await processGAARecord(record, index, submitter, sessionId);
         results.push(result);
         successCount++;
         processedCount++;
-        
-        // Small delay between records to avoid overwhelming the system
-        await new Promise(resolve => setTimeout(resolve, 1000));
-        
+
+        // Small delay between records to avoid sequence conflicts and overwhelming the system
+        log('⏱️  Waiting 2 seconds before next transaction...', 'blue');
+        await new Promise(resolve => setTimeout(resolve, 2000));
+
       } catch (error) {
         log(`❌ Failed to process record ${index + 1}: ${error.message}`, 'red');
         results.push({
@@ -282,20 +283,20 @@ async function processLargeJSONFile(filePath, submitter, sessionId, startFromInd
         });
         failCount++;
         processedCount++;
-        
+
         // Continue processing other records instead of stopping
         log('⚠️  Continuing with next record...', 'yellow');
       }
     });
-    
+
     jsonStreamer.on('end', () => {
       resolve({ results, successCount, failCount, processedCount, startFromIndex });
     });
-    
+
     jsonStreamer.on('error', (error) => {
       reject(error);
     });
-    
+
     fileStream.pipe(jsonStreamer);
   });
 }
@@ -313,13 +314,13 @@ function generateSessionId() {
 function getFileSize(filePath) {
   const stats = fs.statSync(filePath);
   const bytes = stats.size;
-  
+
   if (bytes === 0) return '0 Bytes';
-  
+
   const k = 1024;
   const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
   const i = Math.floor(Math.log(bytes) / Math.log(k));
-  
+
   return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
 }
 
@@ -337,6 +338,29 @@ function isFileTooLarge(filePath) {
  */
 function calculateChecksum(data) {
   return crypto.createHash('sha256').update(data).digest('hex');
+}
+
+/**
+ * Get account sequence number from blockchain
+ */
+function getAccountSequence(account) {
+  try {
+    const address = execSync(`govchaind keys show ${escapeShellArg(account)} --address --keyring-backend ${escapeShellArg(KEYRING_BACKEND)}`, {
+      encoding: 'utf-8'
+    }).trim();
+
+    const result = execSync(`govchaind query auth account ${escapeShellArg(address)} --node ${escapeShellArg(BLOCKCHAIN_NODE)} --output json`, {
+      encoding: 'utf-8'
+    });
+
+    const accountInfo = JSON.parse(result);
+    const sequence = parseInt(accountInfo.account?.sequence || '0');
+    log(`📋 Current account sequence for ${account}: ${sequence}`, 'blue');
+    return sequence;
+  } catch (error) {
+    log(`⚠️  Warning: Could not fetch account sequence for ${account}: ${error.message}`, 'yellow');
+    return null;
+  }
 }
 
 /**
@@ -361,6 +385,17 @@ function submitToBlockchain(params) {
 
   log('⛓️  Submitting to blockchain...', 'yellow');
 
+  // Get current account sequence for proper transaction ordering
+  const currentSequence = getAccountSequence(submitter);
+  let sequenceFlag = '';
+
+  if (currentSequence !== null) {
+    sequenceFlag = `--sequence ${currentSequence}`;
+    log(`🔢 Using sequence number: ${currentSequence}`, 'blue');
+  } else {
+    log('⚠️  Proceeding without explicit sequence (blockchain will auto-determine)', 'yellow');
+  }
+
   try {
     const command = `govchaind tx datasets create-entry \
       ${escapeShellArg(title)} \
@@ -381,6 +416,7 @@ function submitToBlockchain(params) {
       --node ${escapeShellArg(BLOCKCHAIN_NODE)} \
       --chain-id ${escapeShellArg(CHAIN_ID)} \
       --keyring-backend ${escapeShellArg(KEYRING_BACKEND)} \
+      ${sequenceFlag} \
       --gas auto \
       --gas-adjustment 1.5 \
       --yes \
@@ -401,6 +437,12 @@ function submitToBlockchain(params) {
       throw new Error('No transaction hash returned');
     }
   } catch (error) {
+    // Check if it's a sequence mismatch error
+    if (error.message.includes('account sequence mismatch') || error.message.includes('incorrect account sequence')) {
+      log('⚠️  Sequence mismatch detected - this is common in rapid transaction submission', 'yellow');
+      log('🔄 The blockchain will auto-correct on the next transaction', 'yellow');
+      throw new Error(`Sequence mismatch: ${error.message}. Try running again or use --resume to continue from last successful transaction.`);
+    }
     throw new Error(`Blockchain submission failed: ${error.message}`);
   }
 }
@@ -569,13 +611,13 @@ async function main() {
   log(`📄 File: ${filePath}`, 'yellow');
   log(`🔑 Submitter: ${submitter}`, 'yellow');
   log(`🏷️  Session ID: ${sessionId}`, 'blue');
-  
+
   // Check file size and determine processing method
   const fileSize = getFileSize(filePath);
   const useLargeFileProcessing = isFileTooLarge(filePath);
-  
+
   log(`📊 File size: ${fileSize}`, useLargeFileProcessing ? 'yellow' : 'green');
-  
+
   if (useLargeFileProcessing) {
     log(`🔄 Large file detected - using streaming processor`, 'blue');
   }
@@ -596,11 +638,12 @@ async function main() {
 
   // Process file based on size
   let results, successCount, failCount, processedCount, totalRecords;
-  
+  let records = []; // Initialize records array for scope availability
+
   if (useLargeFileProcessing) {
     // Use streaming processor for large files
     log('🌊 Starting streaming file processor...', 'blue');
-    
+
     try {
       const streamResult = await processLargeJSONFile(filePath, submitter, sessionId, startFromIndex);
       results = streamResult.results;
@@ -608,27 +651,26 @@ async function main() {
       failCount = streamResult.failCount;
       processedCount = streamResult.processedCount;
       totalRecords = startFromIndex + processedCount; // Approximate
-      
+
       log(`📊 Processed ${processedCount} records from stream`, 'green');
     } catch (error) {
       log(`❌ Error processing large file: ${error.message}`, 'red');
       logError('Failed to process large file with streaming', error.message, { filePath, sessionId });
       process.exit(1);
     }
-    
+
   } else {
     // Use traditional in-memory processing for smaller files
     log('📊 Loading file into memory...', 'blue');
-    
-    let records;
+
     try {
       const fileContent = fs.readFileSync(filePath, 'utf-8');
       records = JSON.parse(fileContent);
-      
+
       if (!Array.isArray(records)) {
         throw new Error('JSON file must contain an array of records');
       }
-      
+
       totalRecords = records.length;
       log(`📊 Found ${totalRecords} records to process`, 'green');
       if (startFromIndex > 0) {
@@ -639,7 +681,7 @@ async function main() {
       logError('Failed to read input file', error.message, { filePath, sessionId });
       process.exit(1);
     }
-    
+
     // Log session start
     logProgress({
       sessionId,
@@ -650,23 +692,24 @@ async function main() {
       startFromIndex,
       resumeMode: shouldResume
     });
-    
+
     // Process each record starting from the appropriate index
     results = [];
     successCount = 0;
     failCount = 0;
-    
+
     for (let i = startFromIndex; i < records.length; i++) {
       try {
         log(`\n🔄 Processing ${i + 1}/${records.length} (${((i + 1) / records.length * 100).toFixed(1)}%)`, 'blue');
-        
+
         const result = await processGAARecord(records[i], i, submitter, sessionId);
         results.push(result);
         successCount++;
-        
-        // Small delay between records to avoid overwhelming the system
+
+        // Small delay between records to avoid sequence conflicts and overwhelming the system
         if (i < records.length - 1) {
-          await new Promise(resolve => setTimeout(resolve, 1000));
+          log('⏱️  Waiting 2 seconds before next transaction...', 'blue');
+          await new Promise(resolve => setTimeout(resolve, 2000));
         }
       } catch (error) {
         log(`❌ Failed to process record ${i + 1}: ${error.message}`, 'red');
@@ -676,12 +719,12 @@ async function main() {
           index: i
         });
         failCount++;
-        
+
         // Continue processing other records instead of stopping
         log('⚠️  Continuing with next record...', 'yellow');
       }
     }
-    
+
     processedCount = successCount + failCount;
   }
   let skippedCount = startFromIndex;
@@ -690,7 +733,7 @@ async function main() {
   logProgress({
     sessionId,
     status: 'session_completed',
-    totalRecords: records.length,
+    totalRecords: totalRecords || records.length,
     processedRecords: successCount + failCount,
     skippedRecords: skippedCount,
     successCount,

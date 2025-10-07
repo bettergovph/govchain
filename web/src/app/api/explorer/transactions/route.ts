@@ -41,7 +41,7 @@ export async function GET(request: NextRequest) {
     const transactions = entries.map((entry: any) => {
       // Use actual transaction hash if available, otherwise create a meaningful identifier
       const txHash = entry.tx_hash || entry.txHash || entry.index || `entry-${entry.timestamp || Date.now()}`;
-      
+
       return {
         txhash: txHash,
         height: entry.block_height || entry.height || '0', // Use actual block height if available
@@ -93,9 +93,9 @@ export async function GET(request: NextRequest) {
   } catch (error) {
     console.error('Error fetching entry transactions:', error);
     return NextResponse.json(
-      { 
-        error: 'Failed to fetch entry transactions', 
-        details: error instanceof Error ? error.message : String(error) 
+      {
+        error: 'Failed to fetch entry transactions',
+        details: error instanceof Error ? error.message : String(error)
       },
       { status: 500 }
     );

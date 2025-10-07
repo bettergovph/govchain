@@ -386,7 +386,7 @@ export class CosmJSClient {
     try {
       // Fallback to REST API for list queries
       const restEndpoint = this.config.rpcEndpoint.replace('26657', '1317');
-      const response = await fetch(`${restEndpoint}/govchain/datasets/v1/entry?pagination.limit=${limit}&pagination.offset=${offset}`);
+      const response = await fetch(`${restEndpoint}/govchain/datasets/v1/entry?pagination.limit=${limit}&pagination.offset=${offset}&pagination.reverse=true`);
       return response.json();
     } catch (error) {
       console.error('Query failed:', error);

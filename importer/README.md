@@ -15,7 +15,7 @@ Create a `.env` file or export environment variables:
 
 ```bash
 # Connect to remote blockchain node
-export BLOCKCHAIN_NODE=tcp://157.90.134.175:26657
+export BLOCKCHAIN_NODE=tcp://localhost:26657
 export CHAIN_ID=govchain
 export KEYRING_BACKEND=test
 ```
@@ -36,7 +36,7 @@ If no environment variables are set, the script connects to:
 chmod +x upload-to-remote.sh
 
 # Upload to remote node
-./upload-to-remote.sh samples/gaa.json alice tcp://157.90.134.175:26657
+./upload-to-remote.sh samples/gaa.json alice tcp://localhost:26657
 
 # Or use default remote node
 ./upload-to-remote.sh samples/gaa.json alice
@@ -46,11 +46,11 @@ chmod +x upload-to-remote.sh
 
 ```bash
 # Using environment variables
-export BLOCKCHAIN_NODE=tcp://157.90.134.175:26657
+export BLOCKCHAIN_NODE=tcp://localhost:26657
 node upload-gaa.js samples/gaa.json alice
 
 # Or inline
-BLOCKCHAIN_NODE=tcp://157.90.134.175:26657 node upload-gaa.js samples/gaa.json alice
+BLOCKCHAIN_NODE=tcp://localhost:26657 node upload-gaa.js samples/gaa.json alice
 ```
 
 ### Arguments
@@ -71,7 +71,7 @@ node upload-gaa.js samples/gaa.json alice
 
 ### Connect to Remote Node
 ```bash
-BLOCKCHAIN_NODE=tcp://157.90.134.175:26657 \
+BLOCKCHAIN_NODE=tcp://localhost:26657 \
 CHAIN_ID=govchain \
 node upload-gaa.js samples/gaa.json alice
 ```
@@ -80,7 +80,7 @@ node upload-gaa.js samples/gaa.json alice
 ```bash
 # Create .env file
 cat > .env << EOF
-BLOCKCHAIN_NODE=tcp://157.90.134.175:26657
+BLOCKCHAIN_NODE=tcp://localhost:26657
 CHAIN_ID=govchain
 KEYRING_BACKEND=test
 EOF
@@ -120,10 +120,10 @@ After upload, verify the data:
 
 ```bash
 # List all entries
-govchaind query datasets list-entry --node tcp://157.90.134.175:26657
+govchaind query datasets list-entry --node tcp://localhost:26657
 
 # Query by category
-govchaind query datasets entries-by-category GAA --node tcp://157.90.134.175:26657
+govchaind query datasets entries-by-category GAA --node tcp://localhost:26657
 ```
 
 ## Troubleshooting
@@ -144,7 +144,7 @@ govchaind keys add alice --keyring-backend test
 ### "connection refused"
 Check that the blockchain node is running and accessible:
 ```bash
-curl http://157.90.134.175:26657/status
+curl http://localhost:26657/status
 ```
 
 ### "insufficient fees"

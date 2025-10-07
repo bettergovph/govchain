@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Database, RefreshCw, Filter, SortAsc, SortDesc } from 'lucide-react';
+import { Database, RefreshCw, Filter, SortAsc, SortDesc, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Dataset } from '@/types/dataset';
 import DatasetCard from '@/components/DatasetCard';
 
@@ -20,6 +20,15 @@ interface DatasetResponse {
   };
 }
 
+interface PaginationInfo {
+  currentPage: number;
+  pageSize: number;
+  totalItems: number;
+  totalPages: number;
+  hasNextPage: boolean;
+  hasPrevPage: boolean;
+}
+
 export default function DatasetList() {
   const [datasets, setDatasets] = useState<Dataset[]>([]);
   const [loading, setLoading] = useState(true);
@@ -29,6 +38,18 @@ export default function DatasetList() {
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
   const [agencyFilter, setAgencyFilter] = useState('__all__');
   const [categoryFilter, setCategoryFilter] = useState('__all__');
+
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(20);
+  const [totalItems, setTotalItems] = useState(0);
+  const [nextKey, setNextKey] = useState<string>('');
+  const [prevKeys, setPrevKeys] = useState<string[]>([]);
+
+  // Calculate pagination info
+  const totalPages = Math.ceil(totalItems / pageSize);
+  const hasNextPage = !!nextKey || currentPage < totalPages;
+  const hasPrevPage = currentPage > 1;
 
   const agencies = [
     'Department of Health and Human Services',
@@ -55,22 +76,60 @@ export default function DatasetList() {
   ];
 
   useEffect(() => {
-    fetchDatasets();
-  }, []);
+    fetchDatasets(1); // Reset to first page when component mounts
+  }, [pageSize]);
 
-  const fetchDatasets = async () => {
+  // Reset to first page when filters change
+  useEffect(() => {
+    if (currentPage !== 1) {
+      setCurrentPage(1);
+      setPrevKeys([]);
+      setNextKey('');
+      fetchDatasets(1);
+    } else {
+      fetchDatasets(1);
+    }
+  }, [agencyFilter, categoryFilter]);
+
+  const fetchDatasets = async (page: number = currentPage, key: string = '') => {
     setLoading(true);
     setError(null);
 
     try {
-      const response = await fetch('/api/datasets');
-      
+      // Build query parameters for pagination
+      const params = new URLSearchParams({
+        'pagination.limit': pageSize.toString(),
+        'pagination.reverse': 'true', // Most recent first
+      });
+
+      // Add pagination key if provided
+      if (key) {
+        params.set('pagination.key', key);
+      }
+
+      // Add filters if set
+      if (agencyFilter !== '__all__') {
+        // Note: This would require a separate API endpoint for agency filtering
+        // For now, we'll filter on the frontend
+      }
+
+      if (categoryFilter !== '__all__') {
+        // Note: This would require a separate API endpoint for category filtering  
+        // For now, we'll filter on the frontend
+      }
+
+      const response = await fetch(`/api/datasets?${params.toString()}`);
+
       if (!response.ok) {
         throw new Error('Failed to fetch datasets');
       }
 
       const data: DatasetResponse = await response.json();
       setDatasets(data.datasets || []);
+      setTotalItems(parseInt(data.pagination?.total || '0'));
+      setNextKey(data.pagination?.next_key || '');
+      setCurrentPage(page);
+
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to fetch datasets');
     } finally {
@@ -78,22 +137,48 @@ export default function DatasetList() {
     }
   };
 
+  // Pagination navigation functions
+  const goToNextPage = () => {
+    if (hasNextPage && nextKey) {
+      setPrevKeys([...prevKeys, nextKey]);
+      fetchDatasets(currentPage + 1, nextKey);
+    }
+  };
+
+  const goToPrevPage = () => {
+    if (hasPrevPage) {
+      const newPrevKeys = [...prevKeys];
+      const prevKey = newPrevKeys.pop() || '';
+      setPrevKeys(newPrevKeys);
+      fetchDatasets(currentPage - 1, prevKey);
+    }
+  };
+
+  const refreshDatasets = () => {
+    setCurrentPage(1);
+    setPrevKeys([]);
+    setNextKey('');
+    fetchDatasets(1);
+  };
+
   const filteredAndSortedDatasets = datasets
     .filter(dataset => {
-      const matchesSearch = !filter || 
+      const matchesSearch = !filter ||
         dataset.title.toLowerCase().includes(filter.toLowerCase()) ||
         dataset.description.toLowerCase().includes(filter.toLowerCase()) ||
         dataset.agency.toLowerCase().includes(filter.toLowerCase()) ||
         dataset.category.toLowerCase().includes(filter.toLowerCase());
-      
+
+      // Note: Agency and category filtering is temporarily done client-side
+      // TODO: Implement server-side filtering for better performance
       const matchesAgency = agencyFilter === '__all__' || dataset.agency === agencyFilter;
       const matchesCategory = categoryFilter === '__all__' || dataset.category === categoryFilter;
-      
+
       return matchesSearch && matchesAgency && matchesCategory;
     })
     .sort((a, b) => {
       let comparison = 0;
-      
+
       switch (sortBy) {
         case 'title':
           comparison = a.title.localeCompare(b.title);
@@ -108,7 +193,7 @@ export default function DatasetList() {
           comparison = a.file_size - b.file_size;
           break;
       }
-      
+
       return sortOrder === 'asc' ? comparison : -comparison;
     });
 
@@ -135,17 +220,17 @@ export default function DatasetList() {
               </CardTitle>
               <CardDescription>
                 Browse all datasets uploaded to the blockchain
-                {datasets.length > 0 && (
+                {totalItems > 0 && (
                   <span className="ml-2">
-                    ({filteredAndSortedDatasets.length} of {datasets.length} shown)
+                    (Showing {Math.min((currentPage - 1) * pageSize + 1, totalItems)}-{Math.min(currentPage * pageSize, totalItems)} of {totalItems})
                   </span>
                 )}
               </CardDescription>
             </div>
-            <Button 
-              variant="outline" 
-              size="sm" 
-              onClick={fetchDatasets}
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={refreshDatasets}
               disabled={loading}
             >
               <RefreshCw className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
@@ -164,7 +249,7 @@ export default function DatasetList() {
                   onChange={(e) => setFilter(e.target.value)}
                 />
               </div>
-              
+
               <div className="flex gap-2">
                 <Select value={agencyFilter} onValueChange={setAgencyFilter}>
                   <SelectTrigger className="w-48">
@@ -216,7 +301,7 @@ export default function DatasetList() {
                   <SelectItem value="fileSize">File size</SelectItem>
                 </SelectContent>
               </Select>
-              
+
               <Button
                 variant="outline"
                 size="sm"
@@ -273,7 +358,7 @@ export default function DatasetList() {
               {datasets.length === 0 ? 'No datasets found' : 'No matching datasets'}
             </h3>
             <p className="text-muted-foreground">
-              {datasets.length === 0 
+              {datasets.length === 0
                 ? 'No datasets have been uploaded to the blockchain yet.'
                 : 'Try adjusting your search terms or filters.'
               }
@@ -281,11 +366,67 @@ export default function DatasetList() {
           </CardContent>
         </Card>
       ) : (
-        <div className="grid gap-4">
-          {filteredAndSortedDatasets.map((dataset) => (
-            <DatasetCard key={dataset.index} dataset={dataset} />
-          ))}
-        </div>
+        <>
+          <div className="grid gap-4">
+            {filteredAndSortedDatasets.map((dataset) => (
+              <DatasetCard key={dataset.index} dataset={dataset} />
+            ))}
+          </div>
+
+          {/* Pagination Controls */}
+          <Card>
+            <CardContent className="pt-6">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-4">
+                  <span className="text-sm text-muted-foreground">
+                    Page {currentPage} of {totalPages} ({totalItems} total entries)
+                  </span>
+                  <Select
+                    value={pageSize.toString()}
+                    onValueChange={(value) => {
+                      setPageSize(Number(value));
+                      setCurrentPage(1);
+                      setPrevKeys([]);
+                      setNextKey('');
+                    }}
+                  >
+                    <SelectTrigger className="w-32">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="10">10 per page</SelectItem>
+                      <SelectItem value="20">20 per page</SelectItem>
+                      <SelectItem value="50">50 per page</SelectItem>
+                      <SelectItem value="100">100 per page</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={goToPrevPage}
+                    disabled={!hasPrevPage || loading}
+                  >
+                    <ChevronLeft className="h-4 w-4 mr-1" />
+                    Previous
+                  </Button>
+
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={goToNextPage}
+                    disabled={!hasNextPage || loading}
+                  >
+                    Next
+                    <ChevronRight className="h-4 w-4 ml-1" />
+                  </Button>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </>
       )}
     </div>
   );

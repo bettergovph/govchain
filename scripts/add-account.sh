@@ -27,9 +27,11 @@ fi
 # Configuration
 CHAIN_ID="${CHAIN_ID:-govchain}"
 KEYRING_BACKEND="${KEYRING_BACKEND:-test}"
+BLOCKCHAIN_NODE="${BLOCKCHAIN_NODE:-tcp://localhost:26657}"
 
 echo -e "${BLUE}🌐 Chain ID: $CHAIN_ID${NC}"
 echo -e "${BLUE}🔑 Keyring Backend: $KEYRING_BACKEND${NC}"
+echo -e "${BLUE}🌐 Node: $BLOCKCHAIN_NODE${NC}"
 echo ""
 
 # Parse arguments or prompt for input
@@ -169,13 +171,29 @@ echo "================================"
 echo ""
 echo "Next Steps:"
 echo "1. Check account balance:"
-echo -e "   ${BLUE}govchaind query bank balances $ACCOUNT_ADDRESS${NC}"
+echo -e "   ${BLUE}govchaind query bank balances $ACCOUNT_ADDRESS --node $BLOCKCHAIN_NODE${NC}"
 echo ""
-echo "2. List all accounts:"
+echo "2. Fund account if needed (using faucet):"
+echo -e "   ${BLUE}./scripts/faucet.sh $ACCOUNT_NAME${NC}"
+echo ""
+echo "3. List all accounts:"
 echo -e "   ${BLUE}govchaind keys list --keyring-backend $KEYRING_BACKEND${NC}"
 echo ""
-echo "3. Use this account for transactions:"
-echo -e "   ${BLUE}govchaind tx ... --from $ACCOUNT_NAME --keyring-backend $KEYRING_BACKEND${NC}"
+echo "4. Use this account for transactions:"
+echo -e "   ${BLUE}govchaind tx ... --from $ACCOUNT_NAME --keyring-backend $KEYRING_BACKEND --node $BLOCKCHAIN_NODE${NC}"
+echo ""
+
+# Check account balance on blockchain
+echo -e "${YELLOW}💰 Checking account balance on blockchain...${NC}"
+ACCOUNT_BALANCE=$(govchaind query bank balances "$ACCOUNT_ADDRESS" --node "$BLOCKCHAIN_NODE" --output json 2>/dev/null || echo '{"balances":[]}')
+STAKE_BALANCE=$(echo "$ACCOUNT_BALANCE" | jq -r '.balances[] | select(.denom=="stake") | .amount' 2>/dev/null || echo "0")
+
+if [ "$STAKE_BALANCE" = "0" ] || [ -z "$STAKE_BALANCE" ]; then
+    echo -e "${YELLOW}⚠️  Account has no balance on the blockchain${NC}"
+    echo -e "${BLUE}💡 To fund this account, run: ${GREEN}./scripts/faucet.sh $ACCOUNT_NAME${NC}"
+else
+    echo -e "${GREEN}✓ Account balance: $STAKE_BALANCE stake${NC}"
+fi
 echo ""
 
 # Additional info if this is not the test keyring

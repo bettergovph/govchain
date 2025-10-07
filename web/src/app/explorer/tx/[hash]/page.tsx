@@ -63,10 +63,10 @@ export default function TransactionDetailPage() {
   const fetchTransaction = async () => {
     try {
       setLoading(true);
-      
+
       // First try to get the actual transaction from the blockchain
       const response = await fetch(`/api/explorer/transaction/${hash}`);
-      
+
       if (response.ok) {
         const data = await response.json();
         setTransaction(data);
@@ -74,11 +74,11 @@ export default function TransactionDetailPage() {
         // If the transaction is not found, it might be an entry-based pseudo tx
         // Try to get it from our transaction list (which includes entry data)
         const txListResponse = await fetch('/api/explorer/transactions?limit=1000');
-        
+
         if (txListResponse.ok) {
           const txListData = await txListResponse.json();
           const foundTx = txListData.transactions?.find((tx: any) => tx.txhash === hash);
-          
+
           if (foundTx) {
             // Transform entry-based tx to match the expected format
             setTransaction({
@@ -290,8 +290,8 @@ export default function TransactionDetailPage() {
                 <div className="md:col-span-2">
                   <div className="text-sm font-medium text-muted-foreground mb-1">Description</div>
                   <div className="text-sm bg-muted p-2 rounded max-h-32 overflow-y-auto">
-                    {tx.entry_data.description.length > 200 
-                      ? tx.entry_data.description.substring(0, 200) + '...' 
+                    {tx.entry_data.description.length > 200
+                      ? tx.entry_data.description.substring(0, 200) + '...'
                       : tx.entry_data.description}
                   </div>
                 </div>
@@ -342,7 +342,7 @@ export default function TransactionDetailPage() {
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Amount:</span>
                   <span className="font-semibold">
-                    {tx.tx.auth_info.fee.amount.map((a: any) => 
+                    {tx.tx.auth_info.fee.amount.map((a: any) =>
                       `${a.amount} ${a.denom}`
                     ).join(', ')}
                   </span>

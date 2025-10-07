@@ -183,12 +183,12 @@ export default function ExplorerPage() {
     if (!msg['@type']) return 'Unknown';
     const parts = msg['@type'].split('.');
     const msgType = parts[parts.length - 1].replace('Msg', '');
-    
+
     // For dataset entries, show more descriptive type
     if (msgType === 'CreateEntry') {
       return 'Dataset Entry';
     }
-    
+
     return msgType;
   };
 
@@ -197,13 +197,13 @@ export default function ExplorerPage() {
     if ((tx as any).entry_data?.title) {
       return (tx as any).entry_data.title;
     }
-    
+
     // Try to extract from message
     const msg = tx.tx?.body?.messages?.[0];
     if (msg?.title) {
       return msg.title;
     }
-    
+
     return null;
   };
 
@@ -212,13 +212,13 @@ export default function ExplorerPage() {
     if ((tx as any).entry_data?.agency) {
       return (tx as any).entry_data.agency;
     }
-    
+
     // Try to extract from message
     const msg = tx.tx?.body?.messages?.[0];
     if (msg?.agency) {
       return msg.agency;
     }
-    
+
     return null;
   };
 
@@ -327,7 +327,7 @@ export default function ExplorerPage() {
                   {transactions.slice(0, 5).map((tx) => {
                     const entryTitle = getEntryTitle(tx);
                     const entryAgency = getEntryAgency(tx);
-                    
+
                     return (
                       <Link
                         key={tx.txhash}
@@ -421,7 +421,7 @@ export default function ExplorerPage() {
             <CardHeader>
               <CardTitle>Dataset Transactions</CardTitle>
               <CardDescription>
-                Dataset entries and their transaction details - showing data from 
+                Dataset entries and their transaction details - showing data from
                 <code className="bg-muted px-1 rounded text-sm">/govchain/datasets/v1/entry</code>
               </CardDescription>
             </CardHeader>
@@ -474,8 +474,8 @@ export default function ExplorerPage() {
                             <TableCell className="text-xs text-muted-foreground">
                               {tx.timestamp
                                 ? formatDistanceToNow(new Date(tx.timestamp), {
-                                    addSuffix: true,
-                                  })
+                                  addSuffix: true,
+                                })
                                 : 'N/A'}
                             </TableCell>
                           </TableRow>

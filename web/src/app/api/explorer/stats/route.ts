@@ -33,10 +33,10 @@ export async function GET() {
         const entriesData = await entriesResponse.json();
         const entries = entriesData.entry || [];
         const pagination = entriesData.pagination || {};
-        
+
         totalEntries = parseInt(pagination.total || '0');
         recentEntries = entries;
-        
+
         console.log(`Found ${totalEntries} total entries, ${entries.length} recent entries`);
       }
     } catch (error) {
@@ -46,7 +46,7 @@ export async function GET() {
     // Calculate some basic statistics
     const uniqueAgencies = new Set(recentEntries.map(entry => entry.agency)).size;
     const uniqueCategories = new Set(recentEntries.map(entry => entry.category)).size;
-    
+
     // Recent activity (entries from last 24 hours)
     const last24Hours = Date.now() - (24 * 60 * 60 * 1000);
     const recentActivity = recentEntries.filter(entry => {
@@ -85,7 +85,7 @@ export async function GET() {
   } catch (error) {
     console.error('Error fetching explorer stats:', error);
     return NextResponse.json(
-      { 
+      {
         error: 'Failed to fetch explorer stats',
         details: error instanceof Error ? error.message : String(error)
       },

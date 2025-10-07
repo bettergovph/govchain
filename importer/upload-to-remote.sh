@@ -8,7 +8,7 @@ set -e
 # Configuration
 JSON_FILE="${1}"
 SUBMITTER="${2:-alice}"
-NODE_URL="${3:-tcp://157.90.134.175:26657}"
+NODE_URL="${3:-tcp://localhost:26657}"
 
 # Colors
 RED='\033[0;31m'
@@ -25,7 +25,7 @@ if [ -z "$JSON_FILE" ]; then
     echo "Examples:"
     echo "  $0 samples/gaa.json"
     echo "  $0 samples/gaa.json alice"
-    echo "  $0 samples/gaa.json alice tcp://157.90.134.175:26657"
+    echo "  $0 samples/gaa.json alice tcp://localhost:26657"
     echo ""
     exit 1
 fi

@@ -5,6 +5,11 @@
 
 set -e
 
+# Configuration
+CHAIN_ID="${CHAIN_ID:-govchain}"
+BLOCKCHAIN_NODE="${BLOCKCHAIN_NODE:-tcp://localhost:26657}"
+KEYRING_BACKEND="${KEYRING_BACKEND:-test}"
+
 # Colors for output
 RED='\033[0;31m'
 GREEN='\033[0;32m'
@@ -151,8 +156,9 @@ TX_RESULT=$(timeout 30s govchaind tx datasets create-entry \
     "$TIMESTAMP" \
     "0" \
     --from "$SUBMITTER" \
-    --chain-id govchain \
-    --keyring-backend test \
+    --chain-id "$CHAIN_ID" \
+    --node "$BLOCKCHAIN_NODE" \
+    --keyring-backend "$KEYRING_BACKEND" \
     --gas auto \
     --gas-adjustment 1.5 \
     --yes \

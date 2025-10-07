@@ -4,7 +4,7 @@
 
 ### One-Line Command
 ```bash
-./upload-to-remote.sh samples/gaa.json alice tcp://157.90.134.175:26657
+./upload-to-remote.sh samples/gaa.json alice tcp://localhost:26657
 ```
 
 ### Step by Step
@@ -28,7 +28,7 @@
 
 ```bash
 # Set once, use multiple times
-export BLOCKCHAIN_NODE=tcp://157.90.134.175:26657
+export BLOCKCHAIN_NODE=tcp://localhost:26657
 export CHAIN_ID=govchain
 
 # Now run uploads
@@ -40,11 +40,11 @@ node upload-gaa.js samples/gaa.json alice
 ```bash
 # Check latest entries
 govchaind query datasets list-entry \
-  --node tcp://157.90.134.175:26657 \
+  --node tcp://localhost:26657 \
   --output json | jq
 
 # Or via REST API
-curl http://157.90.134.175:1317/govchain/datasets/v1/entry
+curl http://localhost:1317/govchain/datasets/v1/entry
 ```
 
 ## Common Commands
@@ -53,8 +53,8 @@ curl http://157.90.134.175:1317/govchain/datasets/v1/entry
 |------|---------|
 | Upload to remote | `./upload-to-remote.sh samples/gaa.json alice` |
 | Upload to local | `node upload-gaa.js samples/gaa.json alice` |
-| List entries | `govchaind query datasets list-entry --node tcp://157.90.134.175:26657` |
-| Check node status | `curl http://157.90.134.175:26657/status` |
+| List entries | `govchaind query datasets list-entry --node tcp://localhost:26657` |
+| Check node status | `curl http://localhost:26657/status` |
 | List keys | `govchaind keys list --keyring-backend test` |
 
 ## Troubleshooting
@@ -63,7 +63,7 @@ curl http://157.90.134.175:1317/govchain/datasets/v1/entry
 |-------|----------|
 | "govchaind not found" | Build blockchain: `cd blockchain && ignite chain build` |
 | "account not found" | Add key: `govchaind keys add alice --keyring-backend test` |
-| "connection refused" | Check node is running: `curl http://157.90.134.175:26657/status` |
+| "connection refused" | Check node is running: `curl http://localhost:26657/status` |
 | "insufficient fees" | Fund account or check balance |
 
 ## Need Help?
