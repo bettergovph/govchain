@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# GovChain Account Import Script
+# OpenGovChain Account Import Script
 # Imports an account from mnemonic seed
 
 set -e
@@ -13,7 +13,7 @@ BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
 echo "================================"
-echo "GovChain Account Import Tool"
+echo "OpenGovChain Account Import Tool"
 echo "================================"
 echo ""
 

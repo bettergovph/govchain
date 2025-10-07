@@ -1,6 +1,6 @@
-# Getting Started with GovChain Blockchain
+# Getting Started with OpenGovChain Blockchain
 
-This guide will help you set up and run your own GovChain blockchain node, whether as a validator or for development purposes.
+This guide will help you set up and run your own OpenGovChain blockchain node, whether as a validator or for development purposes.
 
 ## 🔧 Prerequisites
 
@@ -60,7 +60,7 @@ ignite chain serve
 ```
 
 ### Option B: Join Existing Network
-If joining an existing GovChain network:
+If joining an existing OpenGovChain network:
 
 ```bash
 # Use the volunteer node script

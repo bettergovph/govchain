@@ -23,7 +23,7 @@ These files are **blockchain-specific** versions of the main project documentati
 ## Key Differences from Main Project Docs
 
 ### Main Project (`/README.md`, `/GETTING_STARTED.md`, `/TECHNICAL_IMPLEMENTATION.md`)
-- **Scope**: Full GovChain ecosystem (web app, indexer, blockchain, IPFS)
+- **Scope**: Full OpenGovChain ecosystem (web app, indexer, blockchain, IPFS)
 - **Audience**: Developers, system administrators, full deployment
 - **Focus**: Complete platform setup and integration
 

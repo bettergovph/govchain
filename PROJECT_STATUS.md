@@ -1,4 +1,4 @@
-# GovChain Project Status
+# OpenGovChain Project Status
 
 **Date**: 2025-10-04  
 **Status**: Initial Setup Complete ✅  
@@ -113,7 +113,7 @@
 
 ```
 ┌─────────────────────────────────────────────────────────┐
-│                    GovChain Platform                     │
+│                    OpenGovChain Platform                     │
 └─────────────────────────────────────────────────────────┘
 
 ┌──────────────┐  ┌──────────────┐  ┌──────────────┐

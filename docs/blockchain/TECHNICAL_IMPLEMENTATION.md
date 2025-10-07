@@ -1,6 +1,6 @@
-# GovChain Blockchain Technical Implementation
+# OpenGovChain Blockchain Technical Implementation
 
-A comprehensive technical overview of the GovChain blockchain architecture, implementation details, and development guidelines.
+A comprehensive technical overview of the OpenGovChain blockchain architecture, implementation details, and development guidelines.
 
 ## 🏗️ Architecture Overview
 
@@ -8,11 +8,11 @@ A comprehensive technical overview of the GovChain blockchain architecture, impl
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│                    GovChain Ecosystem                      │
+│                    OpenGovChain Ecosystem                      │
 ├─────────────────────────────────────────────────────────────┤
 │  Web Application  │  Indexer Node  │  Government APIs       │
 ├─────────────────────────────────────────────────────────────┤
-│                 GovChain Blockchain                         │
+│                 OpenGovChain Blockchain                         │
 │  ┌─────────────┐ ┌─────────────┐ ┌─────────────────────┐   │
 │  │   Datasets  │ │  Tendermint │ │    Cosmos SDK       │   │
 │  │   Module    │ │  Consensus  │ │    Framework        │   │

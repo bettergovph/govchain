@@ -1,4 +1,4 @@
-G# GovChain .gitignore
+# OpenGovChain .gitignore
 
 # Blockchain data
 govchain/.ignite/

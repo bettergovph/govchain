@@ -1,6 +1,6 @@
-# Getting Started with GovChain
+# Getting Started with OpenGovChain
 
-This guide will help you get GovChain running on your local machine in under 30 minutes.
+This guide will help you get OpenGovChain running on your local machine in under 30 minutes.
 
 ## Prerequisites
 
@@ -103,13 +103,13 @@ npm run dev
 
 Wait for: `Next.js ready on http://localhost:3000`
 
-### Step 6: Access GovChain
+### Step 6: Access OpenGovChain
 
 Open your browser and visit:
 
 🌐 **http://localhost:3000**
 
-You should see the GovChain web interface with:
+You should see the OpenGovChain web interface with:
 - Dataset search functionality
 - Upload form for new datasets
 - Browse datasets by agency and category
@@ -476,7 +476,7 @@ If you're stuck:
 
 ---
 
-**Welcome to GovChain! Let's build transparent government infrastructure together. 🏛️**
+**Welcome to OpenGovChain! Let's build transparent government infrastructure together. 🏛️**
 
 Version: 1.0  
 Last Updated: 2025-10-04

@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Upload to remote GovChain node
+# Upload to remote OpenGovChain node
 # Usage: ./upload-to-remote.sh <json-file> [submitter] [node-url]
 
 set -e
@@ -40,7 +40,7 @@ fi
 
 # Display configuration
 echo -e "${YELLOW}================================${NC}"
-echo -e "${YELLOW}GovChain Remote Upload${NC}"
+echo -e "${YELLOW}OpenGovChain Remote Upload${NC}"
 echo -e "${YELLOW}================================${NC}"
 echo ""
 echo -e "${YELLOW}📄 File:${NC} $JSON_FILE"

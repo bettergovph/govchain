@@ -151,7 +151,7 @@ class IndexerApp {
       await this.initialize();
 
       this.app.listen(this.port, () => {
-        logger.info(`🚀 GovChain Indexer running on port ${this.port}`);
+        logger.info(`🚀 OpenGovChain Indexer running on port ${this.port}`);
         logger.info(`📊 Health check: http://localhost:${this.port}/health`);
         logger.info(`🔍 Search endpoint: http://localhost:${this.port}/search?q=<query>`);
       });

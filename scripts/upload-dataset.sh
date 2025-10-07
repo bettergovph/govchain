@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# GovChain Dataset Upload Script
+# OpenGovChain Dataset Upload Script
 # Simplifies uploading datasets to IPFS and registering on blockchain
 
 set -e
@@ -17,7 +17,7 @@ YELLOW='\033[1;33m'
 NC='\033[0m' # No Color
 
 echo "================================"
-echo "GovChain Dataset Upload Tool"
+echo "OpenGovChain Dataset Upload Tool"
 echo "================================"
 echo ""
 

@@ -1,6 +1,6 @@
-# GovChain Web Interface
+# OpenGovChain Web Interface
 
-A Next.js web application for the GovChain dataset portal. This application provides a user-friendly interface for uploading, searching, and managing government datasets on the blockchain.
+A Next.js web application for the OpenGovChain dataset portal. This application provides a user-friendly interface for uploading, searching, and managing government datasets on the blockchain.
 
 ## Features
 
@@ -277,4 +277,4 @@ DEBUG=* npm run dev
 
 ## License
 
-This project is part of GovChain and follows the same license terms.
+This project is part of OpenGovChain and follows the same license terms.

@@ -1,6 +1,6 @@
 # Verified Cosmos SDK Capabilities
 
-This document confirms what GovChain can actually do based on Cosmos SDK capabilities as of 2024.
+This document confirms what OpenGovChain can actually do based on Cosmos SDK capabilities as of 2024.
 
 ## ✅ Verified Native Capabilities
 
@@ -161,7 +161,7 @@ These features need to be built as custom modules:
 
 ## Conclusion
 
-GovChain's extensibility claims are **accurate and verified**. The platform:
+OpenGovChain's extensibility claims are **accurate and verified**. The platform:
 - Provides a solid tokenless base
 - Offers native governance and tokenomics when needed
 - Supports smart contracts via widely-adopted CosmWasm

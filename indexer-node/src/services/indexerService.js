@@ -74,7 +74,7 @@ class IndexerService {
         this.collection = await this.chromaClient.createCollection({
           name: this.collectionName,
           metadata: {
-            description: 'GovChain datasets vector search collection',
+            description: 'OpenGovChain datasets vector search collection',
             created: new Date().toISOString()
           }
         });

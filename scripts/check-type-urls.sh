@@ -6,7 +6,7 @@
 set -e
 
 echo "================================"
-echo "GovChain Type URL Discovery"
+echo "OpenGovChain Type URL Discovery"
 echo "================================"
 echo ""
 

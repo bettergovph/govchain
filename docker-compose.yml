@@ -59,7 +59,7 @@ services:
       - NEXT_PUBLIC_BLOCKCHAIN_API=http://localhost:1317
       - NEXT_PUBLIC_INDEXER_API=http://localhost:9002
       - NEXT_PUBLIC_IPFS_GATEWAY=https://ipfs.io
-      - NEXT_PUBLIC_APP_NAME=GovChain Data Portal
+      - NEXT_PUBLIC_APP_NAME=OpenGovChain Data Portal
     depends_on:
       - indexer
     networks:

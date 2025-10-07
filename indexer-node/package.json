@@ -1,7 +1,7 @@
 {
   "name": "govchain-indexer",
   "version": "1.0.0",
-  "description": "Vector search indexer for GovChain datasets",
+  "description": "Vector search indexer for OpenGovChain datasets",
   "main": "src/index.js",
   "scripts": {
     "start": "node src/index.js",
@@ -33,6 +33,6 @@
     "datasets",
     "government"
   ],
-  "author": "GovChain Team",
+  "author": "OpenGovChain Team",
   "license": "MIT"
 }

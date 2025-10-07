@@ -1,10 +1,10 @@
-# GovChain Blockchain
+# OpenGovChain Blockchain
 
 A tokenless, public good blockchain for government data transparency and accountability.
 
 ## 🎯 Mission
 
-GovChain is a decentralized blockchain network designed to store and manage government datasets with complete transparency. Our mission is to create an open, accessible platform where government data can be stored immutably and accessed by all citizens.
+OpenGovChain is a decentralized blockchain network designed to store and manage government datasets with complete transparency. Our mission is to create an open, accessible platform where government data can be stored immutably and accessed by all citizens.
 
 ## 🌟 Key Features
 
@@ -88,7 +88,7 @@ prometheus = true
 ```bash
 sudo tee /etc/systemd/system/govchaind.service > /dev/null <<EOF
 [Unit]
-Description=GovChain Node
+Description=OpenGovChain Node
 After=network-online.target
 
 [Service]
@@ -205,4 +205,4 @@ This project is open source and available under the MIT License. See LICENSE fil
 
 ---
 
-**GovChain by BetterGov.ph**: Empowering transparency through decentralized government data.
+**OpenGovChain by BetterGov.ph**: Empowering transparency through decentralized government data.

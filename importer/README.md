@@ -1,6 +1,6 @@
-# GovChain Data Importer
+# OpenGovChain Data Importer
 
-Upload datasets to the GovChain blockchain.
+Upload datasets to the OpenGovChain blockchain.
 
 ## Prerequisites
 

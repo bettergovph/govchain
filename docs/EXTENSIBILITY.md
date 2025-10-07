@@ -1,8 +1,8 @@
-# GovChain Extensibility Guide
+# OpenGovChain Extensibility Guide
 
 ## Overview
 
-GovChain is designed as a **foundational platform** - tokenless by default but fully extensible. Agencies can add custom modules for tokenomics, governance, financial transactions, and other blockchain utilities based on their specific needs.
+OpenGovChain is designed as a **foundational platform** - tokenless by default but fully extensible. Agencies can add custom modules for tokenomics, governance, financial transactions, and other blockchain utilities based on their specific needs.
 
 ### What's Included vs. What Requires Development
 
@@ -342,7 +342,7 @@ govchain tx wasm instantiate 1 '{}' --from admin
 
 ## Cosmos SDK Ecosystem
 
-GovChain is built on Cosmos SDK, giving you access to:
+OpenGovChain is built on Cosmos SDK, giving you access to:
 
 ### Standard Modules
 - `x/auth` - Account authentication
@@ -420,15 +420,15 @@ GovChain is built on Cosmos SDK, giving you access to:
 ### Community
 - [Cosmos Discord](https://discord.gg/cosmosnetwork)
 - [Cosmos Forum](https://forum.cosmos.network/)
-- [GovChain Discord](https://discord.gg/bettergovph)
+- [OpenGovChain Discord](https://discord.gg/bettergovph)
 
 ## Support
 
-For help with extending GovChain:
+For help with extending OpenGovChain:
 - 📧 Email: volunteers@bettergov.ph
 - 💬 Discord: https://discord.gg/bettergovph
 - 🐙 GitHub: https://github.com/bettergovph/govchain
 
 ---
 
-**GovChain**: A foundational platform - extend it to meet your needs.
+**OpenGovChain**: A foundational platform - extend it to meet your needs.

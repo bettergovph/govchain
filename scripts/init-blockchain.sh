@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# GovChain Blockchain Initialization Script
+# OpenGovChain Blockchain Initialization Script
 # Creates the Cosmos blockchain with custom datasets module
 
 set -e
@@ -9,7 +9,7 @@ set -e
 export IGNITE_CLI_AUTO_CONFIRM=true
 
 echo "================================"
-echo "GovChain Blockchain Initialization"
+echo "OpenGovChain Blockchain Initialization"
 echo "================================"
 echo ""
 echo "⚠️  WARNING: This script will create a new blockchain project"

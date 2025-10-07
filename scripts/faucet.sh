@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# GovChain Faucet Script
+# OpenGovChain Faucet Script
 # Sends tokens from a funded account to new accounts
 
 set -e
@@ -13,7 +13,7 @@ BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
 echo "================================"
-echo "GovChain Account Faucet"
+echo "OpenGovChain Account Faucet"
 echo "================================"
 echo ""
 

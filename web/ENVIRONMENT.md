@@ -1,6 +1,6 @@
 # Environment Variables Configuration
 
-This document describes the environment variables used by the GovChain web application for secure configuration.
+This document describes the environment variables used by the OpenGovChain web application for secure configuration.
 
 ## Required Environment Variables
 

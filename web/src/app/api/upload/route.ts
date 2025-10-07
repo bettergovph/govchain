@@ -67,7 +67,7 @@ export async function POST(request: NextRequest) {
     // Create unique entry ID
     const entryId = file ? `entry-${timestamp}-${ipfsResult!.cid.slice(-8)}` : `entry-${timestamp}-${Math.random().toString(36).substr(2, 8)}`;
 
-    // Submit to blockchain using GovChain client
+    // Submit to blockchain using OpenGovChain client
     try {
       const result = await govchainClient.createEntry({
         id: entryId,

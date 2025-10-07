@@ -20,11 +20,11 @@ export default function GalleryPage() {
     try {
       setLoading(true);
       const response = await fetch('/api/datasets');
-      
+
       if (!response.ok) {
         throw new Error(`Failed to fetch datasets: ${response.status}`);
       }
-      
+
       const data = await response.json();
       setDatasets(data.results || []);
     } catch (err) {
@@ -39,7 +39,7 @@ export default function GalleryPage() {
     return (
       <div className="space-y-6">
         <h1 className="text-3xl font-bold">Image Gallery</h1>
-        
+
         <div className="text-center py-12">
           <div className="bg-red-50 border border-red-200 rounded-lg p-6 max-w-md mx-auto">
             <h2 className="text-lg font-semibold text-red-800 mb-2">Error Loading Gallery</h2>
@@ -66,7 +66,7 @@ export default function GalleryPage() {
             Browse and explore image datasets stored on the blockchain
           </p>
         </div>
-        
+
         <Link href="/">
           <Button>
             <Upload className="h-4 w-4 mr-2" />
@@ -77,12 +77,12 @@ export default function GalleryPage() {
 
       {/* Gallery Component */}
       <ImageGallery datasets={datasets} loading={loading} />
-      
+
       {/* Footer Info */}
       {!loading && datasets.length > 0 && (
         <div className="mt-12 text-center text-sm text-muted-foreground">
           <p>
-            All images are stored on IPFS and referenced on the GovChain blockchain.
+            All images are stored on IPFS and referenced on the OpenGovChain blockchain.
             <br />
             Data integrity is ensured through cryptographic hashing and decentralized storage.
           </p>

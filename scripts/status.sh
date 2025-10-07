@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# GovChain Status Checker
+# OpenGovChain Status Checker
 # Verifies blockchain connectivity and dataset querying functionality
 
 set -e
@@ -25,7 +25,7 @@ BLOCKCHAIN_BINARY="${BLOCKCHAIN_BINARY:-~/govchain-blockchain/govchaind}"
 BLOCKCHAIN_BINARY=$(eval echo "$BLOCKCHAIN_BINARY")
 
 echo "=================================="
-echo "🔍 GovChain Status Checker"
+echo "🔍 OpenGovChain Status Checker"
 echo "=================================="
 echo ""
 echo "Configuration:"
@@ -298,7 +298,7 @@ if [ $TESTS_FAILED -eq 0 ]; then
     echo ""
     echo -e "${GREEN}🎉 All systems operational!${NC}"
     echo ""
-    echo "✅ Your GovChain is ready for:"
+    echo "✅ Your OpenGovChain is ready for:"
     echo "  • File uploads via web interface"
     echo "  • Dataset queries and search"
     echo "  • IPFS file storage and retrieval"

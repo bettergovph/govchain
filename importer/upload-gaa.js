@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 /**
- * GovChain GAA Dataset Upload Script
+ * OpenGovChain GAA Dataset Upload Script
  * Uploads GAA (General Appropriations Act) records to the blockchain
  * 
  * Usage: node upload-gaa.js <file> [submitter]
@@ -601,7 +601,7 @@ async function processGAARecord(record, index, submitter, sessionId) {
  */
 async function main() {
   console.log('================================');
-  console.log('GovChain GAA Upload Tool');
+  console.log('OpenGovChain GAA Upload Tool');
   console.log('================================\n');
 
   // Initialize logging

@@ -1,6 +1,6 @@
 # Blockchain Explorer
 
-A comprehensive blockchain explorer for the GovChain Cosmos blockchain that provides real-time monitoring of transactions, blocks, and network statistics.
+A comprehensive blockchain explorer for the OpenGovChain Cosmos blockchain that provides real-time monitoring of transactions, blocks, and network statistics.
 
 ## Features
 

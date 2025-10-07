@@ -1,10 +1,10 @@
-# GovChain Volunteer Node Operator Guide
+# OpenGovChain Volunteer Node Operator Guide
 
-Welcome! This guide will help you set up and run a GovChain node to support government data transparency.
+Welcome! This guide will help you set up and run a OpenGovChain node to support government data transparency.
 
 ## Why Run a Node?
 
-By running a GovChain node, you:
+By running a OpenGovChain node, you:
 
 - **Support transparency**: Help preserve government datasets
 - **Ensure availability**: Provide redundant storage and access
@@ -130,7 +130,7 @@ prometheus = true
 ```bash
 sudo tee /etc/systemd/system/govchaind.service > /dev/null <<EOF
 [Unit]
-Description=GovChain Node
+Description=OpenGovChain Node
 After=network-online.target
 
 [Service]
@@ -341,7 +341,7 @@ sudo apt install prometheus
 # Install Grafana
 sudo apt install grafana
 
-# Import GovChain dashboard
+# Import OpenGovChain dashboard
 # Dashboard ID: TBD
 ```
 

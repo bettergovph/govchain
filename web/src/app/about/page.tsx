@@ -22,6 +22,7 @@ import {
   AlertCircle,
 } from "lucide-react";
 import Link from "next/link";
+import Image from "next/image";
 
 export default function AboutPage() {
   return (
@@ -30,7 +31,7 @@ export default function AboutPage() {
       <div className="space-y-4">
         <div className="flex items-center gap-2 flex-wrap">
           <h1 className="text-4xl font-bold text-foreground">
-            GovChain is an open source blockchain.
+            OpenGovChain is an open source blockchain.
           </h1>
           <Badge variant="outline" className="gap-1">
             <Code className="h-3 w-3" />
@@ -47,11 +48,11 @@ export default function AboutPage() {
         </p>
 
         <p>
-            GovChain is a decentralized blockchain network designed to store and
-            manage government datasets with complete transparency. Built as a
-            <strong> foundational platform</strong>, agencies can extend it with
-            custom modules for tokenomics, governance, financial transactions,
-            and other blockchain utilities based on their specific needs.
+          OpenGovChain is a decentralized blockchain network designed to store and
+          manage government datasets with complete transparency. Built as a
+          <strong> foundational platform</strong>, agencies can extend it with
+          custom modules for tokenomics, governance, financial transactions,
+          and other blockchain utilities based on their specific needs.
         </p>
 
         <h2 className="text-xl font-bold">
@@ -59,7 +60,7 @@ export default function AboutPage() {
         </h2>
 
         <p className="text-muted-foreground">
-          GovChain is completely <strong>free and open source</strong>. Any
+          OpenGovChain is completely <strong>free and open source</strong>. Any
           government agency, organization, or individual can use, modify, and
           deploy this platform without restrictions or licensing fees.
         </p>
@@ -75,7 +76,7 @@ export default function AboutPage() {
         </CardHeader>
         <CardContent className="space-y-3">
           <p className="text-muted-foreground">
-            GovChain is currently under active development. Technical
+            OpenGovChain is currently under active development. Technical
             specifications, features, and implementation details may change as
             we refine the platform based on community feedback and real-world
             testing.
@@ -87,7 +88,7 @@ export default function AboutPage() {
             </h4>
             <p className="text-sm text-muted-foreground mb-3">
               We're looking for volunteers to help build, test, and improve
-              GovChain. Whether you're a developer, designer, government
+              OpenGovChain. Whether you're a developer, designer, government
               official, or transparency advocate, your contribution can make a
               difference.
             </p>
@@ -208,94 +209,107 @@ export default function AboutPage() {
         </div>
       </div>
 
-      {/* Architecture */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Architecture</CardTitle>
-          <CardDescription>
-            GovChain combines three powerful technologies
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="grid gap-4 md:grid-cols-3">
-            <div className="space-y-2">
-              <h3 className="font-semibold">Cosmos Blockchain</h3>
-              <p className="text-sm text-muted-foreground">
-                Immutable registry of dataset metadata and provenance
-              </p>
-            </div>
-            <div className="space-y-2">
-              <h3 className="font-semibold">IPFS</h3>
-              <p className="text-sm text-muted-foreground">
-                Distributed file storage with content addressing
-              </p>
-            </div>
-            <div className="space-y-2">
-              <h3 className="font-semibold">ChromaDB Vector DB</h3>
-              <p className="text-sm text-muted-foreground">
-                AI-powered semantic search
-              </p>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
 
-      {/* Blockchain Components */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Blockchain Components</CardTitle>
-          <CardDescription>
-            Core components of the GovChain blockchain
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="grid gap-4 md:grid-cols-2">
-            <div className="space-y-2">
-              <h3 className="font-semibold flex items-center gap-2">
-                <Database className="h-5 w-5 text-primary" />
-                Datasets Module
-              </h3>
-              <p className="text-sm text-muted-foreground">
-                Custom Cosmos SDK module for data management
-              </p>
-            </div>
-            <div className="space-y-2">
-              <h3 className="font-semibold flex items-center gap-2">
-                <Database className="h-5 w-5 text-primary" />
-                Entry Storage
-              </h3>
-              <p className="text-sm text-muted-foreground">
-                Structured metadata for government files
-              </p>
-            </div>
-            <div className="space-y-2">
-              <h3 className="font-semibold flex items-center gap-2">
-                <Database className="h-5 w-5 text-primary" />
-                Query Engine
-              </h3>
-              <p className="text-sm text-muted-foreground">
-                Efficient data retrieval and filtering
-              </p>
-            </div>
-            <div className="space-y-2">
-              <h3 className="font-semibold flex items-center gap-2">
-                <Network className="h-5 w-5 text-primary" />
-                Validator Network
-              </h3>
-              <p className="text-sm text-muted-foreground">
-                Decentralized consensus mechanism
-              </p>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
 
+      <div className="grid grid-cols-2 gap-4">
+
+        {/* Architecture */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Architecture</CardTitle>
+            <CardDescription>
+              OpenGovChain combines three powerful technologies
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="grid gap-4 md:grid-cols-3">
+              <div className="space-y-2">
+                <h3 className="font-semibold">Cosmos Blockchain</h3>
+                <p className="text-sm text-muted-foreground">
+                  Immutable registry of dataset metadata and provenance
+                </p>
+              </div>
+              <div className="space-y-2">
+                <h3 className="font-semibold">IPFS</h3>
+                <p className="text-sm text-muted-foreground">
+                  Distributed file storage with content addressing
+                </p>
+              </div>
+              <div className="space-y-2">
+                <h3 className="font-semibold">ChromaDB Vector DB</h3>
+                <p className="text-sm text-muted-foreground">
+                  AI-powered semantic search
+                </p>
+              </div>
+            </div>
+            <div>
+              <Image src="/opengovchain.jpg" alt="OpenGovChain" width={600} height={400} />
+            </div>
+
+
+          </CardContent>
+        </Card>
+
+
+
+
+        {/* Blockchain Components */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Blockchain Components</CardTitle>
+            <CardDescription>
+              Core components of the OpenGovChain blockchain
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="grid gap-4 md:grid-cols-2">
+              <div className="space-y-2">
+                <h3 className="font-semibold flex items-center gap-2">
+                  <Database className="h-5 w-5 text-primary" />
+                  Datasets Module
+                </h3>
+                <p className="text-sm text-muted-foreground">
+                  Custom Cosmos SDK module for data management
+                </p>
+              </div>
+              <div className="space-y-2">
+                <h3 className="font-semibold flex items-center gap-2">
+                  <Database className="h-5 w-5 text-primary" />
+                  Entry Storage
+                </h3>
+                <p className="text-sm text-muted-foreground">
+                  Structured metadata for government files
+                </p>
+              </div>
+              <div className="space-y-2">
+                <h3 className="font-semibold flex items-center gap-2">
+                  <Database className="h-5 w-5 text-primary" />
+                  Query Engine
+                </h3>
+                <p className="text-sm text-muted-foreground">
+                  Efficient data retrieval and filtering
+                </p>
+              </div>
+              <div className="space-y-2">
+                <h3 className="font-semibold flex items-center gap-2">
+                  <Network className="h-5 w-5 text-primary" />
+                  Validator Network
+                </h3>
+                <p className="text-sm text-muted-foreground">
+                  Decentralized consensus mechanism
+                </p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+      </div>
       {/* Data Flow */}
       <Card>
         <CardHeader>
           <CardTitle>Data Flow</CardTitle>
           <CardDescription>
-            How data moves through the GovChain network
+            How data moves through the OpenGovChain network
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -392,7 +406,7 @@ export default function AboutPage() {
         <CardHeader>
           <CardTitle>Extensible Platform</CardTitle>
           <CardDescription>
-            GovChain is a base platform - agencies can extend it with additional modules
+            OpenGovChain is a base platform - agencies can extend it with additional modules
           </CardDescription>
         </CardHeader>
         <CardContent>

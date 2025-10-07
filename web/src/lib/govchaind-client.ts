@@ -6,7 +6,7 @@ import { StdFee } from '@cosmjs/stargate';
 const DEBUG = process.env.NODE_ENV === 'development';
 function debugLog(message: string, data?: any) {
   if (DEBUG) {
-    console.log(`[GovChain Client] ${message}`, data || '');
+    console.log(`[OpenGovChain Client] ${message}`, data || '');
   }
 }
 
@@ -45,7 +45,7 @@ export interface TransactionResult {
   rawLog?: string;
 }
 
-// Default configuration for GovChain
+// Default configuration for OpenGovChain
 export function getGovChainConfig(): GovChainConfig {
   return {
     chainId: process.env.CHAIN_ID || 'govchain',
@@ -75,7 +75,7 @@ export class GovChainClient {
       this.signer
     );
 
-    debugLog('GovChain client initialized', {
+    debugLog('OpenGovChain client initialized', {
       chainId: this.config.chainId,
       rpcURL: this.config.rpcURL,
       apiURL: this.config.apiURL,
@@ -174,7 +174,7 @@ export class GovChainClient {
           amount: [{ amount: '2000', denom: 'stake' }],
           gas: '200000',
         },
-        memo: memo || 'Dataset entry creation via GovChain client'
+        memo: memo || 'Dataset entry creation via OpenGovChain client'
       });
 
       debugLog('Entry creation result:', result);
@@ -328,7 +328,7 @@ export class GovChainClient {
 let govChainClient: GovChainClient | null = null;
 
 /**
- * Get or create a singleton GovChain client instance
+ * Get or create a singleton OpenGovChain client instance
  */
 export async function getGovChainClient(): Promise<GovChainClient> {
   if (!govChainClient) {

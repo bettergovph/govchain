@@ -1,4 +1,4 @@
-# GovChain: Decentralized Government Transparency Platform
+# OpenGovChain: Decentralized Government Transparency Platform
 
 [![Status](https://img.shields.io/badge/Status-Pre--launch-yellow.svg)]()
 
@@ -6,7 +6,7 @@ A base blockchain platform for government transparency - tokenless by default, e
 
 ## 🎯 Mission
 
-GovChain is a foundational blockchain platform designed to store and manage government datasets with complete transparency. Built on Cosmos SDK, it provides a base layer that agencies can extend with custom modules for tokenomics, governance, financial transactions, and other blockchain utilities based on their specific needs.
+OpenGovChain is a foundational blockchain platform designed to store and manage government datasets with complete transparency. Built on Cosmos SDK, it provides a base layer that agencies can extend with custom modules for tokenomics, governance, financial transactions, and other blockchain utilities based on their specific needs.
 
 ## 🌟 Key Features
 
@@ -31,7 +31,7 @@ GovChain is a foundational blockchain platform designed to store and manage gove
 
 ## 🏗️ Architecture
 
-GovChain combines three powerful technologies:
+OpenGovChain combines three powerful technologies:
 
 1. **Cosmos Blockchain** - Immutable registry of dataset metadata and provenance
 2. **IPFS** - Distributed file storage with content addressing
@@ -197,7 +197,7 @@ Report security issues to: volunteers@bettergov.ph
 
 ## 🔧 Extensibility
 
-GovChain is a **base platform** that agencies can extend with additional modules:
+OpenGovChain is a **base platform** that agencies can extend with additional modules:
 
 ### ✅ Native Extensions (Built-in to Cosmos SDK)
 - **Governance Module** (`x/gov`): On-chain voting, proposals, and democratic decision-making
@@ -226,7 +226,7 @@ Leverage the modular Cosmos SDK:
 - CosmWasm - Smart contract platform (integration required)
 - IBC - Inter-blockchain communication ✅
 
-## 💡 Why GovChain?
+## 💡 Why OpenGovChain?
 
 ### Traditional Government Data Portals:
 - ❌ Can be censored or taken offline
@@ -235,7 +235,7 @@ Leverage the modular Cosmos SDK:
 - ❌ Require trust in centralized operators
 - ❌ Limited to basic data storage
 
-### GovChain:
+### OpenGovChain:
 - ✅ Cannot be censored (distributed worldwide)
 - ✅ Cannot be tampered with (cryptographic verification)
 - ✅ Cannot go offline (redundant copies)
@@ -286,4 +286,4 @@ This project is open source and available under the MIT License. See LICENSE fil
 
 ---
 
-**GovChain by BetterGov.ph**: A foundational blockchain platform for government transparency - extend it to meet your needs.
+**OpenGovChain by BetterGov.ph**: A foundational blockchain platform for government transparency - extend it to meet your needs.

@@ -1,12 +1,12 @@
 #!/bin/bash
 
-# GovChain Quick Start Script
+# OpenGovChain Quick Start Script
 # Starts all services for local development
 
 set -e
 
 echo "================================"
-echo "GovChain Quick Start"
+echo "OpenGovChain Quick Start"
 echo "================================"
 echo ""
 

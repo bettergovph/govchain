@@ -26,7 +26,7 @@ export default function VolunteerPage() {
           Volunteer Node Operator Guide
         </h1>
         <p className="text-xl text-muted-foreground">
-          Help support government data transparency by running a GovChain node
+          Help support government data transparency by running a OpenGovChain node
         </p>
       </div>
 
@@ -502,7 +502,7 @@ export default function VolunteerPage() {
           </ol>
         </CardContent>
       </Card>
-      
+
     </div>
   );
 }

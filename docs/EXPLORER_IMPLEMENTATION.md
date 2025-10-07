@@ -2,7 +2,7 @@
 
 ## ✅ Completed Features
 
-A fully functional blockchain explorer has been created for your GovChain Cosmos blockchain node.
+A fully functional blockchain explorer has been created for your OpenGovChain Cosmos blockchain node.
 
 ### 📁 Files Created
 
@@ -93,7 +93,7 @@ The explorer integrates with your existing infrastructure:
 - Uses the same `BLOCKCHAIN_API` and `BLOCKCHAIN_NODE` environment variables
 - Follows the same UI patterns as other pages (Navigation, Cards, Tables)
 - Uses existing shadcn/ui components
-- Matches the GovChain branding and styling
+- Matches the OpenGovChain branding and styling
 
 ## 📊 Data Flow
 

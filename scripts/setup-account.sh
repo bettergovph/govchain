@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# GovChain Complete Account Setup
+# OpenGovChain Complete Account Setup
 # Creates account and funds it in one go
 
 set -e
@@ -13,7 +13,7 @@ BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
 echo "================================"
-echo "GovChain Complete Account Setup"
+echo "OpenGovChain Complete Account Setup"
 echo "================================"
 echo ""
 

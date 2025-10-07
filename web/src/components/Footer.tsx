@@ -18,10 +18,10 @@ export default function Footer() {
             <div className="flex items-center gap-3 mb-4">
               <img
                 src="/logo.png"
-                alt="GovChain Logo"
+                alt="OpenGovChain Logo"
                 className="rounded-lg h-12"
               />
-              <h3 className="text-lg font-bold">GovChain</h3>
+              <h3 className="text-lg font-bold">OpenGovChain</h3>
             </div>
             <p className="text-sm text-muted-foreground mb-4">
               BetterGov.ph is an open-source #civictech movement that aims to provide citizen-driven innovation by building sites and apps to promote good design, usability, accessibility, and data transparency.

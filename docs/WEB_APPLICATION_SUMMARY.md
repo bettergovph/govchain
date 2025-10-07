@@ -1,8 +1,8 @@
-# GovChain Web Application - Complete Implementation
+# OpenGovChain Web Application - Complete Implementation
 
 ## 🎉 **Successfully Created**
 
-A comprehensive Next.js web application for the GovChain dataset portal with TypeScript, shadcn/ui, and complete API integration.
+A comprehensive Next.js web application for the OpenGovChain dataset portal with TypeScript, shadcn/ui, and complete API integration.
 
 ## 📋 **Features Implemented**
 

@@ -1,13 +1,13 @@
 #!/bin/bash
 
-# GovChain Prerequisites Installation Script
+# OpenGovChain Prerequisites Installation Script
 # This script installs all required dependencies for development
 # Supports both Linux and macOS
 
 set -e
 
 echo "================================"
-echo "GovChain Prerequisites Installer"
+echo "OpenGovChain Prerequisites Installer"
 echo "================================"
 echo ""
 
