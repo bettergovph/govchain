@@ -242,7 +242,7 @@ export default function ExplorerPage() {
       </div>
 
       {/* Search Bar */}
-      <Card>
+      <Card className="bg-card">
         <CardContent className="pt-6">
           <div className="flex gap-2">
             <div className="relative flex-1">
@@ -284,8 +284,8 @@ export default function ExplorerPage() {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">
-                {stats.totalTransactions !== undefined 
-                  ? stats.totalTransactions.toLocaleString() 
+                {stats.totalTransactions !== undefined
+                  ? stats.totalTransactions.toLocaleString()
                   : '0'
                 }
               </div>

@@ -12,7 +12,7 @@ export async function GET(request: NextRequest) {
     const paginationLimit = searchParams.get('pagination.limit');
     const paginationKey = searchParams.get('pagination.key');
     const paginationReverse = searchParams.get('pagination.reverse');
-    
+
     // Handle sorting parameters
     const sortBy = searchParams.get('sortBy') || 'timestamp';
     const sortOrder = searchParams.get('sortOrder') || 'desc';
@@ -89,7 +89,7 @@ export async function GET(request: NextRequest) {
     if (sortBy !== 'timestamp' || paginationReverse !== 'true') {
       datasets = datasets.sort((a: Dataset, b: Dataset) => {
         let comparison = 0;
-        
+
         switch (sortBy) {
           case 'title':
             comparison = a.title.localeCompare(b.title);
@@ -106,7 +106,7 @@ export async function GET(request: NextRequest) {
           default:
             comparison = a.timestamp - b.timestamp;
         }
-        
+
         return sortOrder === 'asc' ? comparison : -comparison;
       });
     }

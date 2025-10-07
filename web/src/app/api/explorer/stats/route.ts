@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 
-const BLOCKCHAIN_API = process.env.BLOCKCHAIN_API || 'http://localhost:1317';
-const BLOCKCHAIN_RPC = process.env.BLOCKCHAIN_NODE || 'http://localhost:26657';
+const BLOCKCHAIN_API = process.env.BLOCKCHAIN_API || 'http://157.90.134.175:1317';
+const BLOCKCHAIN_RPC = process.env.BLOCKCHAIN_NODE || 'tcp://157.90.134.175:26657';
 
 /**
  * Get blockchain explorer statistics using entry data
@@ -23,10 +23,10 @@ export async function GET() {
       console.log('Could not fetch blockchain status:', error);
     }
 
-    // Get total entries and recent data from the entry endpoint
+    // Get total entries using minimal query to get pagination total efficiently
     try {
       const entriesResponse = await fetch(
-        `${BLOCKCHAIN_API}/govchain/datasets/v1/entry?pagination.limit=10&pagination.reverse=true`,
+        `${BLOCKCHAIN_API}/govchain/datasets/v1/entry?pagination.limit=1&pagination.reverse=true`,
         {
           cache: 'no-store', // Ensure fresh data
           headers: {
@@ -41,15 +41,33 @@ export async function GET() {
         const pagination = entriesData.pagination || {};
 
         totalEntries = parseInt(pagination.total || '0');
-        recentEntries = entries;
+        recentEntries = entries; // Will be just 1 record for efficiency
 
-        console.log(`📊 Stats API: Found ${totalEntries} total entries, ${entries.length} recent entries`);
+        console.log(`📊 Stats API: Found ${totalEntries} total entries via pagination.total`);
+        console.log(`🔍 Direct API URL: ${BLOCKCHAIN_API}/govchain/datasets/v1/entry`);
         console.log(`🔍 Pagination data:`, pagination);
-        console.log(`🔍 Sample entries:`, entries.slice(0, 2));
+
+        // Get a few more recent entries for display if we found entries
+        if (totalEntries > 0) {
+          try {
+            const recentResponse = await fetch(
+              `${BLOCKCHAIN_API}/govchain/datasets/v1/entry?pagination.limit=5&pagination.reverse=true`,
+              { cache: 'no-store' }
+            );
+            if (recentResponse.ok) {
+              const recentData = await recentResponse.json();
+              recentEntries = recentData.entry || [];
+              console.log(`🔍 Got ${recentEntries.length} recent entries for display`);
+            }
+          } catch (error) {
+            console.log('Could not fetch recent entries for display:', error);
+          }
+        }
       } else {
         console.error(`Failed to fetch entries for stats: ${entriesResponse.status} ${entriesResponse.statusText}`);
         const errorText = await entriesResponse.text();
         console.error('Error response body:', errorText);
+        console.error(`🔍 Tried URL: ${BLOCKCHAIN_API}/govchain/datasets/v1/entry`);
       }
     } catch (error) {
       console.error('Error fetching entries for stats:', error);

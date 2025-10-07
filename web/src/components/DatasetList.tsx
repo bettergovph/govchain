@@ -129,11 +129,11 @@ export default function DatasetList() {
       if (agencyFilter !== '__all__') {
         params.set('agency', agencyFilter);
       }
-      
+
       if (categoryFilter !== '__all__') {
         params.set('category', categoryFilter);
       }
-      
+
       if (filter.trim()) {
         params.set('q', filter.trim());
       }
@@ -231,9 +231,10 @@ export default function DatasetList() {
             <div className="flex flex-col md:flex-row gap-4">
               <div className="flex-1">
                 <Input
-                  placeholder="Search datasets..."
+                  placeholder="Search datasets... (coming soon)"
                   value={filter}
                   onChange={(e) => setFilter(e.target.value)}
+                  disabled
                 />
               </div>
 

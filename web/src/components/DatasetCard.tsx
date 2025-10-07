@@ -6,15 +6,15 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Separator } from '@/components/ui/separator';
-import { 
-  Download, 
-  ExternalLink, 
-  Eye, 
-  FileText, 
-  Calendar, 
-  Building, 
-  Tag, 
-  Hash, 
+import {
+  Download,
+  ExternalLink,
+  Eye,
+  FileText,
+  Calendar,
+  Building,
+  Tag,
+  Hash,
   HardDrive,
   Shield,
   Users,
@@ -57,7 +57,13 @@ export default function DatasetCard({ dataset }: DatasetCardProps) {
   };
 
   const formatDate = (timestamp: number) => {
-    return formatDistanceToNow(new Date(Number(timestamp) * 1000), { addSuffix: true }); 
+    return formatDistanceToNow(new Date(Number(timestamp) * 1000), { addSuffix: true });
+  };
+
+  const isDownloadable = (mimeType: string) => {
+    // Hide download for text/plain and other non-downloadable types
+    const nonDownloadableTypes = ['text/plain', 'application/json'];
+    return !nonDownloadableTypes.includes(mimeType);
   };
 
   const downloadFile = () => {
@@ -65,9 +71,9 @@ export default function DatasetCard({ dataset }: DatasetCardProps) {
   };
 
   const viewOnBlockchain = () => {
-    // This would link to a blockchain explorer
-    // For now, we'll just show an alert with the transaction details
-    alert(`Dataset ID: ${dataset.index}\nIPFS CID: ${dataset.ipfs_cid}\nChecksum: ${dataset.checksum_sha_256}`);
+    // Link to our blockchain explorer with the dataset index
+    // In the explorer, we can look up the transaction by entry index
+    window.open(`/explorer/tx/${dataset.tx_hash}`, '_blank');
   };
 
   return (
@@ -76,16 +82,16 @@ export default function DatasetCard({ dataset }: DatasetCardProps) {
         {/* Image Preview for image files */}
         {isImageMimeType(dataset.mime_type) && (
           <div className="aspect-video relative overflow-hidden bg-gray-100">
-            <img 
-              src={dataset.file_url} 
+            <img
+              src={dataset.file_url}
               alt={dataset.title}
               className="w-full h-full object-cover hover:scale-105 transition-transform duration-200"
-              // onError={(e) => {
-              //   const target = e.target as HTMLImageElement;
-              //   target.src = dataset.fallback_url || '/placeholder-image.png';
-              // }}
+            // onError={(e) => {
+            //   const target = e.target as HTMLImageElement;
+            //   target.src = dataset.fallback_url || '/placeholder-image.png';
+            // }}
             />
-            
+
             {/* Image overlay with type badge */}
             <div className="absolute top-2 right-2">
               <Badge variant="secondary" className="bg-black/50 text-white border-none">
@@ -93,11 +99,11 @@ export default function DatasetCard({ dataset }: DatasetCardProps) {
                 {dataset.mime_type.split('/')[1].toUpperCase()}
               </Badge>
             </div>
-            
+
             {/* Quick action overlay */}
             <div className="absolute bottom-2 right-2 opacity-0 hover:opacity-100 transition-opacity duration-200">
-              <Button 
-                size="sm" 
+              <Button
+                size="sm"
                 variant="secondary"
                 className="bg-black/50 text-white border-none hover:bg-black/70"
                 onClick={(e) => {
@@ -111,7 +117,7 @@ export default function DatasetCard({ dataset }: DatasetCardProps) {
             </div>
           </div>
         )}
-        
+
         <CardHeader className="pb-4">
           <div className="flex items-start justify-between">
             <div className="flex-1">
@@ -128,7 +134,7 @@ export default function DatasetCard({ dataset }: DatasetCardProps) {
               </div>
             )}
           </div>
-          
+
           <div className="flex flex-wrap gap-2 mt-3">
             <Badge variant="secondary" className="gap-1">
               <Building className="h-3 w-3" />
@@ -146,7 +152,7 @@ export default function DatasetCard({ dataset }: DatasetCardProps) {
             )}
           </div>
         </CardHeader>
-        
+
         <CardContent className="pt-0">
           <div className="flex items-center justify-between text-sm text-muted-foreground mb-4">
             <div className="flex items-center gap-4">
@@ -160,23 +166,26 @@ export default function DatasetCard({ dataset }: DatasetCardProps) {
               </span>
             </div>
           </div>
-          
+
           <div className="flex gap-2">
-            <Button size="sm" onClick={downloadFile} className="flex-1">
-              <Download className="h-4 w-4 mr-2" />
-              Download
-            </Button>
-            <Button 
-              size="sm" 
-              variant="outline" 
+            {isDownloadable(dataset.mime_type) && (
+              <Button size="sm" onClick={downloadFile} className="flex-1">
+                <Download className="h-4 w-4 mr-2" />
+                Download
+              </Button>
+            )}
+            <Button
+              size="sm"
+              variant="outline"
               onClick={() => setShowDetails(true)}
+              className={isDownloadable(dataset.mime_type) ? '' : 'flex-1'}
             >
               <Eye className="h-4 w-4 mr-2" />
               Details
             </Button>
-            <Button 
-              size="sm" 
-              variant="outline" 
+            <Button
+              size="sm"
+              variant="outline"
               onClick={viewOnBlockchain}
             >
               <ExternalLink className="h-4 w-4" />
@@ -187,7 +196,7 @@ export default function DatasetCard({ dataset }: DatasetCardProps) {
 
       {/* Details Dialog */}
       <Dialog open={showDetails} onOpenChange={setShowDetails}>
-        <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               {getFileIcon(dataset.mime_type)}
@@ -197,7 +206,7 @@ export default function DatasetCard({ dataset }: DatasetCardProps) {
               Complete dataset information and metadata
             </DialogDescription>
           </DialogHeader>
-          
+
           <div className="space-y-6">
             {/* Basic Information */}
             <div>
@@ -284,8 +293,8 @@ export default function DatasetCard({ dataset }: DatasetCardProps) {
                     <code className="flex-1 text-xs bg-muted p-2 rounded break-all">
                       {dataset.file_url}
                     </code>
-                    <Button 
-                      size="sm" 
+                    <Button
+                      size="sm"
                       variant="outline"
                       onClick={() => window.open(dataset.file_url, '_blank')}
                     >
@@ -293,7 +302,7 @@ export default function DatasetCard({ dataset }: DatasetCardProps) {
                     </Button>
                   </div>
                 </div>
-                
+
                 {dataset.fallback_url && (
                   <div>
                     <label className="text-sm font-medium">Fallback:</label>
@@ -301,8 +310,8 @@ export default function DatasetCard({ dataset }: DatasetCardProps) {
                       <code className="flex-1 text-xs bg-muted p-2 rounded break-all">
                         {dataset.fallback_url}
                       </code>
-                      <Button 
-                        size="sm" 
+                      <Button
+                        size="sm"
                         variant="outline"
                         onClick={() => window.open(dataset.fallback_url, '_blank')}
                       >
@@ -316,11 +325,17 @@ export default function DatasetCard({ dataset }: DatasetCardProps) {
 
             {/* Action Buttons */}
             <div className="flex gap-2 pt-4">
-              <Button onClick={downloadFile} className="flex-1">
-                <Download className="h-4 w-4 mr-2" />
-                Download File
-              </Button>
-              <Button variant="outline" onClick={viewOnBlockchain}>
+              {isDownloadable(dataset.mime_type) && (
+                <Button onClick={downloadFile} className="flex-1">
+                  <Download className="h-4 w-4 mr-2" />
+                  Download File
+                </Button>
+              )}
+              <Button
+                variant="outline"
+                onClick={viewOnBlockchain}
+                className={isDownloadable(dataset.mime_type) ? '' : 'flex-1'}
+              >
                 <Hash className="h-4 w-4 mr-2" />
                 View on Chain
               </Button>

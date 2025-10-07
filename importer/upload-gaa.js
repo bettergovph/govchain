@@ -265,12 +265,12 @@ async function processLargeJSONFile(filePath, submitter, sessionId, startFromInd
       if (isProcessingQueue || recordQueue.length === 0) {
         return;
       }
-      
+
       isProcessingQueue = true;
-      
+
       while (recordQueue.length > 0) {
         const { record, index } = recordQueue.shift();
-        
+
         // Skip records before startFromIndex
         if (index < startFromIndex) {
           continue;
@@ -300,15 +300,15 @@ async function processLargeJSONFile(filePath, submitter, sessionId, startFromInd
 
           // Continue processing other records instead of stopping
           log('⚠️  Continuing with next record...', 'yellow');
-          
+
           // Also apply delay after errors to prevent rapid retries
           log(`⏱️  Waiting ${TRANSACTION_DELAY} seconds before next transaction...`, 'blue');
           await new Promise(resolve => setTimeout(resolve, TRANSACTION_DELAY * 1000));
         }
       }
-      
+
       isProcessingQueue = false;
-      
+
       // Check if stream ended and queue is empty
       if (streamEnded && recordQueue.length === 0) {
         resolve({ results, successCount, failCount, processedCount, startFromIndex });
@@ -397,7 +397,7 @@ function getAccountSequence(account) {
       // If sequence is not present, it means it's 0 (new account)
       sequence = 0;
     }
-    
+
     log(`📋 Current account sequence for ${account} (${address}): ${sequence}`, 'blue');
     return sequence;
   } catch (error) {
