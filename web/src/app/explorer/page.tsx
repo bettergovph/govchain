@@ -36,10 +36,23 @@ interface BlockchainStats {
   totalTransactions: number;
   chainId: string;
   validators: number;
+  totalValidators: number;
+  peerCount: number;
   blockTime: number;
   source?: string;
   uniqueAgencies?: number;
   uniqueCategories?: number;
+  validatorDetails?: ValidatorInfo[];
+}
+
+interface ValidatorInfo {
+  id: string;
+  moniker: string;
+  network: string;
+  version: string;
+  remote_ip: string;
+  is_outbound: boolean;
+  connection_status: any;
 }
 
 interface Transaction {
@@ -322,10 +335,11 @@ export default function ExplorerPage() {
 
       {/* Tabs for Transactions and Blocks */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="grid grid-cols-3 w-full max-w-md">
+        <TabsList className="grid grid-cols-4 w-full max-w-2xl">
           <TabsTrigger value="overview">Overview</TabsTrigger>
           <TabsTrigger value="transactions">Transactions</TabsTrigger>
           <TabsTrigger value="blocks">Blocks</TabsTrigger>
+          <TabsTrigger value="validators">Validators</TabsTrigger>
         </TabsList>
 
         <TabsContent value="overview" className="mt-6">
@@ -599,6 +613,145 @@ export default function ExplorerPage() {
                     </Button>
                   </div>
                 </>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="validators" className="mt-6">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Users className="h-5 w-5" />
+                Network Validators
+              </CardTitle>
+              <CardDescription>
+                Active validators and network peers securing the blockchain
+                {stats && (
+                  <span className="block mt-1 text-sm">
+                    Total: {stats.totalValidators} validators • {stats.peerCount} connected peers
+                  </span>
+                )}
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              {stats?.validatorDetails && stats.validatorDetails.length > 0 ? (
+                <div className="rounded-md border">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Status</TableHead>
+                        <TableHead>Validator</TableHead>
+                        <TableHead>Node ID</TableHead>
+                        <TableHead>Network</TableHead>
+                        <TableHead>Version</TableHead>
+                        <TableHead>Connection</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {stats.validatorDetails.map((validator, index) => (
+                        <TableRow key={validator.id}>
+                          <TableCell>
+                            {validator.id === 'local-validator' ? (
+                              <div className="flex items-center gap-2">
+                                <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                                <Badge variant="default" className="bg-green-100 text-green-800 hover:bg-green-100">
+                                  Primary
+                                </Badge>
+                              </div>
+                            ) : (
+                              <div className="flex items-center gap-2">
+                                <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                                <Badge variant="secondary">
+                                  Peer
+                                </Badge>
+                              </div>
+                            )}
+                          </TableCell>
+                          <TableCell>
+                            <div>
+                              <div className="font-medium">{validator.moniker}</div>
+                              <div className="text-xs text-muted-foreground">
+                                {validator.remote_ip}
+                              </div>
+                            </div>
+                          </TableCell>
+                          <TableCell className="font-mono text-sm">
+                            {truncateHash(validator.id, 8)}
+                          </TableCell>
+                          <TableCell>
+                            <Badge variant="outline">{validator.network}</Badge>
+                          </TableCell>
+                          <TableCell className="text-sm">
+                            {validator.version}
+                          </TableCell>
+                          <TableCell>
+                            <div className="text-xs text-muted-foreground">
+                              {validator.id === 'local-validator' ? (
+                                'Self'
+                              ) : validator.is_outbound ? (
+                                'Outbound'
+                              ) : (
+                                'Inbound'
+                              )}
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+              ) : (
+                <div className="text-center py-8">
+                  <Users className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                  <div className="text-muted-foreground">
+                    No validator information available
+                  </div>
+                  <div className="text-xs text-muted-foreground mt-2">
+                    Network data is fetched from /net_info endpoint
+                  </div>
+                </div>
+              )}
+
+              {/* Validator Statistics */}
+              {stats && (
+                <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <Card>
+                    <CardContent className="pt-4">
+                      <div className="flex items-center gap-2">
+                        <CheckCircle2 className="h-4 w-4 text-green-500" />
+                        <div>
+                          <div className="text-2xl font-bold">{stats.totalValidators}</div>
+                          <div className="text-xs text-muted-foreground">Total Validators</div>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  <Card>
+                    <CardContent className="pt-4">
+                      <div className="flex items-center gap-2">
+                        <Activity className="h-4 w-4 text-blue-500" />
+                        <div>
+                          <div className="text-2xl font-bold">{stats.peerCount}</div>
+                          <div className="text-xs text-muted-foreground">Connected Peers</div>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  <Card>
+                    <CardContent className="pt-4">
+                      <div className="flex items-center gap-2">
+                        <Clock className="h-4 w-4 text-orange-500" />
+                        <div>
+                          <div className="text-2xl font-bold">~{stats.blockTime}s</div>
+                          <div className="text-xs text-muted-foreground">Block Time</div>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
               )}
             </CardContent>
           </Card>
