@@ -79,35 +79,35 @@ export default function VolunteerPage() {
 
       {/* Node Types */}
       <div className="space-y-4">
-        <h2 className="text-2xl font-bold">Node Types</h2>
+        <h2 className="text-2xl font-bold">Ways to Help</h2>
         <div className="grid gap-4 md:grid-cols-3">
           <Card>
             <CardHeader>
               <Server className="h-8 w-8 text-primary mb-2" />
-              <CardTitle>Validator Node</CardTitle>
+              <CardTitle>Basic Node</CardTitle>
               <CardDescription>
-                Validate transactions and produce blocks
+                Sync and relay transactions
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-3">
               <div>
                 <div className="text-sm font-semibold mb-1">Requirements</div>
                 <ul className="text-sm text-muted-foreground space-y-1">
-                  <li>• 4-8 CPU cores</li>
-                  <li>• 16-32 GB RAM</li>
-                  <li>• 200 GB SSD</li>
+                  <li>• 2 CPU cores</li>
+                  <li>• 4 GB RAM</li>
+                  <li>• 50 GB storage</li>
                 </ul>
               </div>
               <div>
                 <div className="text-sm font-semibold mb-1">Cost</div>
                 <p className="text-sm text-muted-foreground">
-                  $20-40/month (VPS)
+                  $5-10/month (VPS)
                 </p>
               </div>
               <div>
                 <div className="text-sm font-semibold mb-1">Commitment</div>
-                <Badge variant="destructive">
-                  High uptime required (&gt;99%)
+                <Badge variant="secondary">
+                  Low (can run part-time)
                 </Badge>
               </div>
             </CardContent>
@@ -116,25 +116,25 @@ export default function VolunteerPage() {
           <Card>
             <CardHeader>
               <HardDrive className="h-8 w-8 text-primary mb-2" />
-              <CardTitle>IPFS Pinner Node</CardTitle>
-              <CardDescription>Store and serve dataset files</CardDescription>
+              <CardTitle>Data Pinner</CardTitle>
+              <CardDescription>Help preserve government datasets</CardDescription>
             </CardHeader>
             <CardContent className="space-y-3">
               <div>
                 <div className="text-sm font-semibold mb-1">Requirements</div>
                 <ul className="text-sm text-muted-foreground space-y-1">
-                  <li>• 2+ CPU cores</li>
-                  <li>• 8 GB RAM</li>
-                  <li>• 1-10 TB HDD</li>
+                  <li>• 1 CPU core</li>
+                  <li>• 2 GB RAM</li>
+                  <li>• 100+ GB storage</li>
                 </ul>
               </div>
               <div>
                 <div className="text-sm font-semibold mb-1">Cost</div>
-                <p className="text-sm text-muted-foreground">$5-20/month</p>
+                <p className="text-sm text-muted-foreground">$3-8/month</p>
               </div>
               <div>
                 <div className="text-sm font-semibold mb-1">Commitment</div>
-                <Badge>Moderate (can go offline temporarily)</Badge>
+                <Badge>Very Low (hobby-friendly)</Badge>
               </div>
             </CardContent>
           </Card>
@@ -143,24 +143,24 @@ export default function VolunteerPage() {
             <CardHeader>
               <Database className="h-8 w-8 text-primary mb-2" />
               <CardTitle>Archive Node</CardTitle>
-              <CardDescription>Provide full blockchain history</CardDescription>
+              <CardDescription>Store complete blockchain history</CardDescription>
             </CardHeader>
             <CardContent className="space-y-3">
               <div>
                 <div className="text-sm font-semibold mb-1">Requirements</div>
                 <ul className="text-sm text-muted-foreground space-y-1">
-                  <li>• 4 CPU cores</li>
-                  <li>• 16 GB RAM</li>
-                  <li>• 500 GB SSD</li>
+                  <li>• 2 CPU cores</li>
+                  <li>• 8 GB RAM</li>
+                  <li>• 200 GB storage</li>
                 </ul>
               </div>
               <div>
                 <div className="text-sm font-semibold mb-1">Cost</div>
-                <p className="text-sm text-muted-foreground">$30-50/month</p>
+                <p className="text-sm text-muted-foreground">$10-20/month</p>
               </div>
               <div>
                 <div className="text-sm font-semibold mb-1">Commitment</div>
-                <Badge variant="secondary">High availability recommended</Badge>
+                <Badge variant="secondary">Moderate availability</Badge>
               </div>
             </CardContent>
           </Card>
@@ -173,48 +173,53 @@ export default function VolunteerPage() {
           <CardTitle>System Requirements</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid gap-6 md:grid-cols-2">
-            <div>
-              <h3 className="font-semibold mb-3">Minimum</h3>
-              <ul className="space-y-2">
-                <li className="flex items-start gap-2 text-sm text-muted-foreground">
-                  <CheckCircle2 className="h-4 w-4 text-green-500 mt-0.5 flex-shrink-0" />
-                  Ubuntu 20.04+ / Debian 11+ / macOS
-                </li>
-                <li className="flex items-start gap-2 text-sm text-muted-foreground">
-                  <CheckCircle2 className="h-4 w-4 text-green-500 mt-0.5 flex-shrink-0" />
-                  4 GB RAM
-                </li>
-                <li className="flex items-start gap-2 text-sm text-muted-foreground">
-                  <CheckCircle2 className="h-4 w-4 text-green-500 mt-0.5 flex-shrink-0" />
-                  100 GB free disk space
-                </li>
-                <li className="flex items-start gap-2 text-sm text-muted-foreground">
-                  <CheckCircle2 className="h-4 w-4 text-green-500 mt-0.5 flex-shrink-0" />
-                  10 Mbps internet connection
-                </li>
-              </ul>
-            </div>
-            <div>
-              <h3 className="font-semibold mb-3">Recommended</h3>
-              <ul className="space-y-2">
-                <li className="flex items-start gap-2 text-sm text-muted-foreground">
-                  <CheckCircle2 className="h-4 w-4 text-green-500 mt-0.5 flex-shrink-0" />
-                  Ubuntu 22.04 LTS
-                </li>
-                <li className="flex items-start gap-2 text-sm text-muted-foreground">
-                  <CheckCircle2 className="h-4 w-4 text-green-500 mt-0.5 flex-shrink-0" />
-                  8 GB RAM
-                </li>
-                <li className="flex items-start gap-2 text-sm text-muted-foreground">
-                  <CheckCircle2 className="h-4 w-4 text-green-500 mt-0.5 flex-shrink-0" />
-                  500 GB SSD
-                </li>
-                <li className="flex items-start gap-2 text-sm text-muted-foreground">
-                  <CheckCircle2 className="h-4 w-4 text-green-500 mt-0.5 flex-shrink-0" />
-                  100 Mbps internet connection
-                </li>
-              </ul>
+          <div className="space-y-4">
+            <p className="text-muted-foreground">
+              Most modern computers can run a basic node! Even a Raspberry Pi 4 works for simple setups.
+            </p>
+            <div className="grid gap-6 md:grid-cols-2">
+              <div>
+                <h3 className="font-semibold mb-3">Basic Setup</h3>
+                <ul className="space-y-2">
+                  <li className="flex items-start gap-2 text-sm text-muted-foreground">
+                    <CheckCircle2 className="h-4 w-4 text-green-500 mt-0.5 flex-shrink-0" />
+                    Any modern OS (Linux/macOS/Windows)
+                  </li>
+                  <li className="flex items-start gap-2 text-sm text-muted-foreground">
+                    <CheckCircle2 className="h-4 w-4 text-green-500 mt-0.5 flex-shrink-0" />
+                    2 GB RAM
+                  </li>
+                  <li className="flex items-start gap-2 text-sm text-muted-foreground">
+                    <CheckCircle2 className="h-4 w-4 text-green-500 mt-0.5 flex-shrink-0" />
+                    20 GB free space
+                  </li>
+                  <li className="flex items-start gap-2 text-sm text-muted-foreground">
+                    <CheckCircle2 className="h-4 w-4 text-green-500 mt-0.5 flex-shrink-0" />
+                    Basic internet (5+ Mbps)
+                  </li>
+                </ul>
+              </div>
+              <div>
+                <h3 className="font-semibold mb-3">Better Performance</h3>
+                <ul className="space-y-2">
+                  <li className="flex items-start gap-2 text-sm text-muted-foreground">
+                    <CheckCircle2 className="h-4 w-4 text-green-500 mt-0.5 flex-shrink-0" />
+                    Ubuntu/Debian (easier setup)
+                  </li>
+                  <li className="flex items-start gap-2 text-sm text-muted-foreground">
+                    <CheckCircle2 className="h-4 w-4 text-green-500 mt-0.5 flex-shrink-0" />
+                    4 GB RAM
+                  </li>
+                  <li className="flex items-start gap-2 text-sm text-muted-foreground">
+                    <CheckCircle2 className="h-4 w-4 text-green-500 mt-0.5 flex-shrink-0" />
+                    100 GB SSD
+                  </li>
+                  <li className="flex items-start gap-2 text-sm text-muted-foreground">
+                    <CheckCircle2 className="h-4 w-4 text-green-500 mt-0.5 flex-shrink-0" />
+                    Stable internet connection
+                  </li>
+                </ul>
+              </div>
             </div>
           </div>
         </CardContent>
