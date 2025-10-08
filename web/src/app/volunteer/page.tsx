@@ -251,6 +251,12 @@ export default function VolunteerPage() {
                   <div>
                     sudo tar -C /usr/local -xzf go1.21.6.linux-amd64.tar.gz
                   </div>
+                  <div className="mt-2 text-muted-foreground">
+                    # Install Ignite CLI
+                  </div>
+                  <div>
+                    curl https://get.ignite.com/cli | bash
+                  </div>
                 </div>
               </div>
             </div>
