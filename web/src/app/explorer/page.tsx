@@ -186,10 +186,8 @@ export default function ExplorerPage() {
         console.error('Error searching block:', error);
       }
     } else {
-      // It's a hash, search for transaction
-      setActiveTab('transactions');
-      // In a real implementation, you'd have a specific endpoint for this
-      alert('Transaction hash search coming soon!');
+      // It's a hash, redirect to transaction detail page
+      window.location.href = `/explorer/tx/${searchQuery.trim()}`;
     }
   };
 
@@ -454,87 +452,79 @@ export default function ExplorerPage() {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              {loading ? (
-                <div className="text-center py-8 text-muted-foreground">Loading...</div>
-              ) : transactions.length === 0 ? (
-                <div className="text-center py-8 text-muted-foreground">No transactions found</div>
-              ) : (
-                <>
-                  <div className="rounded-md border">
-                    <Table>
-                      <TableHeader>
-                        <TableRow>
-                          <TableHead>Status</TableHead>
-                          <TableHead>Tx Hash / Entry</TableHead>
-                          <TableHead>Block</TableHead>
-                          <TableHead>Type</TableHead>
-                          <TableHead>Agency</TableHead>
-                          <TableHead>Time</TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {transactions.map((tx) => (
-                          <TableRow key={tx.txhash} className="cursor-pointer hover:bg-accent">
-                            <TableCell>
-                              {tx.code === 0 ? (
-                                <CheckCircle2 className="h-4 w-4 text-green-500" />
-                              ) : (
-                                <XCircle className="h-4 w-4 text-red-500" />
-                              )}
-                            </TableCell>
-                            <TableCell className="font-mono text-sm">
-                              <Link
-                                href={`/explorer/tx/${tx.txhash}`}
-                                className="text-primary hover:underline"
-                              >
-                                {truncateHash(tx.txhash)}
-                              </Link>
-                            </TableCell>
-                            <TableCell>#{tx.height}</TableCell>
-                            <TableCell>
-                              <Badge variant="outline">
-                                {tx.tx?.body?.messages?.[0]
-                                  ? getMessageType(tx.tx.body.messages[0])
-                                  : 'Unknown'}
-                              </Badge>
-                            </TableCell>
-                            <TableCell>{parseInt(tx.gas_used || '0').toLocaleString()}</TableCell>
-                            <TableCell className="text-xs text-muted-foreground">
-                              {tx.timestamp
-                                ? formatDistanceToNow(new Date(tx.timestamp), {
-                                  addSuffix: true,
-                                })
-                                : 'N/A'}
-                            </TableCell>
-                          </TableRow>
-                        ))}
-                      </TableBody>
-                    </Table>
-                  </div>
+              <div className="rounded-md border">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Status</TableHead>
+                      <TableHead>Tx Hash / Entry</TableHead>
+                      <TableHead>Block</TableHead>
+                      <TableHead>Type</TableHead>
+                      <TableHead>Agency</TableHead>
+                      <TableHead>Time</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {transactions.map((tx) => (
+                      <TableRow key={tx.txhash} className="cursor-pointer hover:bg-accent">
+                        <TableCell>
+                          {tx.code === 0 ? (
+                            <CheckCircle2 className="h-4 w-4 text-green-500" />
+                          ) : (
+                            <XCircle className="h-4 w-4 text-red-500" />
+                          )}
+                        </TableCell>
+                        <TableCell className="font-mono text-sm">
+                          <Link
+                            href={`/explorer/tx/${tx.txhash}`}
+                            className="text-primary hover:underline"
+                          >
+                            {truncateHash(tx.txhash)}
+                          </Link>
+                        </TableCell>
+                        <TableCell>#{tx.height}</TableCell>
+                        <TableCell>
+                          <Badge variant="outline">
+                            {tx.tx?.body?.messages?.[0]
+                              ? getMessageType(tx.tx.body.messages[0])
+                              : 'Unknown'}
+                          </Badge>
+                        </TableCell>
+                        <TableCell>{parseInt(tx.gas_used || '0').toLocaleString()}</TableCell>
+                        <TableCell className="text-xs text-muted-foreground">
+                          {tx.timestamp
+                            ? formatDistanceToNow(new Date(tx.timestamp), {
+                              addSuffix: true,
+                            })
+                            : 'N/A'}
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
 
-                  {/* Pagination */}
-                  <div className="flex items-center justify-between mt-4">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-                      disabled={currentPage === 1}
-                    >
-                      <ChevronLeft className="h-4 w-4 mr-2" />
-                      Previous
-                    </Button>
-                    <span className="text-sm text-muted-foreground">Page {currentPage}</span>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => setCurrentPage((p) => p + 1)}
-                    >
-                      Next
-                      <ChevronRight className="h-4 w-4 ml-2" />
-                    </Button>
-                  </div>
-                </>
-              )}
+              {/* Pagination */}
+              <div className="flex items-center justify-between mt-4">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                  disabled={currentPage === 1}
+                >
+                  <ChevronLeft className="h-4 w-4 mr-2" />
+                  Previous
+                </Button>
+                <span className="text-sm text-muted-foreground">Page {currentPage}</span>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setCurrentPage((p) => p + 1)}
+                >
+                  Next
+                  <ChevronRight className="h-4 w-4 ml-2" />
+                </Button>
+              </div>
             </CardContent>
           </Card>
         </TabsContent>
@@ -546,74 +536,67 @@ export default function ExplorerPage() {
               <CardDescription>All blocks on the blockchain</CardDescription>
             </CardHeader>
             <CardContent>
-              {loading ? (
-                <div className="text-center py-8 text-muted-foreground">Loading...</div>
-              ) : blocks.length === 0 ? (
-                <div className="text-center py-8 text-muted-foreground">No blocks found</div>
-              ) : (
-                <>
-                  <div className="rounded-md border">
-                    <Table>
-                      <TableHeader>
-                        <TableRow>
-                          <TableHead>Height</TableHead>
-                          <TableHead>Block Hash</TableHead>
-                          <TableHead>Transactions</TableHead>
-                          <TableHead>Proposer</TableHead>
-                          <TableHead>Time</TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {blocks.map((block) => (
-                          <TableRow key={block.block.header.height}>
-                            <TableCell className="font-semibold">
-                              #{block.block.header.height}
-                            </TableCell>
-                            <TableCell className="font-mono text-sm">
-                              {truncateHash(block.block_id.hash)}
-                            </TableCell>
-                            <TableCell>
-                              <Badge variant="secondary">
-                                {block.block.data.txs?.length || 0} txs
-                              </Badge>
-                            </TableCell>
-                            <TableCell className="font-mono text-xs">
-                              {truncateHash(block.block.header.proposer_address, 6)}
-                            </TableCell>
-                            <TableCell className="text-xs text-muted-foreground">
-                              {formatDistanceToNow(new Date(block.block.header.time), {
-                                addSuffix: true,
-                              })}
-                            </TableCell>
-                          </TableRow>
-                        ))}
-                      </TableBody>
-                    </Table>
-                  </div>
 
-                  {/* Pagination */}
-                  <div className="flex items-center justify-between mt-4">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-                      disabled={currentPage === 1}
-                    >
-                      <ChevronLeft className="h-4 w-4 mr-2" />
-                      Previous
-                    </Button>
-                    <span className="text-sm text-muted-foreground">Page {currentPage}</span>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => setCurrentPage((p) => p + 1)}
-                    >
-                      Next
-                      <ChevronRight className="h-4 w-4 ml-2" />
-                    </Button>
-                  </div>
-                </>
-              )}
+              <div className="rounded-md border">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Height</TableHead>
+                      <TableHead>Block Hash</TableHead>
+                      <TableHead>Transactions</TableHead>
+                      <TableHead>Proposer</TableHead>
+                      <TableHead>Time</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {blocks.map((block) => (
+                      <TableRow key={block.block.header.height}>
+                        <TableCell className="font-semibold">
+                          #{block.block.header.height}
+                        </TableCell>
+                        <TableCell className="font-mono text-sm">
+                          {truncateHash(block.block_id.hash)}
+                        </TableCell>
+                        <TableCell>
+                          <Badge variant="secondary">
+                            {block.block.data.txs?.length || 0} txs
+                          </Badge>
+                        </TableCell>
+                        <TableCell className="font-mono text-xs">
+                          {truncateHash(block.block.header.proposer_address, 6)}
+                        </TableCell>
+                        <TableCell className="text-xs text-muted-foreground">
+                          {formatDistanceToNow(new Date(block.block.header.time), {
+                            addSuffix: true,
+                          })}
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+
+              {/* Pagination */}
+              <div className="flex items-center justify-between mt-4">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                  disabled={currentPage === 1}
+                >
+                  <ChevronLeft className="h-4 w-4 mr-2" />
+                  Previous
+                </Button>
+                <span className="text-sm text-muted-foreground">Page {currentPage}</span>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setCurrentPage((p) => p + 1)}
+                >
+                  Next
+                  <ChevronRight className="h-4 w-4 ml-2" />
+                </Button>
+              </div>
             </CardContent>
           </Card>
         </TabsContent>
