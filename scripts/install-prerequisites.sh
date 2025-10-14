@@ -37,7 +37,7 @@ if [ "$MACHINE" = "Linux" ]; then
     case "$OS_NAME" in
         fedora)
             echo "🐧 Fedora detected!"
-            echo "sudo dnf upgrade (change me into a command bitch)"
+            sudo dnf upgrade
             ;;
         *)
             echo "⚠️  Unknown Linux distribution: $OS_NAME"
