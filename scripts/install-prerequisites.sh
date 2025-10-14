@@ -13,6 +13,7 @@ echo ""
 
 # Detect operating system
 OS="$(uname -s)"
+OS_NAME=$(grep "^ID=" /etc/os-release | cut -d'=' -f2)
 case "${OS}" in
     Linux*)     MACHINE=Linux;;
     Darwin*)    MACHINE=Mac;;
@@ -32,8 +33,18 @@ fi
 
 # Update system packages based on OS
 if [ "$MACHINE" = "Linux" ]; then
-    echo "📦 Updating system packages (Linux)..."
-    sudo apt update
+    echo "📦 Updating system packages for Linux distro: $OS_NAME"
+    case "$OS_NAME" in
+        fedora)
+            echo "🐧 Fedora detected!"
+            sudo dnf upgrade
+            ;;
+        *)
+            echo "⚠️  Unknown Linux distribution: $OS_NAME"
+            echo "📦 Updating system packages (Linux)..."
+            sudo apt update
+            ;;
+    esac
 elif [ "$MACHINE" = "Mac" ]; then
     echo "📦 Checking for Homebrew (macOS)..."
     if ! command -v brew &> /dev/null; then
@@ -66,15 +77,25 @@ fi
 if ! command -v curl &> /dev/null; then
     echo "📦 Installing curl..."
     if [ "$MACHINE" = "Linux" ]; then
-        sudo apt install -y curl || {
-            echo "⚠️  curl installation failed, trying alternative method..."
-            sudo apt remove -y curl 2>/dev/null
-            sudo apt install -y curl
-        }
+        case "$OS_NAME" in
+            fedora)
+                sudo dnf install -y curl
+                ;;
+            *)
+                sudo apt install -y curl || {
+                    echo "⚠️  curl installation failed, trying alternative method..."
+                    sudo apt remove -y curl 2>/dev/null
+                    sudo apt install -y curl
+                }
+                ;;
+        esac
+
     elif [ "$MACHINE" = "Mac" ]; then
         # curl is usually pre-installed on macOS, but if missing:
         brew install curl
     fi
+else
+    echo "✅ Curl already installed: $(curl --version)"
 fi
 
 # Install build tools if needed
@@ -89,6 +110,8 @@ if ! command -v gcc &> /dev/null; then
         # Install Xcode command line tools
         xcode-select --install 2>/dev/null || echo "✅ Xcode command line tools already installed"
     fi
+else
+    echo "✅ gcc already installed: $(gcc --version)"
 fi
 
 # Install Go 1.24+
@@ -152,14 +175,30 @@ fi
 # Install IPFS Kubo
 echo "🔧 Installing IPFS Kubo..."
 IPFS_VERSION="v0.24.0"
+KUBO_TAR="kubo_${IPFS_VERSION}_linux-amd64.tar.gz"
+KUBO_URL="https://dist.ipfs.tech/kubo/${IPFS_VERSION}/${KUBO_TAR}"
 if ! command -v ipfs &> /dev/null; then
     if [ "$MACHINE" = "Linux" ]; then
-        wget https://dist.ipfs.tech/kubo/${IPFS_VERSION}/kubo_${IPFS_VERSION}_linux-amd64.tar.gz
+        echo "📥 Downloading Kubo from: $KUBO_URL"
+        # Clean up old files first (in-case it failed)
+        rm -f "$KUBO_TAR"
+        wget "$KUBO_URL"
+
+        # Verify it downloaded correctly
+        if ! tar -tzf "$KUBO_TAR" &>/dev/null; then
+            echo "❌ Download failed or file corrupted. Retrying... (using Curl)"
+            rm -f "$KUBO_TAR"
+            curl -L -o "$KUBO_TAR" "$KUBO_URL"
+        fi
+
+        echo "📦 Extracting..."
         tar -xvzf kubo_${IPFS_VERSION}_linux-amd64.tar.gz
+
         cd kubo
         sudo bash install.sh
         cd ..
-        rm -rf kubo kubo_${IPFS_VERSION}_linux-amd64.tar.gz
+
+        rm -rf kubo "${KUBO_TAR}"
     elif [ "$MACHINE" = "Mac" ]; then
         # Detect architecture for macOS
         ARCH=$(uname -m)
@@ -168,13 +207,17 @@ if ! command -v ipfs &> /dev/null; then
         else
             IPFS_ARCH="darwin-amd64"
         fi
-        
-        curl -O https://dist.ipfs.tech/kubo/${IPFS_VERSION}/kubo_${IPFS_VERSION}_${IPFS_ARCH}.tar.gz
-        tar -xvzf kubo_${IPFS_VERSION}_${IPFS_ARCH}.tar.gz
+
+        KUBO_TAR="kubo_${IPFS_VERSION}_${IPFS_ARCH}.tar.gz"
+        KUBO_URL="https://dist.ipfs.tech/kubo/${IPFS_VERSION}/${KUBO_TAR}"
+
+        echo "📥 Downloading Kubo from: $KUBO_URL"
+        curl -O "$KUBO_URL"
+        tar -xvzf "$KUBO_TAR"
         cd kubo
         sudo bash install.sh
         cd ..
-        rm -rf kubo kubo_${IPFS_VERSION}_${IPFS_ARCH}.tar.gz
+        rm -rf kubo "$KUBO_TAR"
     fi
     echo "✅ IPFS installed: $(ipfs version)"
 else
@@ -196,8 +239,9 @@ if ! command -v docker &> /dev/null; then
         echo "   You can also install via Homebrew:"
         echo "   brew install --cask docker"
     fi
-else
     echo "✅ Docker installed: $(docker --version)"
+else
+    echo "✅ Docker already installed: $(docker --version)"
 fi
 
 # Check Docker Compose
