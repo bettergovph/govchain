@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -8,6 +8,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { Separator } from '@/components/ui/separator';
 import {
   Download,
+  DollarSign,
   ExternalLink,
   Eye,
   FileText,
@@ -15,6 +16,9 @@ import {
   Building,
   Tag,
   Hash,
+  Code,
+  ListOrdered,
+  Layers,
   HardDrive,
   Shield,
   Users,
@@ -24,6 +28,8 @@ import {
 } from 'lucide-react';
 import { Dataset, MIME_TYPE_PREVIEWS, PreviewType, isImageMimeType } from '@/types/dataset';
 import { formatDistanceToNow } from 'date-fns';
+import { tryParseData } from '@/lib/utils';
+import { FinancialSummaryCard, HierarchicalCard, DetailListCard } from './DescriptionShaper';
 
 interface DatasetCardProps {
   dataset: Dataset;
@@ -31,6 +37,15 @@ interface DatasetCardProps {
 
 export default function DatasetCard({ dataset }: DatasetCardProps) {
   const [showDetails, setShowDetails] = useState(false);
+  const [viewMode, setViewMode] = useState('financial');
+
+  const parsedData = useMemo(() => tryParseData(dataset.description), [dataset.description,]);
+  const modes = [
+    { id: 'financial', label: 'Financial', Icon: DollarSign },
+    { id: 'hierarchical', label: 'Hierarchy', Icon: Layers },
+    { id: 'detailed', label: 'Details', Icon: ListOrdered },
+    { id: 'raw', label: 'Raw', Icon: Code },
+  ];
 
   const getPreviewType = (mimeType: string): PreviewType => {
     return MIME_TYPE_PREVIEWS[mimeType as keyof typeof MIME_TYPE_PREVIEWS] || 'unknown';
@@ -74,6 +89,38 @@ export default function DatasetCard({ dataset }: DatasetCardProps) {
     // Link to our blockchain explorer with the dataset index
     // In the explorer, we can look up the transaction by entry index
     window.open(`/explorer/tx/${dataset.tx_hash}`, '_blank');
+  };
+
+  const renderActiveView = () => {
+    // Only render cards if the data was successfully parsed
+    if (parsedData) {
+      switch (viewMode) {
+        case 'financial':
+          return <FinancialSummaryCard data={parsedData} />;
+        case 'hierarchical':
+          return <HierarchicalCard data={parsedData} />;
+        case 'detailed':
+          return <DetailListCard data={parsedData} />;
+        case 'raw':
+          // Display the raw JSON string with wrapping enabled
+          return (
+            <pre className="p-4 w-full bg-gray-50 dark:bg-gray-700/50 rounded-lg whitespace-pre-wrap text-sm font-mono text-gray-800 dark:text-gray-200">
+              {dataset.description}
+            </pre>
+          );
+        default:
+          return null;
+      }
+    }
+    // Fallback for plain text description (when parsedData is null)
+    return (
+      <div className='mb-4'>
+        <span className='font-medium block mb-1 text-sm'>Description:</span>
+        <p className='text-sm text-gray-700 dark:text-gray-300 whitespace-pre-line border-l-4 border-blue-500 pl-3 py-1 bg-blue-50 dark:bg-blue-900/20 rounded'>
+          {dataset.description}
+        </p>
+      </div>
+    );
   };
 
   return (
@@ -196,7 +243,7 @@ export default function DatasetCard({ dataset }: DatasetCardProps) {
 
       {/* Details Dialog */}
       <Dialog open={showDetails} onOpenChange={setShowDetails}>
-        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-7xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               {getFileIcon(dataset.mime_type)}
@@ -211,11 +258,49 @@ export default function DatasetCard({ dataset }: DatasetCardProps) {
             {/* Basic Information */}
             <div>
               <h3 className="font-semibold mb-3">Basic Information</h3>
+
+              {/* 👇 NEW: Full-width Description Block */}
+              {parsedData ? (
+                // --- DATA IS JSON: Show Tabs and Selected View ---
+                <div className="mb-6 border-y dark:border-gray-700 py-6">
+                  
+                  {/* View Mode Tabs (Now with icons) */}
+                  <div className="flex flex-wrap gap-2 mb-6 border-b border-gray-200 dark:border-gray-700">
+                    {modes.map((mode) => (
+                      <button
+                        key={mode.id}
+                        onClick={() => setViewMode(mode.id)}
+                        className={`py-2 px-3 text-sm font-medium transition-colors duration-200 rounded-t-lg flex items-center justify-center
+                          ${viewMode === mode.id
+                            ? 'border-b-2 border-indigo-500 text-indigo-600 dark:text-indigo-400 dark:border-indigo-400 bg-gray-50 dark:bg-gray-800'
+                            : 'text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700/50'
+                          }`}
+                      >
+                        {/* Icon Component */}
+                        <mode.Icon className="w-5 h-5 mr-1" />
+                        
+                        {/* Label (Hidden on small screens to save space) */}
+                        <span className="hidden sm:inline">{mode.label}</span>
+                      </button>
+                    ))}
+                  </div>
+
+                  {/* Active Card / View */}
+                  <div className="flex justify-center w-full">
+                    {renderActiveView()}
+                  </div>
+
+                </div>
+              ) : (
+                renderActiveView()      
+              )}
+              {/* 👆 END NEW: Full-width Description Block */}
+
               <div className="grid gap-3">
-                <div className="grid grid-cols-3 gap-2 text-sm">
+              {/* <div className="grid grid-cols-3 gap-2 text-sm">
                   <span className="font-medium">Description:</span>
                   <span className="col-span-2">{dataset.description}</span>
-                </div>
+                </div> */}
                 <div className="grid grid-cols-3 gap-2 text-sm">
                   <span className="font-medium">Agency:</span>
                   <span className="col-span-2">{dataset.agency}</span>
