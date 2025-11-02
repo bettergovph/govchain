@@ -26,7 +26,11 @@ export default function VolunteerPage() {
           Volunteer Node Operator Guide
         </h1>
         <p className="text-xl text-muted-foreground">
-          Help support government data transparency by running a OpenGovChain node
+          Help support government data transparency by running an OpenGovChain node
+        </p>
+        <p className="text-muted-foreground">
+          OpenGovChain is a <strong>tokenless, public good blockchain</strong> for government data transparency and accountability.
+          The network is operated by volunteers like you, with no economic barriers to participation.
         </p>
       </div>
 
@@ -229,35 +233,56 @@ export default function VolunteerPage() {
       <Card>
         <CardHeader>
           <CardTitle>Quick Setup</CardTitle>
-          <CardDescription>Get started in 6 steps</CardDescription>
+          <CardDescription>
+            Get started with Docker (recommended) or build from source. 
+            Full documentation: <a href="https://github.com/bettergovph/govchaind" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">GitHub Repository</a>
+          </CardDescription>
         </CardHeader>
         <CardContent>
           <div className="space-y-6">
-            {/* Step 1 */}
+            {/* Step 1 - Docker Method (Recommended) */}
             <div className="flex gap-4">
               <div className="flex-shrink-0 w-8 h-8 rounded-full bg-primary text-primary-foreground flex items-center justify-center font-bold">
                 1
               </div>
               <div className="flex-1">
-                <h3 className="font-semibold mb-2">Install Dependencies</h3>
+                <h3 className="font-semibold mb-2">Option A: Using Docker (Recommended)</h3>
+                <p className="text-sm text-muted-foreground mb-3">
+                  The easiest and most maintainable method. Choose your setup:
+                </p>
+                <div className="space-y-3">
+                  <div>
+                    <div className="font-medium text-sm mb-1">For VPS or Public IP:</div>
+                    <div className="bg-muted p-4 rounded-lg font-mono text-sm overflow-x-auto">
+                      <div className="text-muted-foreground"># See Standalone Node Guide</div>
+                      <div>docker-compose up -d</div>
+                    </div>
+                  </div>
+                  <div>
+                    <div className="font-medium text-sm mb-1">For Home Network (behind NAT):</div>
+                    <div className="bg-muted p-4 rounded-lg font-mono text-sm overflow-x-auto">
+                      <div className="text-muted-foreground"># See Tailscale Guide for secure connectivity</div>
+                      <div>docker-compose -f docker-compose.tailscale.yml up -d</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <Separator />
+
+            {/* Step 1B - From Source */}
+            <div className="flex gap-4">
+              <div className="flex-shrink-0 w-8 h-8 rounded-full bg-secondary text-secondary-foreground flex items-center justify-center font-bold">
+                1B
+              </div>
+              <div className="flex-1">
+                <h3 className="font-semibold mb-2">Option B: Build from Source (Advanced)</h3>
                 <div className="bg-muted p-4 rounded-lg font-mono text-sm overflow-x-auto">
-                  <div className="text-muted-foreground"># Update system</div>
-                  <div>sudo apt update && sudo apt upgrade -y</div>
+                  <div className="text-muted-foreground"># Verify environment</div>
+                  <div>./scripts/check-build-env.sh</div>
                   <div className="mt-2 text-muted-foreground">
-                    # Install basic tools
-                  </div>
-                  <div>
-                    sudo apt install -y curl wget git build-essential jq
-                  </div>
-                  <div className="mt-2 text-muted-foreground">
-                    # Install Go 1.21
-                  </div>
-                  <div>wget https://go.dev/dl/go1.21.6.linux-amd64.tar.gz</div>
-                  <div>
-                    sudo tar -C /usr/local -xzf go1.21.6.linux-amd64.tar.gz
-                  </div>
-                  <div className="mt-2 text-muted-foreground">
-                    # Install Ignite CLI
+                    # Prerequisites: Go 1.18+ and Ignite CLI
                   </div>
                   <div>
                     curl https://get.ignite.com/cli | bash
@@ -274,15 +299,19 @@ export default function VolunteerPage() {
                 2
               </div>
               <div className="flex-1">
-                <h3 className="font-semibold mb-2">Build Blockchain Binary</h3>
+                <h3 className="font-semibold mb-2">Clone and Build</h3>
                 <div className="bg-muted p-4 rounded-lg font-mono text-sm overflow-x-auto">
                   <div className="text-muted-foreground">
                     # Clone repository
                   </div>
                   <div>
-                    git clone https://github.com/bettergov/govchaind.git
+                    git clone https://github.com/bettergovph/govchaind.git
                   </div>
                   <div>cd govchaind</div>
+                  <div className="mt-2 text-muted-foreground">
+                    # Setup environment
+                  </div>
+                  <div>./scripts/setup-env.sh</div>
                   <div className="mt-2 text-muted-foreground">
                     # Build binary
                   </div>
@@ -299,21 +328,16 @@ export default function VolunteerPage() {
                 3
               </div>
               <div className="flex-1">
-                <h3 className="font-semibold mb-2">Initialize Node</h3>
+                <h3 className="font-semibold mb-2">Join as Volunteer</h3>
                 <div className="bg-muted p-4 rounded-lg font-mono text-sm overflow-x-auto">
                   <div className="text-muted-foreground">
-                    # Initialize node (replace 'my-node' with your moniker)
+                    # Use the join script (auto-detects public IP on VPS)
                   </div>
-                  <div>govchaind init my-node --chain-id govchain-1</div>
+                  <div>./scripts/join-as-volunteer.sh &lt;your-node-name&gt; &lt;genesis-url&gt;</div>
                   <div className="mt-2 text-muted-foreground">
-                    # Download genesis file
+                    # Or for local development:
                   </div>
-                  <div>
-                    wget
-                    https://govchain.bettergov.ph/genesis.json
-                    \
-                  </div>
-                  <div> -O ~/.govchain/config/genesis.json</div>
+                  <div>ignite chain serve</div>
                 </div>
               </div>
             </div>
@@ -326,55 +350,12 @@ export default function VolunteerPage() {
                 4
               </div>
               <div className="flex-1">
-                <h3 className="font-semibold mb-2">Configure Node</h3>
-                <div className="bg-muted p-4 rounded-lg font-mono text-sm overflow-x-auto">
-                  <div className="text-muted-foreground">
-                    # Edit config.toml
-                  </div>
-                  <div>nano ~/.govchain/config/config.toml</div>
-                  <div className="mt-2 text-muted-foreground">
-                    # Key settings:
-                  </div>
-                  <div>
-                    persistent_peers = "node1@ip1:26656,node2@ip2:26656"
-                  </div>
-                  <div>external_address = "tcp://YOUR_PUBLIC_IP:26656"</div>
-                  <div>prometheus = true</div>
-                </div>
-              </div>
-            </div>
-
-            <Separator />
-
-            {/* Step 5 */}
-            <div className="flex gap-4">
-              <div className="flex-shrink-0 w-8 h-8 rounded-full bg-primary text-primary-foreground flex items-center justify-center font-bold">
-                5
-              </div>
-              <div className="flex-1">
-                <h3 className="font-semibold mb-2">Create Systemd Service</h3>
-                <div className="bg-muted p-4 rounded-lg font-mono text-sm overflow-x-auto">
-                  <div>sudo systemctl daemon-reload</div>
-                  <div>sudo systemctl enable govchaind</div>
-                  <div>sudo systemctl start govchaind</div>
-                </div>
-              </div>
-            </div>
-
-            <Separator />
-
-            {/* Step 6 */}
-            <div className="flex gap-4">
-              <div className="flex-shrink-0 w-8 h-8 rounded-full bg-primary text-primary-foreground flex items-center justify-center font-bold">
-                6
-              </div>
-              <div className="flex-1">
                 <h3 className="font-semibold mb-2">Verify Node is Running</h3>
                 <div className="bg-muted p-4 rounded-lg font-mono text-sm overflow-x-auto">
-                  <div className="text-muted-foreground"># Check status</div>
-                  <div>sudo systemctl status govchaind</div>
+                  <div className="text-muted-foreground"># Check Docker status</div>
+                  <div>docker-compose ps</div>
                   <div className="mt-2 text-muted-foreground">
-                    # Check sync status
+                    # Or check node sync status
                   </div>
                   <div>govchaind status | jq .SyncInfo</div>
                 </div>
@@ -454,6 +435,38 @@ export default function VolunteerPage() {
         </CardContent>
       </Card>
 
+      {/* Documentation Links */}
+      <Card>
+        <CardHeader>
+          <CardTitle>📚 Full Documentation</CardTitle>
+          <CardDescription>
+            Comprehensive guides for different setup scenarios
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <ul className="space-y-2">
+            <li className="text-sm">
+              • <a href="https://github.com/bettergovph/govchaind" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">Getting Started Guide</a> - Complete setup instructions
+            </li>
+            <li className="text-sm">
+              • <a href="https://github.com/bettergovph/govchaind" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">Standalone Node Guide</a> - For VPS or local development
+            </li>
+            <li className="text-sm">
+              • <a href="https://github.com/bettergovph/govchaind" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">Tailscale Guide</a> - Join securely from behind NAT
+            </li>
+            <li className="text-sm">
+              • <a href="https://github.com/bettergovph/govchaind" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">Docker Guide</a> - Running with Docker
+            </li>
+            <li className="text-sm">
+              • <a href="https://github.com/bettergovph/govchaind" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">Network Configuration</a> - Peers, ports, and settings
+            </li>
+            <li className="text-sm">
+              • <a href="https://github.com/bettergovph/govchaind" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">Technical Implementation</a> - Architecture deep dive
+            </li>
+          </ul>
+        </CardContent>
+      </Card>
+
       {/* Support & Community */}
       <Card>
         <CardHeader>
@@ -464,18 +477,68 @@ export default function VolunteerPage() {
         </CardHeader>
         <CardContent>
           <div>
-            <ul className="space-y-1">
-              <li className="text-sm text-muted-foreground">
-                • Discord: https://discord.gg/bettergovph
+            <ul className="space-y-2">
+              <li className="text-sm">
+                • <a href="https://discord.gg/bettergovph" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">Discord Community</a>
               </li>
-              <li className="text-sm text-muted-foreground">
-                • GitHub Issues: https://github.com/bettergovph/govchain/issues
+              <li className="text-sm">
+                • <a href="https://github.com/bettergovph/govchaind/issues" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">GitHub Issues</a>
               </li>
-              <li className="text-sm text-muted-foreground">
-                • Email: volunteers@bettergov.ph
+              <li className="text-sm">
+                • Email: <a href="mailto:volunteers@bettergov.ph" className="text-primary hover:underline">volunteers@bettergov.ph</a>
+              </li>
+              <li className="text-sm">
+                • License: <a href="https://github.com/bettergovph/govchaind/blob/main/LICENSE" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">MIT License</a> (Open Source)
               </li>
             </ul>
           </div>
+        </CardContent>
+      </Card>
+
+      {/* Key Features */}
+      <Card className="bg-primary/5 border-primary/20">
+        <CardHeader>
+          <CardTitle>🌟 Why OpenGovChain is Different</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <ul className="space-y-3">
+            <li className="flex items-start gap-3">
+              <CheckCircle2 className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
+              <div>
+                <span className="font-semibold">Tokenless Architecture:</span>
+                <span className="text-sm text-muted-foreground">
+                  {" "}No economic barriers to participation. The network is a public good operated by volunteers.
+                </span>
+              </div>
+            </li>
+            <li className="flex items-start gap-3">
+              <CheckCircle2 className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
+              <div>
+                <span className="font-semibold">Immutable Government Data:</span>
+                <span className="text-sm text-muted-foreground">
+                  {" "}Datasets are stored permanently on the blockchain with IPFS integration.
+                </span>
+              </div>
+            </li>
+            <li className="flex items-start gap-3">
+              <CheckCircle2 className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
+              <div>
+                <span className="font-semibold">Rich Metadata & Queries:</span>
+                <span className="text-sm text-muted-foreground">
+                  {" "}Search by agency, category, and file type with comprehensive metadata.
+                </span>
+              </div>
+            </li>
+            <li className="flex items-start gap-3">
+              <CheckCircle2 className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
+              <div>
+                <span className="font-semibold">Decentralized & Secure:</span>
+                <span className="text-sm text-muted-foreground">
+                  {" "}Built on Cosmos SDK with Tendermint BFT consensus, secured by volunteer validators.
+                </span>
+              </div>
+            </li>
+          </ul>
         </CardContent>
       </Card>
 
@@ -488,23 +551,23 @@ export default function VolunteerPage() {
           <ol className="space-y-2">
             <li className="flex items-center gap-2 text-sm">
               <CheckCircle2 className="h-4 w-4 text-primary" />
+              Choose your setup method (Docker recommended)
+            </li>
+            <li className="flex items-center gap-2 text-sm">
+              <CheckCircle2 className="h-4 w-4 text-primary" />
+              Read the appropriate guide for your environment
+            </li>
+            <li className="flex items-center gap-2 text-sm">
+              <CheckCircle2 className="h-4 w-4 text-primary" />
               Set up your node
             </li>
             <li className="flex items-center gap-2 text-sm">
               <CheckCircle2 className="h-4 w-4 text-primary" />
-              Join Discord community
+              <a href="https://discord.gg/bettergovph" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">Join Discord community</a>
             </li>
             <li className="flex items-center gap-2 text-sm">
               <CheckCircle2 className="h-4 w-4 text-primary" />
               Introduce yourself in #introductions
-            </li>
-            <li className="flex items-center gap-2 text-sm">
-              <CheckCircle2 className="h-4 w-4 text-primary" />
-              Start pinning datasets
-            </li>
-            <li className="flex items-center gap-2 text-sm">
-              <CheckCircle2 className="h-4 w-4 text-primary" />
-              Participate in governance
             </li>
             <li className="flex items-center gap-2 text-sm">
               <CheckCircle2 className="h-4 w-4 text-primary" />
