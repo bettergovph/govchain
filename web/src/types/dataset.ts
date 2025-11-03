@@ -13,7 +13,7 @@ export interface Dataset {
   category: string;
   submitter: string;
   timestamp: number;
-  pinCount: number;
+  pin_count: number;
   creator: string;
   tx_hash?: string;
 }
