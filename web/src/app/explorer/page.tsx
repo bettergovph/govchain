@@ -266,7 +266,7 @@ export default function ExplorerPage() {
                 className="pl-10"
               />
             </div>
-            <Button onClick={handleSearch}>
+            <Button onClick={handleSearch} aria-label="Search">
               <Search className="h-4 w-4 sm:mr-2" />
               <span className="hidden sm:block">Search</span>
             </Button>
