@@ -266,9 +266,9 @@ export default function ExplorerPage() {
                 className="pl-10"
               />
             </div>
-            <Button onClick={handleSearch}>
-              <Search className="h-4 w-4 mr-2" />
-              Search
+            <Button onClick={handleSearch} aria-label="Search">
+              <Search className="h-4 w-4 sm:mr-2" />
+              <span className="hidden sm:block">Search</span>
             </Button>
           </div>
         </CardContent>
@@ -333,7 +333,7 @@ export default function ExplorerPage() {
 
       {/* Tabs for Transactions and Blocks */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="grid grid-cols-4 w-full max-w-2xl">
+        <TabsList className="grid grid-cols-2 sm:grid-cols-4 w-full max-w-2xl h-auto sm:h-9">
           <TabsTrigger value="overview">Overview</TabsTrigger>
           <TabsTrigger value="transactions">Transactions</TabsTrigger>
           <TabsTrigger value="blocks">Blocks</TabsTrigger>
