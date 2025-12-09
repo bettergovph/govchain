@@ -234,7 +234,7 @@ export default function VolunteerPage() {
         <CardHeader>
           <CardTitle>Quick Setup</CardTitle>
           <CardDescription>
-            Get started with Docker (recommended) or build from source. 
+            Get started with Docker (recommended) or build from source.
             Full documentation: <a href="https://github.com/bettergovph/govchaind" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">GitHub Repository</a>
           </CardDescription>
         </CardHeader>
