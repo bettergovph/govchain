@@ -199,7 +199,7 @@ export default function DatasetList() {
       {/* Header */}
       <Card>
         <CardHeader>
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col sm:flex-row gap-2 sm:items-center justify-between">
             <div>
               <CardTitle className="flex items-center gap-2">
                 <Database className="h-6 w-6" />
@@ -238,7 +238,7 @@ export default function DatasetList() {
                 />
               </div>
 
-              <div className="flex gap-2">
+              <div className="flex gap-2 flex-wrap">
                 <Select value={agencyFilter} onValueChange={setAgencyFilter}>
                   <SelectTrigger className="w-48">
                     <SelectValue placeholder="All agencies" />
@@ -276,7 +276,7 @@ export default function DatasetList() {
             </div>
 
             {/* Sort Controls */}
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-4 flex-wrap">
               <span className="text-sm text-muted-foreground">Sort by:</span>
               <Select value={sortBy} onValueChange={(value: any) => setSortBy(value)}>
                 <SelectTrigger className="w-40">
