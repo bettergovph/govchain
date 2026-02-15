@@ -26,6 +26,8 @@ import {
   Clock,
   FolderOpen,
   Ruler,
+  ExternalLink,
+  BookOpen,
 } from "lucide-react";
 import Link from "next/link";
 
@@ -70,9 +72,7 @@ export default function OC4IDSPage() {
 
         <p className="text-xl text-muted-foreground max-w-3xl">
           OpenGovChain&apos;s infrastructure module implements the{" "}
-          <strong>
-            Open Contracting for Infrastructure Data Standard (OC4IDS)
-          </strong>{" "}
+          <a href="https://standard.open-contracting.org/infrastructure/latest/en/" target="_blank" rel="noopener noreferrer" className="underline decoration-primary/40 hover:decoration-primary underline-offset-2"><strong>Open Contracting for Infrastructure Data Standard (OC4IDS)</strong></a>{" "}
           — bringing transparency to public infrastructure projects by linking
           project-level data with procurement processes on an immutable
           blockchain.
@@ -99,18 +99,20 @@ export default function OC4IDSPage() {
         <CardContent className="space-y-4">
           <p className="text-muted-foreground">
             The{" "}
-            <strong>
-              Open Contracting for Infrastructure Data Standard (OC4IDS)
-            </strong>{" "}
-            builds on OCDS to provide a framework for disclosing data about
-            infrastructure projects. Developed in partnership with the{" "}
-            <strong>CoST – Infrastructure Transparency Initiative</strong>, it
+            <a href="https://standard.open-contracting.org/infrastructure/latest/en/" target="_blank" rel="noopener noreferrer" className="text-primary underline decoration-primary/40 hover:decoration-primary underline-offset-2"><strong>Open Contracting for Infrastructure Data Standard (OC4IDS)</strong></a>{" "}
+            builds on{" "}
+            <a href="https://standard.open-contracting.org/latest/en/" target="_blank" rel="noopener noreferrer" className="text-primary underline decoration-primary/40 hover:decoration-primary underline-offset-2">OCDS</a>{" "}
+            to provide a{" "}
+            <a href="https://standard.open-contracting.org/infrastructure/latest/en/reference/" target="_blank" rel="noopener noreferrer" className="text-primary underline decoration-primary/40 hover:decoration-primary underline-offset-2">framework for disclosing data</a>{" "}
+            about infrastructure projects. Developed in partnership with the{" "}
+            <a href="https://infrastructuretransparency.org/" target="_blank" rel="noopener noreferrer" className="text-primary underline decoration-primary/40 hover:decoration-primary underline-offset-2"><strong>CoST – Infrastructure Transparency Initiative</strong></a>, it
             enables governments to publish structured data about projects,
             their associated procurement processes, and physical progress.
           </p>
           <p className="text-muted-foreground">
-            OC4IDS bridges the gap between procurement data and project
-            outcomes, making it possible to track whether infrastructure
+            OC4IDS bridges the gap between procurement data and{" "}
+            <a href="https://standard.open-contracting.org/infrastructure/latest/en/cost/" target="_blank" rel="noopener noreferrer" className="text-primary underline decoration-primary/40 hover:decoration-primary underline-offset-2">project outcomes</a>,
+            making it possible to track whether infrastructure
             projects are delivered on time, on budget, and to specification —
             from the initial project identification through to completion.
           </p>
@@ -145,7 +147,9 @@ export default function OC4IDSPage() {
           Infrastructure Project Lifecycle On-Chain
         </h2>
         <p className="text-muted-foreground">
-          Every phase of an infrastructure project is recorded as immutable
+          Every phase of an{" "}
+          <a href="https://standard.open-contracting.org/infrastructure/latest/en/reference/codelists/#projectstatus" target="_blank" rel="noopener noreferrer" className="text-primary underline decoration-primary/40 hover:decoration-primary underline-offset-2">infrastructure project lifecycle</a>{" "}
+          is recorded as immutable
           blockchain transactions, creating a permanent and verifiable record.
         </p>
 
@@ -236,7 +240,9 @@ export default function OC4IDSPage() {
                 Infrastructure Project
               </h3>
               <p className="text-sm text-muted-foreground">
-                The core data structure. Each project captures everything from
+                The core data structure, based on the{" "}
+                <a href="https://standard.open-contracting.org/infrastructure/latest/en/reference/#project-schema" target="_blank" rel="noopener noreferrer" className="text-primary underline decoration-primary/40 hover:decoration-primary underline-offset-2">OC4IDS project schema</a>.
+                Each project captures everything from
                 identification through completion, including linked
                 procurement processes.
               </p>
@@ -282,8 +288,11 @@ export default function OC4IDSPage() {
                 Location Data
               </h3>
               <p className="text-sm text-muted-foreground">
-                Rich geospatial data for each project, supporting addresses,
-                gazetteer identifiers, and geometry coordinates for precise
+                Rich{" "}
+                <a href="https://standard.open-contracting.org/infrastructure/latest/en/reference/#location" target="_blank" rel="noopener noreferrer" className="text-primary underline decoration-primary/40 hover:decoration-primary underline-offset-2">geospatial data</a>{" "}
+                for each project, supporting addresses,{" "}
+                <a href="https://standard.open-contracting.org/infrastructure/latest/en/reference/codelists/#geometrytype" target="_blank" rel="noopener noreferrer" className="text-primary underline decoration-primary/40 hover:decoration-primary underline-offset-2">gazetteer identifiers, and geometry</a>{" "}
+                coordinates for precise
                 location tracking.
               </p>
               <div className="bg-accent/50 rounded-lg p-3 space-y-1 text-sm font-mono">
@@ -318,8 +327,11 @@ export default function OC4IDSPage() {
                 Metrics &amp; Observations
               </h3>
               <p className="text-sm text-muted-foreground">
-                Measurable indicators that track physical and financial progress
-                over time with structured observation data.
+                Measurable{" "}
+                <a href="https://standard.open-contracting.org/infrastructure/latest/en/reference/#metric" target="_blank" rel="noopener noreferrer" className="text-primary underline decoration-primary/40 hover:decoration-primary underline-offset-2">indicators</a>{" "}
+                that track physical and financial progress
+                over time with structured{" "}
+                <a href="https://standard.open-contracting.org/infrastructure/latest/en/reference/#observation" target="_blank" rel="noopener noreferrer" className="text-primary underline decoration-primary/40 hover:decoration-primary underline-offset-2">observation data</a>.
               </p>
               <div className="bg-accent/50 rounded-lg p-3 space-y-1 text-sm font-mono">
                 <div>
@@ -357,8 +369,11 @@ export default function OC4IDSPage() {
                 Contracting Process Summary
               </h3>
               <p className="text-sm text-muted-foreground">
-                Summarized procurement data linked from the OCDS procurement
-                module, connecting contracts to the infrastructure project
+                Summarized procurement data linked from the{" "}
+                <a href="https://standard.open-contracting.org/latest/en/" target="_blank" rel="noopener noreferrer" className="text-primary underline decoration-primary/40 hover:decoration-primary underline-offset-2">OCDS</a>{" "}
+                procurement module, following the{" "}
+                <a href="https://standard.open-contracting.org/infrastructure/latest/en/reference/#contractingprocesssummary" target="_blank" rel="noopener noreferrer" className="text-primary underline decoration-primary/40 hover:decoration-primary underline-offset-2">contracting process summary</a>{" "}
+                schema to connect contracts to the infrastructure project
                 they serve.
               </p>
               <div className="bg-accent/50 rounded-lg p-3 space-y-1 text-sm font-mono">
@@ -604,6 +619,83 @@ export default function OC4IDSPage() {
                 with.
               </p>
             </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* References */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-2xl flex items-center gap-2">
+            <BookOpen className="h-6 w-6 text-primary" />
+            References &amp; Standard Sources
+          </CardTitle>
+          <CardDescription>
+            Official documentation and resources for the Open Contracting for Infrastructure Data Standard
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="grid gap-3 md:grid-cols-2">
+            {[
+              {
+                title: "OC4IDS Schema Reference",
+                url: "https://standard.open-contracting.org/infrastructure/latest/en/reference/",
+                description: "Complete schema reference for the infrastructure data standard, including all object definitions and field descriptions.",
+              },
+              {
+                title: "OC4IDS Project Schema",
+                url: "https://standard.open-contracting.org/infrastructure/latest/en/reference/#project-schema",
+                description: "The project schema — the primary data structure describing an infrastructure project from identification to completion.",
+              },
+              {
+                title: "OC4IDS Codelists",
+                url: "https://standard.open-contracting.org/infrastructure/latest/en/reference/codelists/",
+                description: "Standardized code values for project status, sector classifications, project types, and geometry types.",
+              },
+              {
+                title: "CoST Infrastructure Data Standard",
+                url: "https://standard.open-contracting.org/infrastructure/latest/en/cost/",
+                description: "How OC4IDS maps to the CoST IDS (Infrastructure Data Standard) for proactive and reactive disclosure.",
+              },
+              {
+                title: "OC4IDS Getting Started",
+                url: "https://standard.open-contracting.org/infrastructure/latest/en/guidance/",
+                description: "Implementation guidance for publishers, including how to identify and structure infrastructure project data.",
+              },
+              {
+                title: "OCDS for Infrastructure",
+                url: "https://standard.open-contracting.org/infrastructure/latest/en/projects/",
+                description: "How OC4IDS connects project-level data with OCDS contracting processes for end-to-end transparency.",
+              },
+              {
+                title: "CoST Initiative",
+                url: "https://infrastructuretransparency.org/",
+                description: "The Infrastructure Transparency Initiative (CoST) — the global program promoting infrastructure transparency.",
+              },
+              {
+                title: "Open Contracting Partnership",
+                url: "https://www.open-contracting.org/",
+                description: "The global organization that stewards both OCDS and OC4IDS and supports open contracting reforms worldwide.",
+              },
+            ].map((ref) => (
+              <a
+                key={ref.url}
+                href={ref.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-start gap-3 p-3 rounded-lg border hover:bg-accent/50 transition-colors group"
+              >
+                <ExternalLink className="h-4 w-4 text-muted-foreground group-hover:text-primary mt-0.5 flex-shrink-0" />
+                <div>
+                  <p className="text-sm font-medium group-hover:text-primary transition-colors">
+                    {ref.title}
+                  </p>
+                  <p className="text-xs text-muted-foreground mt-0.5">
+                    {ref.description}
+                  </p>
+                </div>
+              </a>
+            ))}
           </div>
         </CardContent>
       </Card>

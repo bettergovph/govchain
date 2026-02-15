@@ -24,6 +24,8 @@ import {
   Search,
   ArrowLeft,
   Workflow,
+  ExternalLink,
+  BookOpen,
 } from "lucide-react";
 import Link from "next/link";
 
@@ -66,7 +68,7 @@ export default function OCDSPage() {
 
         <p className="text-xl text-muted-foreground max-w-3xl">
           OpenGovChain&apos;s procurement module implements the{" "}
-          <strong>Open Contracting Data Standard</strong> — the global
+          <a href="https://standard.open-contracting.org/latest/en/" target="_blank" rel="noopener noreferrer" className="underline decoration-primary/40 hover:decoration-primary underline-offset-2"><strong>Open Contracting Data Standard</strong></a> — the global
           benchmark for publishing structured, comparable procurement data —
           directly on an immutable blockchain ledger.
         </p>
@@ -90,17 +92,22 @@ export default function OCDSPage() {
         </CardHeader>
         <CardContent className="space-y-4">
           <p className="text-muted-foreground">
-            The <strong>Open Contracting Data Standard (OCDS)</strong> provides a
-            structured schema for publishing data about every stage of the
+            The{" "}
+            <a href="https://standard.open-contracting.org/latest/en/" target="_blank" rel="noopener noreferrer" className="text-primary underline decoration-primary/40 hover:decoration-primary underline-offset-2"><strong>Open Contracting Data Standard (OCDS)</strong></a>{" "}
+            provides a{" "}
+            <a href="https://standard.open-contracting.org/latest/en/schema/" target="_blank" rel="noopener noreferrer" className="text-primary underline decoration-primary/40 hover:decoration-primary underline-offset-2">structured schema</a>{" "}
+            for publishing data about every stage of the
             public contracting process. Developed by the{" "}
-            <strong>Open Contracting Partnership</strong>, it is used by
+            <a href="https://www.open-contracting.org/" target="_blank" rel="noopener noreferrer" className="text-primary underline decoration-primary/40 hover:decoration-primary underline-offset-2"><strong>Open Contracting Partnership</strong></a>, it is used by
             governments and organizations in over 30 countries to make
             procurement data accessible, comparable, and actionable.
           </p>
           <p className="text-muted-foreground">
-            OCDS defines a common vocabulary for procurement data — including
-            planning, tender, award, contract, and implementation stages —
-            enabling cross-border analysis, anti-corruption monitoring, and
+            OCDS defines a{" "}
+            <a href="https://standard.open-contracting.org/latest/en/schema/codelists/" target="_blank" rel="noopener noreferrer" className="text-primary underline decoration-primary/40 hover:decoration-primary underline-offset-2">common vocabulary</a>{" "}
+            for procurement data — including{" "}
+            <a href="https://standard.open-contracting.org/latest/en/getting_started/contracting_process/" target="_blank" rel="noopener noreferrer" className="text-primary underline decoration-primary/40 hover:decoration-primary underline-offset-2">planning, tender, award, contract, and implementation stages</a>{" "}
+            — enabling cross-border analysis, anti-corruption monitoring, and
             better value for money in public spending.
           </p>
           <div className="flex gap-2 flex-wrap">
@@ -134,7 +141,9 @@ export default function OCDSPage() {
           The Full Contracting Lifecycle On-Chain
         </h2>
         <p className="text-muted-foreground">
-          Each stage of the procurement process is captured as a blockchain
+          Each stage of the{" "}
+          <a href="https://standard.open-contracting.org/latest/en/getting_started/contracting_process/" target="_blank" rel="noopener noreferrer" className="text-primary underline decoration-primary/40 hover:decoration-primary underline-offset-2">contracting process</a>{" "}
+          is captured as a blockchain
           transaction, creating an immutable record from start to finish.
         </p>
 
@@ -222,8 +231,11 @@ export default function OCDSPage() {
               </h3>
               <p className="text-sm text-muted-foreground">
                 The core unit of OCDS data. Each process is identified by a
-                unique <strong>OCID</strong> (Open Contracting Identifier)
-                and contains the compiled release that aggregates all stages.
+                unique{" "}
+                <a href="https://standard.open-contracting.org/latest/en/schema/identifiers/" target="_blank" rel="noopener noreferrer" className="text-primary underline decoration-primary/40 hover:decoration-primary underline-offset-2"><strong>OCID</strong> (Open Contracting Identifier)</a>{" "}
+                and contains the{" "}
+                <a href="https://standard.open-contracting.org/latest/en/schema/record_package/" target="_blank" rel="noopener noreferrer" className="text-primary underline decoration-primary/40 hover:decoration-primary underline-offset-2">compiled release</a>{" "}
+                that aggregates all stages.
               </p>
               <div className="bg-accent/50 rounded-lg p-3 space-y-1 text-sm font-mono">
                 <div>
@@ -255,9 +267,12 @@ export default function OCDSPage() {
                 Release
               </h3>
               <p className="text-sm text-muted-foreground">
-                An individual update to a contracting process. Each release
+                An individual update to a contracting process. Each{" "}
+                <a href="https://standard.open-contracting.org/latest/en/schema/release/" target="_blank" rel="noopener noreferrer" className="text-primary underline decoration-primary/40 hover:decoration-primary underline-offset-2">release</a>{" "}
                 captures one or more changes (planning, tender, award,
-                contract, implementation) and is tagged accordingly.
+                contract, implementation) and is{" "}
+                <a href="https://standard.open-contracting.org/latest/en/schema/codelists/#release-tag" target="_blank" rel="noopener noreferrer" className="text-primary underline decoration-primary/40 hover:decoration-primary underline-offset-2">tagged</a>{" "}
+                accordingly.
               </p>
               <div className="bg-accent/50 rounded-lg p-3 space-y-1 text-sm font-mono">
                 <div>
@@ -289,8 +304,11 @@ export default function OCDSPage() {
                 Entity Registry
               </h3>
               <p className="text-sm text-muted-foreground">
-                Organizations participating in procurement can be registered
-                on-chain with verified identifiers. This creates a reusable
+                <a href="https://standard.open-contracting.org/latest/en/schema/reference/#organization" target="_blank" rel="noopener noreferrer" className="text-primary underline decoration-primary/40 hover:decoration-primary underline-offset-2">Organizations</a>{" "}
+                participating in procurement can be registered
+                on-chain with verified{" "}
+                <a href="https://org-id.guide/" target="_blank" rel="noopener noreferrer" className="text-primary underline decoration-primary/40 hover:decoration-primary underline-offset-2">identifiers</a>.
+                This creates a reusable
                 registry of procuring entities and suppliers.
               </p>
               <div className="bg-accent/50 rounded-lg p-3 space-y-1 text-sm font-mono">
@@ -318,7 +336,9 @@ export default function OCDSPage() {
                 Document Verification
               </h3>
               <p className="text-sm text-muted-foreground">
-                Procurement documents (bid notices, evaluation reports,
+                Procurement{" "}
+                <a href="https://standard.open-contracting.org/latest/en/schema/reference/#document" target="_blank" rel="noopener noreferrer" className="text-primary underline decoration-primary/40 hover:decoration-primary underline-offset-2">documents</a>{" "}
+                (bid notices, evaluation reports,
                 contracts) are stored on IPFS with content hashes recorded
                 on-chain for tamper-proof verification.
               </p>
@@ -511,7 +531,8 @@ export default function OCDSPage() {
               {
                 param: "allowed_ocid_prefixes",
                 description:
-                  "Approved OCID prefixes (e.g., ocds-abc123) that can be used for contracting processes.",
+                  "Approved OCID prefixes (e.g., ocds-abc123) that can be used for contracting processes. See OCDS identifier guidance.",
+                href: "https://standard.open-contracting.org/latest/en/schema/identifiers/",
               },
               {
                 param: "default_currency",
@@ -547,6 +568,83 @@ export default function OCDSPage() {
                   {item.description}
                 </p>
               </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* References */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-2xl flex items-center gap-2">
+            <BookOpen className="h-6 w-6 text-primary" />
+            References &amp; Standard Sources
+          </CardTitle>
+          <CardDescription>
+            Official documentation and resources for the Open Contracting Data Standard
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="grid gap-3 md:grid-cols-2">
+            {[
+              {
+                title: "OCDS Schema Reference",
+                url: "https://standard.open-contracting.org/latest/en/schema/",
+                description: "Complete schema documentation including release, record, and all component schemas.",
+              },
+              {
+                title: "OCDS Release Schema",
+                url: "https://standard.open-contracting.org/latest/en/schema/release/",
+                description: "The release schema — the primary unit of OCDS data describing one update to a contracting process.",
+              },
+              {
+                title: "OCDS Codelists",
+                url: "https://standard.open-contracting.org/latest/en/schema/codelists/",
+                description: "Standardized code values for procurement methods, tender statuses, award criteria, and more.",
+              },
+              {
+                title: "OCDS Identifiers",
+                url: "https://standard.open-contracting.org/latest/en/schema/identifiers/",
+                description: "Guidance on OCIDs (Open Contracting Identifiers) and organization identifier schemes.",
+              },
+              {
+                title: "Contracting Process Overview",
+                url: "https://standard.open-contracting.org/latest/en/getting_started/contracting_process/",
+                description: "How OCDS maps to the five stages of the contracting process: planning through implementation.",
+              },
+              {
+                title: "OCDS Guidance & Best Practices",
+                url: "https://standard.open-contracting.org/latest/en/guidance/",
+                description: "Implementation guidance, mapping templates, and best practices for publishers.",
+              },
+              {
+                title: "Open Contracting Partnership",
+                url: "https://www.open-contracting.org/",
+                description: "The global organization that stewards OCDS and supports open contracting reforms worldwide.",
+              },
+              {
+                title: "Organization Identifier Guide",
+                url: "https://org-id.guide/",
+                description: "The reference list of organization identifier schemes used in OCDS for buyer and supplier IDs.",
+              },
+            ].map((ref) => (
+              <a
+                key={ref.url}
+                href={ref.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-start gap-3 p-3 rounded-lg border hover:bg-accent/50 transition-colors group"
+              >
+                <ExternalLink className="h-4 w-4 text-muted-foreground group-hover:text-primary mt-0.5 flex-shrink-0" />
+                <div>
+                  <p className="text-sm font-medium group-hover:text-primary transition-colors">
+                    {ref.title}
+                  </p>
+                  <p className="text-xs text-muted-foreground mt-0.5">
+                    {ref.description}
+                  </p>
+                </div>
+              </a>
             ))}
           </div>
         </CardContent>
