@@ -26,6 +26,7 @@ import {
   Workflow,
   ExternalLink,
   BookOpen,
+  ArrowDown,
 } from "lucide-react";
 import Link from "next/link";
 
@@ -41,11 +42,11 @@ export default function OCDSPage() {
       {/* Breadcrumb */}
       <div>
         <Link
-          href="/standards"
+          href="/"
           className="text-sm text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1"
         >
           <ArrowLeft className="h-3 w-3" />
-          Back to Standards
+          Back to Home
         </Link>
       </div>
 
@@ -212,6 +213,137 @@ export default function OCDSPage() {
           })}
         </div>
       </div>
+
+      {/* Lifecycle Flow Diagram */}
+      <Card className="overflow-hidden">
+        <CardHeader>
+          <CardTitle className="text-lg flex items-center gap-2">
+            <Workflow className="h-5 w-5 text-primary" />
+            Contracting Process Flow
+          </CardTitle>
+          <CardDescription>
+            How procurement data flows through the{" "}
+            <a href="https://standard.open-contracting.org/latest/en/getting_started/contracting_process/" target="_blank" rel="noopener noreferrer" className="text-primary underline decoration-primary/40 hover:decoration-primary underline-offset-2">OCDS stages</a>{" "}
+            on-chain, unified by a single Open Contracting Identifier (OCID)
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          {/* OCID identifier bar */}
+          <div className="flex items-center gap-3 p-3 bg-primary/5 border border-primary/20 rounded-lg">
+            <Database className="h-5 w-5 text-primary flex-shrink-0" />
+            <div>
+              <p className="text-xs text-muted-foreground">Every stage is linked by a single identifier</p>
+              <p className="font-mono text-sm font-semibold text-primary">OCID: ocds-abc123-procurement-001</p>
+            </div>
+          </div>
+
+          {/* Flow diagram */}
+          <div className="flex flex-col lg:flex-row items-stretch gap-0">
+            {[
+              {
+                name: "Planning",
+                color: "border-blue-300 bg-blue-50 dark:border-blue-800 dark:bg-blue-950/50",
+                iconColor: "text-blue-600 dark:text-blue-400",
+                dotColor: "bg-blue-500",
+                data: ["Budget allocation", "Procurement rationale", "Timeline estimates"],
+                tag: "planning",
+              },
+              {
+                name: "Tender",
+                color: "border-amber-300 bg-amber-50 dark:border-amber-800 dark:bg-amber-950/50",
+                iconColor: "text-amber-600 dark:text-amber-400",
+                dotColor: "bg-amber-500",
+                data: ["Items & quantities", "Submission deadline", "Procurement method", "Eligibility criteria"],
+                tag: "tender",
+              },
+              {
+                name: "Award",
+                color: "border-green-300 bg-green-50 dark:border-green-800 dark:bg-green-950/50",
+                iconColor: "text-green-600 dark:text-green-400",
+                dotColor: "bg-green-500",
+                data: ["Selected supplier(s)", "Evaluation results", "Award value"],
+                tag: "award",
+              },
+              {
+                name: "Contract",
+                color: "border-purple-300 bg-purple-50 dark:border-purple-800 dark:bg-purple-950/50",
+                iconColor: "text-purple-600 dark:text-purple-400",
+                dotColor: "bg-purple-500",
+                data: ["Signed terms", "Milestones", "Delivery schedule", "Contract value"],
+                tag: "contract",
+              },
+              {
+                name: "Implementation",
+                color: "border-rose-300 bg-rose-50 dark:border-rose-800 dark:bg-rose-950/50",
+                iconColor: "text-rose-600 dark:text-rose-400",
+                dotColor: "bg-rose-500",
+                data: ["Milestone progress", "Financial transactions", "Delivery documents"],
+                tag: "implementation",
+              },
+            ].map((stage, i, arr) => (
+              <div key={stage.name} className="contents">
+                <div className="flex-1 min-w-0">
+                  <div className={`border-2 rounded-xl p-4 h-full ${stage.color}`}>
+                    <div className="flex items-center gap-2 mb-3">
+                      <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold text-white ${stage.dotColor}`}>
+                        {i + 1}
+                      </div>
+                      <h4 className={`font-semibold text-sm ${stage.iconColor}`}>{stage.name}</h4>
+                    </div>
+                    <ul className="text-xs text-muted-foreground space-y-1.5 mb-3">
+                      {stage.data.map((d) => (
+                        <li key={d} className="flex items-start gap-1.5">
+                          <CheckCircle2 className={`h-3 w-3 mt-0.5 flex-shrink-0 ${stage.iconColor} opacity-60`} />
+                          {d}
+                        </li>
+                      ))}
+                    </ul>
+                    <div className="pt-2 border-t border-current/10">
+                      <Badge variant="outline" className="text-[10px] font-mono gap-1">
+                        <FileText className="h-2.5 w-2.5" />
+                        tag: {stage.tag}
+                      </Badge>
+                    </div>
+                  </div>
+                </div>
+                {i < arr.length - 1 && (
+                  <div className="flex items-center justify-center py-2 lg:py-0 lg:px-1">
+                    <ArrowRight className="h-5 w-5 text-muted-foreground/40 hidden lg:block" />
+                    <ArrowDown className="h-5 w-5 text-muted-foreground/40 lg:hidden" />
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+
+          {/* Release trail */}
+          <div className="hidden lg:block relative">
+            <div className="absolute inset-x-0 top-1/2 h-px bg-primary/20" />
+            <div className="flex justify-between relative">
+              {["Planning Release", "Tender Release", "Award Release", "Contract Release", "Implementation Release"].map((label, i) => (
+                <div key={label} className="flex flex-col items-center">
+                  <div className={`w-3 h-3 rounded-full border-2 border-primary/40 ${
+                    ["bg-blue-500", "bg-amber-500", "bg-green-500", "bg-purple-500", "bg-rose-500"][i]
+                  }`} />
+                  <span className="text-[10px] text-muted-foreground mt-1.5 text-center whitespace-nowrap">{label}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Bottom note */}
+          <div className="flex items-start gap-3 p-3 bg-accent/30 rounded-lg text-xs text-muted-foreground">
+            <Shield className="h-4 w-4 flex-shrink-0 mt-0.5" />
+            <p>
+              Each stage generates an immutable{" "}
+              <a href="https://standard.open-contracting.org/latest/en/schema/release/" target="_blank" rel="noopener noreferrer" className="text-primary underline decoration-primary/40 hover:decoration-primary underline-offset-2">OCDS release</a>{" "}
+              stored on-chain. Releases are compiled into a single{" "}
+              <a href="https://standard.open-contracting.org/latest/en/schema/record_package/" target="_blank" rel="noopener noreferrer" className="text-primary underline decoration-primary/40 hover:decoration-primary underline-offset-2">record</a>{" "}
+              per contracting process, providing a complete audit trail that can never be altered or deleted.
+            </p>
+          </div>
+        </CardContent>
+      </Card>
 
       {/* On-Chain Data Model */}
       <Card>
@@ -658,10 +790,10 @@ export default function OCDSPage() {
             <ArrowRight className="h-4 w-4" />
           </Button>
         </Link>
-        <Link href="/standards">
+        <Link href="/">
           <Button size="lg" variant="outline" className="gap-2">
             <ArrowLeft className="h-4 w-4" />
-            Back to Standards Overview
+            Back to Home
           </Button>
         </Link>
         <a

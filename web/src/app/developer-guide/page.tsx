@@ -25,6 +25,9 @@ import {
   ExternalLink,
 } from "lucide-react";
 import Link from "next/link";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import UploadSection from "@/components/UploadSection";
+import DatasetList from "@/components/DatasetList";
 
 // ---------------------------------------------------------------------------
 // Code Block with copy
@@ -135,6 +138,7 @@ const TOC = [
   { id: "pagination", label: "Pagination" },
   { id: "events", label: "Events & WebSocket" },
   { id: "errors", label: "Error Handling" },
+  { id: "dataset-portal", label: "Dataset Portal" },
 ];
 
 // ---------------------------------------------------------------------------
@@ -1317,6 +1321,36 @@ wscat -c ws://localhost:26657/websocket`}
 const account = await client.getAccount(address);
 // account.sequence => next expected sequence number`}
             />
+          </Section>
+
+          {/* ============================================================= */}
+          {/* Dataset Portal */}
+          {/* ============================================================= */}
+          <Section
+            id="dataset-portal"
+            title="Dataset Portal"
+            icon={Database}
+          >
+            <p className="text-sm text-muted-foreground">
+              Upload, discover, and access government datasets stored on the
+              blockchain. Use the tabs below to browse existing datasets or
+              upload new ones.
+            </p>
+
+            <Tabs defaultValue="datasets" className="w-full">
+              <TabsList className="grid grid-cols-2 w-full max-w-md">
+                <TabsTrigger value="datasets">Browse Datasets</TabsTrigger>
+                <TabsTrigger value="upload">Upload Dataset</TabsTrigger>
+              </TabsList>
+
+              <TabsContent value="upload" className="mt-6">
+                <UploadSection />
+              </TabsContent>
+
+              <TabsContent value="datasets" className="mt-6">
+                <DatasetList />
+              </TabsContent>
+            </Tabs>
           </Section>
         </div>
       </main>

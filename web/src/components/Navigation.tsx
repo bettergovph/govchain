@@ -9,9 +9,9 @@ import { useState } from 'react';
 
 const navItems = [
   { href: '/', label: 'Home', icon: Home },
+  { href: '/whitepaper', label: 'Whitepaper', icon: BookOpen },
   { href: '/standards/ocds', label: 'Procurement', icon: FileText },
   { href: '/standards/oc4ids', label: 'Infrastructure', icon: HardHat },
-  { href: '/standards', label: 'Standards', icon: BookOpen },
   { href: '/developer-guide', label: 'Developers', icon: Code },
   { href: '/about', label: 'About', icon: Info },
 ];
@@ -47,7 +47,7 @@ export default function Navigation() {
             <ul className="hidden md:flex items-center gap-4">
               {navItems.map((item) => {
                 const Icon = item.icon;
-                const isActive = item.href === '/' || item.href === '/standards'
+                const isActive = item.href === '/'
                   ? pathname === item.href
                   : pathname.startsWith(item.href);
 
@@ -115,7 +115,7 @@ export default function Navigation() {
               {/* Mobile Navigation Links */}
               {navItems.map((item) => {
                 const Icon = item.icon;
-                const isActive = item.href === '/' || item.href === '/standards'
+                const isActive = item.href === '/'
                   ? pathname === item.href
                   : pathname.startsWith(item.href);
 

@@ -28,6 +28,7 @@ import {
   Ruler,
   ExternalLink,
   BookOpen,
+  ArrowDown,
 } from "lucide-react";
 import Link from "next/link";
 
@@ -44,11 +45,11 @@ export default function OC4IDSPage() {
       {/* Breadcrumb */}
       <div>
         <Link
-          href="/standards"
+          href="/"
           className="text-sm text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1"
         >
           <ArrowLeft className="h-3 w-3" />
-          Back to Standards
+          Back to Home
         </Link>
       </div>
 
@@ -223,6 +224,162 @@ export default function OC4IDSPage() {
           })}
         </div>
       </div>
+
+      {/* Lifecycle Flow Diagram */}
+      <Card className="overflow-hidden">
+        <CardHeader>
+          <CardTitle className="text-lg flex items-center gap-2">
+            <TrendingUp className="h-5 w-5 text-primary" />
+            Infrastructure Project Flow
+          </CardTitle>
+          <CardDescription>
+            How an infrastructure project progresses through{" "}
+            <a href="https://standard.open-contracting.org/infrastructure/latest/en/reference/codelists/#projectstatus" target="_blank" rel="noopener noreferrer" className="text-primary underline decoration-primary/40 hover:decoration-primary underline-offset-2">OC4IDS project statuses</a>,
+            with linked procurement processes and continuous monitoring
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          {/* Project status flow */}
+          <div>
+            <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-3">Project Status Progression</p>
+            <div className="flex flex-col md:flex-row items-stretch gap-0">
+              {[
+                {
+                  name: "Identification",
+                  color: "border-sky-300 bg-sky-50 dark:border-sky-800 dark:bg-sky-950/50",
+                  iconColor: "text-sky-600 dark:text-sky-400",
+                  dotColor: "bg-sky-500",
+                  data: ["Project title & purpose", "Sector classification", "Geographic locations", "Public authority"],
+                },
+                {
+                  name: "Preparation",
+                  color: "border-amber-300 bg-amber-50 dark:border-amber-800 dark:bg-amber-950/50",
+                  iconColor: "text-amber-600 dark:text-amber-400",
+                  dotColor: "bg-amber-500",
+                  data: ["Budget allocation", "Project timeline", "Environmental assessment", "Design & feasibility"],
+                },
+                {
+                  name: "Implementation",
+                  color: "border-emerald-300 bg-emerald-50 dark:border-emerald-800 dark:bg-emerald-950/50",
+                  iconColor: "text-emerald-600 dark:text-emerald-400",
+                  dotColor: "bg-emerald-500",
+                  data: ["Physical progress %", "Financial disbursements", "Contractor performance", "Milestone tracking"],
+                },
+                {
+                  name: "Completion",
+                  color: "border-violet-300 bg-violet-50 dark:border-violet-800 dark:bg-violet-950/50",
+                  iconColor: "text-violet-600 dark:text-violet-400",
+                  dotColor: "bg-violet-500",
+                  data: ["Final project status", "Actual vs. planned cost", "Completion date", "Evaluation & handover"],
+                },
+              ].map((phase, i, arr) => (
+                <div key={phase.name} className="contents">
+                  <div className="flex-1 min-w-0">
+                    <div className={`border-2 rounded-xl p-4 h-full ${phase.color}`}>
+                      <div className="flex items-center gap-2 mb-3">
+                        <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold text-white ${phase.dotColor}`}>
+                          {i + 1}
+                        </div>
+                        <h4 className={`font-semibold text-sm ${phase.iconColor}`}>{phase.name}</h4>
+                      </div>
+                      <ul className="text-xs text-muted-foreground space-y-1.5">
+                        {phase.data.map((d) => (
+                          <li key={d} className="flex items-start gap-1.5">
+                            <CheckCircle2 className={`h-3 w-3 mt-0.5 flex-shrink-0 ${phase.iconColor} opacity-60`} />
+                            {d}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  </div>
+                  {i < arr.length - 1 && (
+                    <div className="flex items-center justify-center py-2 md:py-0 md:px-1">
+                      <ArrowRight className="h-5 w-5 text-muted-foreground/40 hidden md:block" />
+                      <ArrowDown className="h-5 w-5 text-muted-foreground/40 md:hidden" />
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Continuous activity tracks */}
+          <div className="border-t pt-6">
+            <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-3">Continuous Activities Throughout Lifecycle</p>
+            <div className="grid gap-3 md:grid-cols-3">
+              {/* Procurement Linkage */}
+              <div className="p-4 border-2 border-dashed border-amber-300 dark:border-amber-800 rounded-xl bg-amber-50/50 dark:bg-amber-950/30 space-y-2">
+                <div className="flex items-center gap-2">
+                  <Link2 className="h-4 w-4 text-amber-600 dark:text-amber-400" />
+                  <h4 className="font-semibold text-sm text-amber-700 dark:text-amber-300">Procurement Linkage</h4>
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  OCDS contracting processes are linked to the project via{" "}
+                  <span className="font-mono text-[10px] bg-amber-100 dark:bg-amber-900/50 px-1 rounded">Msg/LinkContractingProcess</span>,
+                  connecting procurement data to physical outcomes.
+                </p>
+                <div className="flex items-center gap-2 pt-1">
+                  <Badge variant="outline" className="text-[10px] font-mono gap-1">
+                    <ArrowRight className="h-2.5 w-2.5" />
+                    OCDS Module
+                  </Badge>
+                </div>
+              </div>
+
+              {/* Document Management */}
+              <div className="p-4 border-2 border-dashed border-blue-300 dark:border-blue-800 rounded-xl bg-blue-50/50 dark:bg-blue-950/30 space-y-2">
+                <div className="flex items-center gap-2">
+                  <FileText className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+                  <h4 className="font-semibold text-sm text-blue-700 dark:text-blue-300">Document Attachment</h4>
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  Environmental assessments, permits, designs, and reports are attached with IPFS storage and on-chain hash verification via{" "}
+                  <span className="font-mono text-[10px] bg-blue-100 dark:bg-blue-900/50 px-1 rounded">Msg/AttachDocument</span>.
+                </p>
+                <div className="flex items-center gap-2 pt-1">
+                  <Badge variant="outline" className="text-[10px] font-mono gap-1">
+                    <Shield className="h-2.5 w-2.5" />
+                    IPFS + On-Chain Hash
+                  </Badge>
+                </div>
+              </div>
+
+              {/* Progress Monitoring */}
+              <div className="p-4 border-2 border-dashed border-emerald-300 dark:border-emerald-800 rounded-xl bg-emerald-50/50 dark:bg-emerald-950/30 space-y-2">
+                <div className="flex items-center gap-2">
+                  <BarChart3 className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
+                  <h4 className="font-semibold text-sm text-emerald-700 dark:text-emerald-300">Progress Monitoring</h4>
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  Physical and financial progress is tracked with measurable{" "}
+                  <a href="https://standard.open-contracting.org/infrastructure/latest/en/reference/#metric" target="_blank" rel="noopener noreferrer" className="text-primary underline decoration-primary/40 hover:decoration-primary underline-offset-2">metrics</a>{" "}
+                  and{" "}
+                  <a href="https://standard.open-contracting.org/infrastructure/latest/en/reference/#observation" target="_blank" rel="noopener noreferrer" className="text-primary underline decoration-primary/40 hover:decoration-primary underline-offset-2">observations</a>{" "}
+                  via <span className="font-mono text-[10px] bg-emerald-100 dark:bg-emerald-900/50 px-1 rounded">Msg/UpdateProgress</span>.
+                </p>
+                <div className="flex items-center gap-2 pt-1">
+                  <Badge variant="outline" className="text-[10px] font-mono gap-1">
+                    <TrendingUp className="h-2.5 w-2.5" />
+                    KPIs & Observations
+                  </Badge>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Bottom note */}
+          <div className="flex items-start gap-3 p-3 bg-accent/30 rounded-lg text-xs text-muted-foreground">
+            <Shield className="h-4 w-4 flex-shrink-0 mt-0.5" />
+            <p>
+              Every project update is recorded as an immutable blockchain transaction.
+              The{" "}
+              <a href="https://standard.open-contracting.org/infrastructure/latest/en/reference/#project-schema" target="_blank" rel="noopener noreferrer" className="text-primary underline decoration-primary/40 hover:decoration-primary underline-offset-2">OC4IDS project schema</a>{" "}
+              ensures that budget, timeline, location, procurement, and progress data are captured in a structured,
+              internationally comparable format that can never be altered or deleted.
+            </p>
+          </div>
+        </CardContent>
+      </Card>
 
       {/* On-Chain Data Model */}
       <Card>
@@ -708,10 +865,10 @@ export default function OC4IDSPage() {
             <ArrowRight className="h-4 w-4" />
           </Button>
         </Link>
-        <Link href="/standards">
+        <Link href="/">
           <Button size="lg" variant="outline" className="gap-2">
             <ArrowLeft className="h-4 w-4" />
-            Back to Standards Overview
+            Back to Home
           </Button>
         </Link>
         <a
