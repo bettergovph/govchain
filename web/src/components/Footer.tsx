@@ -1,8 +1,9 @@
 import Link from 'next/link';
-import { Home, Info, Users, FileImage, Github, MessageCircle } from 'lucide-react';
+import { Home, Info, Users, FileImage, Github, MessageCircle, BookOpen } from 'lucide-react';
 
 const navItems = [
   { href: '/', label: 'Home', icon: Home },
+  { href: '/standards', label: 'Standards', icon: BookOpen },
   { href: '/about', label: 'About', icon: Info },
   { href: '/volunteer', label: 'Become a Validator', icon: Users },
   { href: '/gallery', label: 'Gallery', icon: FileImage },
