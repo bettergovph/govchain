@@ -259,12 +259,48 @@ const MODULE_INFO: Record<
     coreSchemas: ["govchain.datasets.v1.Entry"],
     supportingSchemas: ["govchain.datasets.v1.Params"],
   },
+  "govchain.budget.v1": {
+    name: "Budget",
+    icon: "💰",
+    standard: "National Budget Tracking",
+    standardUrl: "",
+    description:
+      "Tracks the national budget lifecycle from the National Expenditure Program (NEP) through the General Appropriations Act (GAA), allotment releases (SARO), cash allocations (NCA), obligations, and disbursements. Provides end-to-end transparency for public financial management aligned with the Unified Account Code Structure (UACS).",
+    concepts: [
+      {
+        term: "Budget Line Item",
+        definition:
+          "A specific allocation in the General Appropriations Act, classified using the Unified Account Code Structure (UACS).",
+      },
+      {
+        term: "Allotment Release (SARO)",
+        definition:
+          "A Special Allotment Release Order authorizing an agency to incur obligations for specified purposes.",
+      },
+      {
+        term: "Cash Allocation (NCA)",
+        definition:
+          "A Notice of Cash Allocation authorizing an agency to disburse funds from the National Treasury.",
+      },
+      {
+        term: "Obligation & Disbursement",
+        definition:
+          "A commitment by a government agency to pay for goods, services, or projects, followed by the actual release of funds.",
+      },
+    ],
+    queryPrefix: "/govchain/budget/",
+    msgPrefix: "/govchain.budget.v1.Msg/",
+    definitionPrefix: "govchain.budget.v1.",
+    coreSchemas: [],
+    supportingSchemas: [],
+  },
 };
 
-const MODULES = [
+const MODULES: { id: string; label: string; placeholder?: boolean }[] = [
   { id: "govchain.procurement.v1", label: "Procurement (OCDS)" },
   { id: "govchain.infrastructure.v1", label: "Infrastructure (OC4IDS)" },
   { id: "govchain.datasets.v1", label: "Datasets" },
+  { id: "govchain.budget.v1", label: "Budget", placeholder: true },
 ];
 
 const SECTIONS: { id: Section; label: string; icon: typeof BookOpen }[] = [
@@ -1198,60 +1234,69 @@ export default function APIDocsPage() {
         </div>
 
         {sidebarOpen && (
-          <div className="flex-1 overflow-y-auto p-3 space-y-4">
-            {/* Module Selection */}
-            <div>
-              <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-2 px-1">
-                Modules
-              </div>
-              <div className="space-y-1">
-                {MODULES.map((mod) => {
-                  const mInfo = MODULE_INFO[mod.id];
-                  return (
+          <div className="flex-1 overflow-y-auto p-3">
+            <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-2 px-1">
+              Modules
+            </div>
+            <div className="space-y-1">
+              {MODULES.map((mod) => {
+                const mInfo = MODULE_INFO[mod.id];
+                const isSelected = selectedModule === mod.id;
+
+                return (
+                  <div key={mod.id}>
                     <button
-                      key={mod.id}
                       onClick={() => {
                         setSelectedModule(mod.id);
                         setSelectedSection("overview");
                       }}
                       className={`w-full text-left px-3 py-2 rounded-md transition-colors flex items-center gap-2 text-sm ${
-                        selectedModule === mod.id
+                        isSelected
                           ? "bg-primary text-primary-foreground"
                           : "hover:bg-muted"
                       }`}
                     >
                       <span>{mInfo?.icon}</span>
                       <span className="font-medium">{mod.label}</span>
+                      {mod.placeholder && (
+                        <Badge
+                          variant="outline"
+                          className={`text-[9px] ml-auto px-1.5 py-0 ${
+                            isSelected
+                              ? "border-primary-foreground/40 text-primary-foreground"
+                              : ""
+                          }`}
+                        >
+                          Soon
+                        </Badge>
+                      )}
                     </button>
-                  );
-                })}
-              </div>
-            </div>
 
-            {/* Section Navigation */}
-            <div>
-              <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-2 px-1">
-                Sections
-              </div>
-              <div className="space-y-0.5">
-                {SECTIONS.map((sec) => {
-                  const Icon = sec.icon;
-                  return (
-                    <button
-                      key={sec.id}
-                      onClick={() => setSelectedSection(sec.id)}
-                      className={`w-full text-left px-3 py-1.5 rounded-md transition-colors flex items-center gap-2 text-sm ${
-                        selectedSection === sec.id
-                          ? "bg-muted font-semibold"
-                          : "hover:bg-muted/50 text-muted-foreground"
-                      }`}
-                    >
-                      <Icon className="h-3.5 w-3.5" />
-                      {sec.label}
-                    </button>
-                  );
-                })}
-              </div>
+                    {/* Sub-sections nested under selected module */}
+                    {isSelected && !mod.placeholder && (
+                      <div className="ml-4 mt-1 mb-2 space-y-0.5 border-l pl-3">
+                        {SECTIONS.map((sec) => {
+                          const Icon = sec.icon;
+                          return (
+                            <button
+                              key={sec.id}
+                              onClick={() => setSelectedSection(sec.id)}
+                              className={`w-full text-left px-3 py-1.5 rounded-md transition-colors flex items-center gap-2 text-sm ${
+                                selectedSection === sec.id
+                                  ? "bg-muted font-semibold"
+                                  : "hover:bg-muted/50 text-muted-foreground"
+                              }`}
+                            >
+                              <Icon className="h-3.5 w-3.5" />
+                              {sec.label}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
             </div>
           </div>
         )}
@@ -1277,19 +1322,69 @@ export default function APIDocsPage() {
             </p>
           </div>
 
+          {/* WIP Notice */}
+          <div className="flex items-start gap-3 p-4 rounded-lg border border-amber-300/50 bg-amber-50/50 dark:border-amber-800/50 dark:bg-amber-950/30">
+            <AlertCircle className="h-5 w-5 text-amber-500 flex-shrink-0 mt-0.5" />
+            <div>
+              <p className="text-sm font-medium text-amber-800 dark:text-amber-300">
+                Work in Progress
+              </p>
+              <p className="text-xs text-amber-700/80 dark:text-amber-400/70 mt-0.5">
+                This API documentation is under active development. Endpoints,
+                schemas, and message formats are subject to change as the
+                project evolves.
+              </p>
+            </div>
+          </div>
+
+          {/* Budget Placeholder */}
+          {selectedModule === "govchain.budget.v1" && (
+            <Card>
+              <CardContent className="pt-8 pb-8 text-center space-y-4">
+                <span className="text-5xl block">💰</span>
+                <div>
+                  <h2 className="text-xl font-bold">Budget Module</h2>
+                  <p className="text-muted-foreground text-sm max-w-lg mx-auto mt-2">
+                    The National Budget module will track the full lifecycle of
+                    public funds — from the National Expenditure Program (NEP)
+                    through the General Appropriations Act (GAA), allotment
+                    releases (SARO), cash allocations (NCA), obligations, and
+                    disbursements.
+                  </p>
+                </div>
+                <div className="grid gap-3 sm:grid-cols-2 max-w-xl mx-auto text-left">
+                  {MODULE_INFO["govchain.budget.v1"].concepts.map((c) => (
+                    <Card key={c.term}>
+                      <CardContent className="pt-4 pb-4">
+                        <div className="font-semibold text-sm mb-1">{c.term}</div>
+                        <p className="text-xs text-muted-foreground leading-relaxed">
+                          {c.definition}
+                        </p>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+                <Badge variant="outline" className="text-xs gap-1.5">
+                  <AlertCircle className="h-3 w-3" />
+                  Coming Soon
+                </Badge>
+              </CardContent>
+            </Card>
+          )}
+
           {/* Active Section */}
-          {selectedSection === "overview" && (
+          {selectedModule !== "govchain.budget.v1" && selectedSection === "overview" && (
             <OverviewSection moduleId={selectedModule} />
           )}
 
-          {selectedSection === "schemas" && (
+          {selectedModule !== "govchain.budget.v1" && selectedSection === "schemas" && (
             <SchemasSection
               moduleId={selectedModule}
               definitions={definitions}
             />
           )}
 
-          {selectedSection === "queries" && (
+          {selectedModule !== "govchain.budget.v1" && selectedSection === "queries" && (
             <QueriesSection
               moduleId={selectedModule}
               paths={paths}
@@ -1297,7 +1392,7 @@ export default function APIDocsPage() {
             />
           )}
 
-          {selectedSection === "transactions" && (
+          {selectedModule !== "govchain.budget.v1" && selectedSection === "transactions" && (
             <TransactionsSection
               moduleId={selectedModule}
               paths={paths}
