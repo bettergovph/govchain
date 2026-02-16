@@ -18,6 +18,7 @@ import {
   AlertTriangle,
   Terminal,
   ExternalLink,
+  FileCode,
 } from "lucide-react";
 
 const GUIDE_SECTIONS = [
@@ -34,6 +35,7 @@ const GUIDE_SECTIONS = [
 
 const RESOURCES = [
   { href: "/api-docs", label: "API Reference", icon: Terminal },
+  { href: "/api-docs", label: "Data Schema", icon: FileCode },
   { href: "/explorer", label: "Block Explorer", icon: ExternalLink },
   { href: "/volunteer", label: "Run a Validator", icon: ExternalLink },
   { href: "/datasets", label: "Dataset Portal", icon: Database },
