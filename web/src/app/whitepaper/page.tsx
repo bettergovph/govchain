@@ -125,8 +125,22 @@ export default function WhitepaperPage() {
           and a proposed National Budget Module for the Philippine budget cycle.
         </p>
         <p className="text-xs text-muted-foreground">
-          Version 0.1 &middot; February 2025 &middot; BetterGov.PH
+          DRAFT &mdash; Version 0.1 &middot; Last updated 2026-02-15 &middot; BetterGov.PH
         </p>
+
+        <div className="flex items-start gap-3 p-4 rounded-lg border border-amber-300/50 bg-amber-50/50 dark:border-amber-800/50 dark:bg-amber-950/30">
+          <Shield className="h-5 w-5 text-amber-500 flex-shrink-0 mt-0.5" />
+          <div>
+            <p className="text-sm font-medium text-amber-800 dark:text-amber-300">
+              Draft Document
+            </p>
+            <p className="text-xs text-amber-700/80 dark:text-amber-400/70 mt-0.5">
+              This whitepaper is a living document in draft state. Objectives,
+              module designs, and technical details are subject to change as the
+              project evolves. Feedback and contributions are welcome.
+            </p>
+          </div>
+        </div>
       </div>
 
       {/* ---------------------------------------------------------------- */}

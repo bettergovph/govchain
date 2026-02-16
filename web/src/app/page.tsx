@@ -22,13 +22,15 @@ import {
   TrendingUp,
   Landmark,
   HardHat,
+  Banknote,
+  BookOpen,
 } from "lucide-react";
 import Link from "next/link";
 
 export const metadata = {
   title: "OpenGovChain - Open Standards on Blockchain for Government Transparency",
   description:
-    "Blockchain-backed Open Contracting Data Standard (OCDS) and Open Contracting for Infrastructure (OC4IDS) for transparent, verifiable, and permanent government procurement and infrastructure data.",
+    "Blockchain-backed Open Contracting Data Standard (OCDS), Open Contracting for Infrastructure (OC4IDS), and National Budget tracking for transparent, verifiable, and permanent government fiscal data.",
 };
 
 export default function Home() {
@@ -48,16 +50,22 @@ export default function Home() {
         </div>
 
         <h1 className="text-4xl font-bold text-foreground leading-tight">
-          Blockchain for Open Contracting Data Standard (OCDS) &amp; Open
-          Contracting for Infrastructure (OC4IDS)
+          Open Contracting (OCDS) & Infrastructure (OC4IDS) Data Standards &amp; Budget Monitoring on Blockchain
         </h1>
 
-        <p className="text-xl text-muted-foreground max-w-3xl">
-          OpenGovChain implements internationally recognized open data standards
-          on an immutable blockchain — making government procurement and
-          infrastructure spending transparent, verifiable, and permanently
-          accessible to every citizen.
+        <p className="text-xl text-muted-foreground max-w-5xl">
+          OpenGovChain is an open-source platform that implements internationally recognized open data standards
+          on an immutable blockchain — making government procurement,
+          infrastructure spending, and the national budget transparent,
+          verifiable, and permanently accessible to every citizen.
         </p>
+
+        <Link href="/whitepaper">
+          <Button size="lg" className="gap-2">
+            <BookOpen className="h-5 w-5" />
+            Read the Whitepaper
+          </Button>
+        </Link>
       </div>
 
       {/* Why Open Standards Matter */}
@@ -111,10 +119,10 @@ export default function Home() {
         </CardContent>
       </Card>
 
-      {/* The Two Standards */}
+      {/* The Three Modules */}
       <div className="space-y-4">
-        <h2 className="text-2xl font-bold">Our Implemented Standards</h2>
-        <div className="grid gap-6 md:grid-cols-2">
+        <h2 className="text-2xl font-bold">Our Modules</h2>
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
           {/* OCDS Card */}
           <Card className="flex flex-col">
             <CardHeader>
@@ -214,6 +222,60 @@ export default function Home() {
               </Link>
             </CardContent>
           </Card>
+
+          {/* Budget Card */}
+          <Card className="flex flex-col">
+            <CardHeader>
+              <div className="flex items-center gap-3 mb-2">
+                <div className="p-3 bg-primary/10 rounded-lg">
+                  <Banknote className="h-8 w-8 text-primary" />
+                </div>
+                <div>
+                  <CardTitle className="text-xl">National Budget</CardTitle>
+                  <CardDescription className="flex items-center gap-1.5">
+                    NEP &rarr; GAA &rarr; SARO &rarr; Disbursement
+                    <Badge variant="secondary" className="text-[10px] ml-1">
+                      Proposed
+                    </Badge>
+                  </CardDescription>
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent className="flex-1 space-y-4">
+              <p className="text-sm text-muted-foreground">
+                A proposed module to track the full lifecycle of public funds
+                — from the National Expenditure Program (NEP) through
+                legislative enactment (GAA), allotment releases (SARO), cash
+                allocations (NCA), obligations, and disbursements, aligned
+                with the Unified Account Code Structure (UACS).
+              </p>
+
+              <div className="space-y-2">
+                <h4 className="font-semibold text-sm">Planned Capabilities:</h4>
+                <ul className="space-y-1">
+                  {[
+                    "Track budget lines from NEP proposal through GAA enactment",
+                    "Record allotment releases (SARO) and cash allocations (NCA)",
+                    "Link obligations to OCDS procurement processes via UACS codes",
+                    "Anchor COA audit findings to specific budget items",
+                    "End-to-end traceability from appropriation to physical delivery",
+                  ].map((item) => (
+                    <li key={item} className="flex items-start gap-2">
+                      <CheckCircle2 className="h-4 w-4 text-muted-foreground/40 mt-0.5 flex-shrink-0" />
+                      <span className="text-sm text-muted-foreground">{item}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+
+              <Link href="/whitepaper#budget">
+                <Button variant="outline" className="w-full gap-2 mt-2">
+                  Read the Whitepaper
+                  <ArrowRight className="h-4 w-4" />
+                </Button>
+              </Link>
+            </CardContent>
+          </Card>
         </div>
       </div>
 
@@ -271,10 +333,10 @@ export default function Home() {
                 Interoperability &amp; Open APIs
               </h3>
               <p className="text-sm text-muted-foreground">
-                Data stored on-chain follows international standards, making it
-                interoperable with existing OCDS and OC4IDS tools, analytics
-                platforms, and civil society monitoring applications
-                worldwide.
+                Data stored on-chain follows international standards (OCDS,
+                OC4IDS, UACS), making it interoperable with existing open
+                contracting tools, analytics platforms, and civil society
+                monitoring applications worldwide.
               </p>
             </div>
           </div>
@@ -406,13 +468,19 @@ export default function Home() {
             </h2>
             <p className="text-muted-foreground max-w-2xl mx-auto">
               OpenGovChain is open source and free for any government agency or
-              organization. Help us build a future where every public
-              contract and infrastructure project is transparent, verifiable,
-              and accountable.
+              organization. Help us build a future where every public peso
+              — from appropriation to procurement to physical delivery —
+              is transparent, verifiable, and accountable.
             </p>
             <div className="flex flex-wrap justify-center gap-3">
-              <Link href="/standards/ocds">
+              <Link href="/whitepaper">
                 <Button size="lg" className="gap-2">
+                  <BookOpen className="h-5 w-5" />
+                  Read the Whitepaper
+                </Button>
+              </Link>
+              <Link href="/standards/ocds">
+                <Button size="lg" variant="outline" className="gap-2">
                   <Landmark className="h-5 w-5" />
                   Explore OCDS Module
                 </Button>
