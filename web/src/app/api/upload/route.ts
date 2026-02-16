@@ -109,7 +109,7 @@ export async function POST(request: NextRequest) {
         category: metadata.category,
         submitter: submitter,
         timestamp: timestamp * 1000, // Convert to milliseconds for frontend
-        pinCount: 0,
+        pin_count: 0,
         creator: submitter,
       };
 
