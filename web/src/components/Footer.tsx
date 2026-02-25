@@ -1,18 +1,34 @@
 import Link from 'next/link';
-import { Home, Info, Users, FileImage, Github, MessageCircle } from 'lucide-react';
+import { Github, HelpCircleIcon, MessageCircle, User2Icon } from 'lucide-react';
 
 const navItems = [
-  { href: '/', label: 'Home', icon: Home },
-  { href: '/about', label: 'About', icon: Info },
-  { href: '/volunteer', label: 'Become a Validator', icon: Users },
-  { href: '/gallery', label: 'Gallery', icon: FileImage },
+  { href: '/', label: 'Home' },
+  { href: '/whitepaper', label: 'Whitepaper' },
+  { href: '/standards/ocds', label: 'Procurement (OCDS)' },
+  { href: '/standards/oc4ids', label: 'Infrastructure (OC4IDS)' },
+  { href: '/about', label: 'About OpenGovChain' },
+];
+
+const developerItems = [
+  { href: '/developer-guide', label: 'Developer Guide' },
+  { href: '/standards/ocds', label: 'Procurement (OCDS)' },
+  { href: '/standards/oc4ids', label: 'Infrastructure (OC4IDS)' },
+  { href: '/api-docs', label: 'Data Schema' },
+  { href: 'https://github.com/bettergovph/govchain/issues', label: 'Report Issues'}
+];
+
+const resourceItems = [
+  { href: '/api-docs', label: 'API Reference' },
+  { href: '/datasets', label: 'Dataset Portal' },
+  { href: '/explorer', label: 'Blockchain Explorer' },
+  { href: '/volunteer', label: 'Run a Validator' }
 ];
 
 export default function Footer() {
   return (
     <footer className="border-t border-border bg-background mt-16">
       <div className="container mx-auto px-4 py-12">
-        <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-4">
+        <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-6">
           {/* About Section */}
           <div className="lg:col-span-2">
             <div className="flex items-center gap-3 mb-4">
@@ -48,10 +64,55 @@ export default function Footer() {
             </ul>
           </div>
 
+          {/* Developer Links */}
+          <div>
+            <h4 className="font-semibold mb-4">Developers</h4>
+            <ul className="space-y-2">
+              {developerItems.map((item) => (
+                <li key={item.href}>
+                  <Link
+                    href={item.href}
+                    className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+                  >
+                    {item.label}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {/* Resources */}
+          <div>
+            <h4 className="font-semibold mb-4">Resources</h4>
+            <ul className="space-y-2">
+              {resourceItems.map((item) => (
+                <li key={item.href}>
+                  <Link
+                    href={item.href}
+                    className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+                  >
+                    {item.label}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+
           {/* Community Links */}
           <div>
             <h4 className="font-semibold mb-4">Community</h4>
             <ul className="space-y-2">
+              <li>
+                <a
+                  href="https://discord.gg/bettergovph"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-sm text-muted-foreground hover:text-foreground transition-colors flex items-center gap-2"
+                >
+                  <User2Icon className="h-4 w-4" />
+                  Become a Volunteer
+                </a>
+              </li>
               <li>
                 <a
                   href="https://discord.gg/bettergovph"
@@ -72,6 +133,17 @@ export default function Footer() {
                 >
                   <Github className="h-4 w-4" />
                   GitHub
+                </a>
+              </li>
+               <li>
+                <a
+                  href="https://about.bettergov.ph"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-sm text-muted-foreground hover:text-foreground transition-colors flex items-center gap-2"
+                >
+                  <HelpCircleIcon className="h-4 w-4" />
+                  About BetterGov.ph
                 </a>
               </li>
             </ul>

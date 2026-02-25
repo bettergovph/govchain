@@ -2,17 +2,18 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Home, Info, Users, FileImage, Github, MessageCircle, Menu, X, Activity } from 'lucide-react';
+import { Home, Info, Github, MessageCircle, Menu, X, BookOpen, Code, FileText, HardHat } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import Image from 'next/image';
 import { useState } from 'react';
 
 const navItems = [
   { href: '/', label: 'Home', icon: Home },
-  { href: '/explorer', label: 'Explorer', icon: Activity },
+  { href: '/whitepaper', label: 'Whitepaper', icon: BookOpen },
+  { href: '/standards/ocds', label: 'Procurement', icon: FileText },
+  { href: '/standards/oc4ids', label: 'Infrastructure', icon: HardHat },
+  { href: '/developer-guide', label: 'Developers', icon: Code },
   { href: '/about', label: 'About', icon: Info },
-  { href: '/volunteer', label: 'Become a Validator', icon: Users },
-  { href: '/gallery', label: 'Gallery', icon: FileImage },
 ];
 
 export default function Navigation() {
@@ -46,7 +47,9 @@ export default function Navigation() {
             <ul className="hidden md:flex items-center gap-4">
               {navItems.map((item) => {
                 const Icon = item.icon;
-                const isActive = pathname === item.href;
+                const isActive = item.href === '/'
+                  ? pathname === item.href
+                  : pathname.startsWith(item.href);
 
                 return (
                   <li key={item.href}>
@@ -112,7 +115,9 @@ export default function Navigation() {
               {/* Mobile Navigation Links */}
               {navItems.map((item) => {
                 const Icon = item.icon;
-                const isActive = pathname === item.href;
+                const isActive = item.href === '/'
+                  ? pathname === item.href
+                  : pathname.startsWith(item.href);
 
                 return (
                   <Link
