@@ -17,7 +17,7 @@ import {
   Landmark,
   Users,
   CheckCircle2,
-  ChevronRight,
+  ChevronsDown
 } from "lucide-react";
 
 // ---------------------------------------------------------------------------
@@ -845,7 +845,7 @@ export default function WhitepaperPage() {
                 Construction &mdash; Region III&rdquo; (UACS: 101-10-01-001-03-08-310203-5-02-13-050) appropriates PHP 50M. DBM releases SARO and NCA.
               </div>
             </div>
-            <ChevronRight className="h-4 w-4 text-muted-foreground mx-auto" />
+            <ChevronsDown className="h-4 w-4 text-muted-foreground mx-auto" />
             <div className="flex items-start gap-3">
               <FileText className="h-4 w-4 text-primary flex-shrink-0 mt-0.5" />
               <div>
@@ -855,7 +855,7 @@ export default function WhitepaperPage() {
                 line. The process moves through tender, award, and contract.
               </div>
             </div>
-            <ChevronRight className="h-4 w-4 text-muted-foreground mx-auto" />
+            <ChevronsDown className="h-4 w-4 text-muted-foreground mx-auto" />
             <div className="flex items-start gap-3">
               <HardHat className="h-4 w-4 text-primary flex-shrink-0 mt-0.5" />
               <div>
@@ -1021,11 +1021,10 @@ export default function WhitepaperPage() {
                   className="flex items-start gap-2 text-xs text-muted-foreground"
                 >
                   <CheckCircle2
-                    className={`h-3.5 w-3.5 flex-shrink-0 mt-0.5 ${
-                      p.status === "complete"
-                        ? "text-emerald-500"
-                        : "text-muted-foreground/40"
-                    }`}
+                    className={`h-3.5 w-3.5 flex-shrink-0 mt-0.5 ${p.status === "complete"
+                      ? "text-emerald-500"
+                      : "text-muted-foreground/40"
+                      }`}
                   />
                   {item}
                 </li>
