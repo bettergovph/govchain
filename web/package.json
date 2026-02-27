@@ -40,6 +40,7 @@
     "date-fns": "^4.1.0",
     "helia": "^5.5.1",
     "lucide-react": "^0.544.0",
+    "mapbox-gl": "^3.8.0",
     "multiformats": "^13.4.1",
     "next": "^15.5.9",
     "react": "19.1.0",

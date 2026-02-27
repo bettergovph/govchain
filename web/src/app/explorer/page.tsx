@@ -28,8 +28,10 @@ import {
   Hash,
   CheckCircle2,
   XCircle,
+  MapPin,
 } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
+import { ValidatorMap } from '@/components/ui/validator-map';
 
 interface BlockchainStats {
   latestHeight: number;
@@ -53,6 +55,16 @@ interface ValidatorInfo {
   remote_ip: string;
   is_outbound: boolean;
   connection_status: any;
+}
+
+interface ValidatorGeoLocation {
+  ip: string;
+  lat: number;
+  lng: number;
+  moniker: string;
+  country: string;
+  city: string;
+  nodeId: string;
 }
 
 interface Transaction {
@@ -90,6 +102,7 @@ export default function ExplorerPage() {
   const [stats, setStats] = useState<BlockchainStats | null>(null);
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [blocks, setBlocks] = useState<Block[]>([]);
+  const [validatorLocations, setValidatorLocations] = useState<ValidatorGeoLocation[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
@@ -99,6 +112,7 @@ export default function ExplorerPage() {
     fetchStats();
     fetchTransactions();
     fetchBlocks();
+    fetchValidatorGeolocations();
 
     // Auto-refresh every 5 seconds for more real-time stats
     const interval = setInterval(() => {
@@ -166,6 +180,21 @@ export default function ExplorerPage() {
       console.error('Error fetching blocks:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchValidatorGeolocations = async () => {
+    try {
+      const response = await fetch('/api/explorer/validators-geo');
+      if (response.ok) {
+        const data = await response.json();
+        if (data.success && data.validators) {
+          setValidatorLocations(data.validators);
+          console.log(`📍 Loaded ${data.count} validator locations`);
+        }
+      }
+    } catch (error) {
+      console.error('Error fetching validator geolocations:', error);
     }
   };
 
@@ -734,6 +763,18 @@ export default function ExplorerPage() {
                       </div>
                     </CardContent>
                   </Card>
+                </div>
+              )}
+
+              {/* Global Validator Map */}
+              {validatorLocations.length > 0 && (
+                <div className="mt-6">
+                  <div className="flex items-center gap-2 mb-3">
+                    <MapPin className="h-5 w-5" />
+                    <h3 className="text-lg font-semibold">Global Validator Network</h3>
+                    <Badge variant="secondary">{validatorLocations.length} nodes</Badge>
+                  </div>
+                  <ValidatorMap validators={validatorLocations} />
                 </div>
               )}
             </CardContent>
