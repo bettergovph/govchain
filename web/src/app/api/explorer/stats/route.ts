@@ -3,21 +3,26 @@ import { NextResponse } from 'next/server';
 const BLOCKCHAIN_API = process.env.BLOCKCHAIN_API || 'http://157.90.134.175:1317';
 const BLOCKCHAIN_RPC = process.env.BLOCKCHAIN_NODE || 'tcp://157.90.134.175:26657';
 
+function rpcEndpoint() {
+  return BLOCKCHAIN_RPC.replace(/^tcp:\/\//, 'http://').replace(/\/$/, '');
+}
+
 /**
  * Get blockchain explorer statistics using entry data
  */
 export async function GET() {
   try {
-    let totalEntries = 0;
+    let totalTransactions = 0;
+    let totalProcurementProcesses = 0;
     let latestBlockHeight = 0;
-    let recentEntries: any[] = [];
     let totalValidators = 1; // Default fallback
     let validators: any[] = [];
     let peerCount = 0;
+    const rpc = rpcEndpoint();
 
     // Get latest block height for blockchain info
     try {
-      const statusResponse = await fetch(`${BLOCKCHAIN_RPC}/status`);
+      const statusResponse = await fetch(`${rpc}/status`);
       if (statusResponse.ok) {
         const statusData = await statusResponse.json();
         latestBlockHeight = parseInt(statusData.result?.sync_info?.latest_block_height || '0');
@@ -28,7 +33,7 @@ export async function GET() {
 
     // Get validator/peer information from net_info endpoint
     try {
-      const netInfoResponse = await fetch(`${BLOCKCHAIN_RPC}/net_info`);
+      const netInfoResponse = await fetch(`${rpc}/net_info`);
       if (netInfoResponse.ok) {
         const netData = await netInfoResponse.json();
         const peers = netData.result?.peers || [];
@@ -68,70 +73,48 @@ export async function GET() {
       console.error('Error fetching network info:', error);
     }
 
-    // Get total entries using minimal query to get pagination total efficiently
+    // Count real indexed transactions from CometBFT.
     try {
-      const entriesResponse = await fetch(
-        `${BLOCKCHAIN_API}/govchain/datasets/v1/entry?pagination.limit=1&pagination.reverse=true`,
-        {
-          cache: 'no-store', // Ensure fresh data
-          headers: {
-            'Cache-Control': 'no-cache'
-          }
-        }
-      );
+      const params = new URLSearchParams({
+        query: '"tx.height>0"',
+        prove: 'false',
+        page: '1',
+        per_page: '1',
+        order_by: '"desc"',
+      });
+      const txResponse = await fetch(`${rpc}/tx_search?${params.toString()}`, { cache: 'no-store' });
 
-      if (entriesResponse.ok) {
-        const entriesData = await entriesResponse.json();
-        const entries = entriesData.entry || [];
-        const pagination = entriesData.pagination || {};
-
-        totalEntries = parseInt(pagination.total || '0');
-        recentEntries = entries; // Will be just 1 record for efficiency
-
-        console.log(`📊 Stats API: Found ${totalEntries} total entries via pagination.total`);
-        console.log(`🔍 Direct API URL: ${BLOCKCHAIN_API}/govchain/datasets/v1/entry`);
-        console.log(`🔍 Pagination data:`, pagination);
-
-        // Get a few more recent entries for display if we found entries
-        if (totalEntries > 0) {
-          try {
-            const recentResponse = await fetch(
-              `${BLOCKCHAIN_API}/govchain/datasets/v1/entry?pagination.limit=5&pagination.reverse=true`,
-              { cache: 'no-store' }
-            );
-            if (recentResponse.ok) {
-              const recentData = await recentResponse.json();
-              recentEntries = recentData.entry || [];
-              console.log(`🔍 Got ${recentEntries.length} recent entries for display`);
-            }
-          } catch (error) {
-            console.log('Could not fetch recent entries for display:', error);
-          }
-        }
+      if (txResponse.ok) {
+        const txData = await txResponse.json();
+        totalTransactions = Number(txData.result?.total_count || 0);
       } else {
-        console.error(`Failed to fetch entries for stats: ${entriesResponse.status} ${entriesResponse.statusText}`);
-        const errorText = await entriesResponse.text();
-        console.error('Error response body:', errorText);
-        console.error(`🔍 Tried URL: ${BLOCKCHAIN_API}/govchain/datasets/v1/entry`);
+        console.error(`Failed to fetch tx count: ${txResponse.status} ${txResponse.statusText}`);
       }
     } catch (error) {
-      console.error('Error fetching entries for stats:', error);
+      console.error('Error fetching tx count:', error);
     }
 
-    // Calculate some basic statistics
-    const uniqueAgencies = new Set(recentEntries.map(entry => entry.agency)).size;
-    const uniqueCategories = new Set(recentEntries.map(entry => entry.category)).size;
+    // Count procurement processes, which corresponds to imported OCDS releases in
+    // the current one-release-per-process import.
+    try {
+      const processResponse = await fetch(
+        `${BLOCKCHAIN_API}/govchain/procurement/v1/process?pagination.limit=1&pagination.count_total=true`,
+        { cache: 'no-store' }
+      );
 
-    // Recent activity (entries from last 24 hours)
-    const last24Hours = Date.now() - (24 * 60 * 60 * 1000);
-    const recentActivity = recentEntries.filter(entry => {
-      if (!entry.timestamp) return false;
-      const entryTime = parseInt(entry.timestamp) * 1000;
-      return entryTime > last24Hours;
-    }).length;
+      if (processResponse.ok) {
+        const processData = await processResponse.json();
+        totalProcurementProcesses = Number(processData.pagination?.total || processData.processes?.length || 0);
+      } else {
+        console.error(`Failed to fetch procurement process count: ${processResponse.status} ${processResponse.statusText}`);
+      }
+    } catch (error) {
+      console.error('Error fetching procurement process count:', error);
+    }
 
     return NextResponse.json({
-      totalTransactions: totalEntries, // Use entries as "transactions"
+      totalTransactions,
+      totalProcurementProcesses,
       totalBlocks: latestBlockHeight,
       latestHeight: latestBlockHeight,
       totalValidators: totalValidators, // Real validator count from network
@@ -140,23 +123,8 @@ export async function GET() {
       avgBlockTime: '6s', // Placeholder - could be calculated from recent blocks
       blockTime: 6,
       chainId: 'govchain',
-      recentActivity,
-      uniqueAgencies,
-      uniqueCategories,
       validatorDetails: validators, // Detailed validator information
-      latestEntries: recentEntries.slice(0, 5).map(entry => {
-        // Transform entries to look like transactions for the explorer
-        return {
-          txhash: entry.index || `entry-${entry.timestamp}`,
-          timestamp: entry.timestamp ? new Date(parseInt(entry.timestamp) * 1000).toISOString() : new Date().toISOString(),
-          type: 'MsgCreateEntry',
-          title: entry.title,
-          agency: entry.agency,
-          category: entry.category,
-          submitter: entry.submitter
-        };
-      }),
-      source: 'entries',
+      source: 'tx_search',
       success: true
     });
   } catch (error) {

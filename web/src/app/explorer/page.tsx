@@ -34,6 +34,7 @@ import { formatDistanceToNow } from 'date-fns';
 interface BlockchainStats {
   latestHeight: number;
   totalTransactions: number;
+  totalProcurementProcesses?: number;
   chainId: string;
   validators: number;
   totalValidators: number;
@@ -58,6 +59,7 @@ interface ValidatorInfo {
 interface Transaction {
   txhash: string;
   height: string;
+  index?: number;
   code: number;
   timestamp: string;
   tx: {
@@ -68,6 +70,17 @@ interface Transaction {
   };
   gas_used: string;
   gas_wanted: string;
+  release_count?: number;
+  first_release?: {
+    ocid?: string;
+    releaseId?: string;
+    publisher?: string;
+  };
+  last_release?: {
+    ocid?: string;
+    releaseId?: string;
+    publisher?: string;
+  };
 }
 
 interface Block {
@@ -120,10 +133,8 @@ export default function ExplorerPage() {
         const data = await response.json();
         console.log('📊 Explorer stats received:', {
           totalTransactions: data.totalTransactions,
+          totalProcurementProcesses: data.totalProcurementProcesses,
           source: data.source,
-          uniqueAgencies: data.uniqueAgencies,
-          uniqueCategories: data.uniqueCategories,
-          rawData: data // Log full data for debugging
         });
         setStats(data);
       } else {
@@ -206,10 +217,14 @@ export default function ExplorerPage() {
       return 'Dataset Entry';
     }
 
-    return msgType;
+    return msg.count && msg.count > 1 ? `${msgType} x${msg.count}` : msgType;
   };
 
   const getEntryTitle = (tx: Transaction) => {
+    if (tx.release_count) {
+      return `${tx.release_count.toLocaleString()} procurement releases`;
+    }
+
     // If this is from entry data, show the title
     if ((tx as any).entry_data?.title) {
       return (tx as any).entry_data.title;
@@ -225,6 +240,10 @@ export default function ExplorerPage() {
   };
 
   const getEntryAgency = (tx: Transaction) => {
+    if (tx.first_release?.ocid && tx.last_release?.ocid) {
+      return `${tx.first_release.ocid}/${tx.first_release.releaseId} to ${tx.last_release.ocid}/${tx.last_release.releaseId}`;
+    }
+
     // If this is from entry data, show the agency
     if ((tx as any).entry_data?.agency) {
       return (tx as any).entry_data.agency;
@@ -290,7 +309,7 @@ export default function ExplorerPage() {
 
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Dataset Entries</CardTitle>
+              <CardTitle className="text-sm font-medium">Indexed Transactions</CardTitle>
               <TrendingUp className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
@@ -300,7 +319,7 @@ export default function ExplorerPage() {
                   : '0'
                 }
               </div>
-              <p className="text-xs text-muted-foreground">Total entries on chain</p>
+              <p className="text-xs text-muted-foreground">Total committed txs</p>
               {stats.source && (
                 <p className="text-xs text-blue-600">Source: {stats.source}</p>
               )}
@@ -309,12 +328,14 @@ export default function ExplorerPage() {
 
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Active Validators (relax, this is a demo)</CardTitle>
-              <Users className="h-4 w-4 text-muted-foreground" />
+              <CardTitle className="text-sm font-medium">Procurement Releases</CardTitle>
+              <Activity className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{stats.validators}</div>
-              <p className="text-xs text-muted-foreground">Securing the network</p>
+              <div className="text-2xl font-bold">
+                {(stats.totalProcurementProcesses || 0).toLocaleString()}
+              </div>
+              <p className="text-xs text-muted-foreground">Imported OCDS processes</p>
             </CardContent>
           </Card>
 
@@ -445,10 +466,10 @@ export default function ExplorerPage() {
         <TabsContent value="transactions" className="mt-6">
           <Card>
             <CardHeader>
-              <CardTitle>Dataset Transactions</CardTitle>
+              <CardTitle>Transactions</CardTitle>
               <CardDescription>
-                Dataset entries and their transaction details - showing data from
-                <code className="bg-muted px-1 rounded text-sm">/govchain/datasets/v1/entry</code>
+                Real committed chain transactions from
+                <code className="bg-muted px-1 rounded text-sm"> /tx_search</code>
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -460,7 +481,8 @@ export default function ExplorerPage() {
                       <TableHead>Tx Hash / Entry</TableHead>
                       <TableHead>Block</TableHead>
                       <TableHead>Type</TableHead>
-                      <TableHead>Agency</TableHead>
+                      <TableHead>Releases</TableHead>
+                      <TableHead>Gas Used</TableHead>
                       <TableHead>Time</TableHead>
                     </TableRow>
                   </TableHeader>
@@ -489,6 +511,9 @@ export default function ExplorerPage() {
                               ? getMessageType(tx.tx.body.messages[0])
                               : 'Unknown'}
                           </Badge>
+                        </TableCell>
+                        <TableCell>
+                          {tx.release_count ? tx.release_count.toLocaleString() : '—'}
                         </TableCell>
                         <TableCell>{parseInt(tx.gas_used || '0').toLocaleString()}</TableCell>
                         <TableCell className="text-xs text-muted-foreground">

@@ -1,101 +1,156 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-const BLOCKCHAIN_API = process.env.BLOCKCHAIN_API || 'http://localhost:1317';
+const RAW_BLOCKCHAIN_RPC = process.env.BLOCKCHAIN_NODE || 'http://localhost:26657';
 
-/**
- * Fetch transactions from dataset entries using the REST endpoint
- * This gives us actual dataset-related transactions with tx_hash from entries
- */
+function rpcEndpoint() {
+  return RAW_BLOCKCHAIN_RPC.replace(/^tcp:\/\//, 'http://').replace(/\/$/, '');
+}
+
+function clampInt(value: string | null, fallback: number, min: number, max: number) {
+  const parsed = Number(value);
+  if (!Number.isInteger(parsed)) return fallback;
+  return Math.min(max, Math.max(min, parsed));
+}
+
+function eventAttributes(event: any) {
+  const attributes: Record<string, string> = {};
+
+  for (const attr of event?.attributes || []) {
+    if (typeof attr?.key === 'string') {
+      attributes[attr.key] = typeof attr.value === 'string' ? attr.value : String(attr.value ?? '');
+    }
+  }
+
+  return attributes;
+}
+
+function summarizeTx(tx: any, blockTime?: string) {
+  const events = tx.tx_result?.events || [];
+  const actionCounts = new Map<string, number>();
+  const releaseEvents = [];
+
+  for (const event of events) {
+    const attributes = eventAttributes(event);
+
+    if (event.type === 'message' && attributes.action) {
+      actionCounts.set(attributes.action, (actionCounts.get(attributes.action) || 0) + 1);
+    }
+
+    if (event.type === 'release_submitted') {
+      releaseEvents.push({
+        ocid: attributes.ocid,
+        releaseId: attributes.release_id,
+        publisher: attributes.publisher,
+      });
+    }
+  }
+
+  const messages = Array.from(actionCounts.entries()).map(([typeUrl, count]) => ({
+    '@type': typeUrl,
+    count,
+  }));
+
+  const firstRelease = releaseEvents[0];
+  const lastRelease = releaseEvents[releaseEvents.length - 1];
+
+  return {
+    txhash: tx.hash,
+    height: tx.height,
+    index: tx.index,
+    code: Number(tx.tx_result?.code || 0),
+    timestamp: blockTime || '',
+    tx: {
+      body: {
+        messages,
+        memo: '',
+      },
+    },
+    gas_used: String(tx.tx_result?.gas_used || '0'),
+    gas_wanted: String(tx.tx_result?.gas_wanted || '0'),
+    raw_log: tx.tx_result?.log || '',
+    release_count: releaseEvents.length,
+    first_release: firstRelease,
+    last_release: lastRelease,
+    release_samples: releaseEvents.slice(0, 5),
+  };
+}
+
+async function getBlockTimes(rpc: string, heights: string[]) {
+  const uniqueHeights = Array.from(new Set(heights));
+  const entries = await Promise.all(
+    uniqueHeights.map(async (height) => {
+      try {
+        const response = await fetch(`${rpc}/block?height=${encodeURIComponent(height)}`, {
+          cache: 'no-store',
+        });
+
+        if (!response.ok) return [height, ''] as const;
+
+        const data = await response.json();
+        return [height, data.result?.block?.header?.time || ''] as const;
+      } catch {
+        return [height, ''] as const;
+      }
+    })
+  );
+
+  return Object.fromEntries(entries);
+}
+
 export async function GET(request: NextRequest) {
   try {
     const searchParams = request.nextUrl.searchParams;
-    const page = parseInt(searchParams.get('page') || '1');
-    const limit = parseInt(searchParams.get('limit') || '20');
-    const offset = (page - 1) * limit;
+    const page = clampInt(searchParams.get('page'), 1, 1, 1000000);
+    const limit = clampInt(searchParams.get('limit'), 20, 1, 100);
+    const height = searchParams.get('height');
+    const rpc = rpcEndpoint();
 
-    console.log(`Fetching entries with limit=${limit}, offset=${offset}`);
+    const query = height ? `tx.height=${height}` : 'tx.height>0';
+    const params = new URLSearchParams({
+      query: `"${query}"`,
+      prove: 'false',
+      page: String(page),
+      per_page: String(limit),
+      order_by: '"desc"',
+    });
 
-    // Query dataset entries directly from blockchain REST API
-    const entriesResponse = await fetch(
-      `${BLOCKCHAIN_API}/govchain/datasets/v1/entry?pagination.limit=${limit}&pagination.offset=${offset}&pagination.reverse=true`
-    );
+    const response = await fetch(`${rpc}/tx_search?${params.toString()}`, {
+      cache: 'no-store',
+    });
 
-    if (!entriesResponse.ok) {
-      console.error('Failed to fetch entries:', entriesResponse.status, entriesResponse.statusText);
+    if (!response.ok) {
+      const body = await response.text();
       return NextResponse.json(
-        { error: 'Failed to fetch entries from blockchain' },
+        { error: 'Failed to fetch transactions from RPC', details: body.slice(0, 500) },
         { status: 500 }
       );
     }
 
-    const entriesData = await entriesResponse.json();
-    console.log('Entries response:', {
-      entryCount: entriesData.entry?.length || 0,
-      paginationTotal: entriesData.pagination?.total || 0
-    });
-
-    const entries = entriesData.entry || [];
-    const pagination = entriesData.pagination || {};
-
-    // Transform entries to transaction-like objects for the explorer
-    const transactions = entries.map((entry: any) => {
-      // Use actual transaction hash if available, otherwise create a meaningful identifier
-      const txHash = entry.tx_hash || entry.txHash || entry.index || `entry-${entry.timestamp || Date.now()}`;
-
-      return {
-        txhash: txHash,
-        height: entry.block_height || entry.height || '0', // Use actual block height if available
-        code: 0, // Assume success since entry exists
-        timestamp: entry.timestamp ? new Date(parseInt(entry.timestamp) * 1000).toISOString() : new Date().toISOString(),
-        tx: {
-          body: {
-            messages: [{
-              '@type': '/govchain.datasets.v1.MsgCreateEntry',
-              title: entry.title,
-              description: entry.description,
-              agency: entry.agency,
-              category: entry.category,
-              submitter: entry.submitter,
-              ipfs_cid: entry.ipfs_cid,
-              mime_type: entry.mime_type,
-              file_name: entry.file_name,
-              file_url: entry.file_url,
-              fallback_url: entry.fallback_url,
-              file_size: entry.file_size,
-              checksum_sha_256: entry.checksum_sha_256,
-              pin_count: entry.pin_count
-            }],
-            memo: `Dataset Entry: ${entry.title}`
-          }
-        },
-        gas_used: entry.gas_used || '0',
-        gas_wanted: entry.gas_wanted || '0',
-        raw_log: entry.raw_log || `Dataset entry created: ${entry.title}`,
-        entry_data: entry // Include the full entry data for reference
-      };
-    });
-
-    const totalCount = parseInt(pagination.total || '0');
-    const totalPages = Math.ceil(totalCount / limit);
+    const data = await response.json();
+    const result = data.result || {};
+    const txs = result.txs || [];
+    const blockTimes = await getBlockTimes(rpc, txs.map((tx: any) => String(tx.height)));
+    const transactions = txs.map((tx: any) => summarizeTx(tx, blockTimes[String(tx.height)]));
+    const total = Number(result.total_count || transactions.length);
 
     return NextResponse.json({
       transactions,
       pagination: {
         page,
         limit,
-        total: totalCount,
-        totalPages,
+        total,
+        totalPages: Math.ceil(total / limit),
       },
-      latestHeight: 0, // We don't track height from entries
-      source: 'entries',
-      success: true
+      latestHeight: transactions[0]?.height ? Number(transactions[0].height) : 0,
+      source: 'tx_search',
+      success: true,
     });
   } catch (error) {
-    console.error('Error fetching entry transactions:', error);
+    console.error('Error fetching transactions:', error);
     return NextResponse.json(
       {
-        error: 'Failed to fetch entry transactions',
-        details: error instanceof Error ? error.message : String(error)
+        error: 'Failed to fetch transactions',
+        details: error instanceof Error ? error.message : String(error),
       },
       { status: 500 }
     );
