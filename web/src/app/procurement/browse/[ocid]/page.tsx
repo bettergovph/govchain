@@ -4,20 +4,32 @@ import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import { formatDistanceToNow } from 'date-fns';
-import { ArrowLeft, Box, CheckCircle2, ExternalLink, FileText, Landmark, ReceiptText } from 'lucide-react';
+import {
+  ArrowLeft,
+  Box,
+  CheckCircle2,
+  Circle,
+  Clock,
+  Code2,
+  ExternalLink,
+  FileText,
+  GitCommitHorizontal,
+  Landmark,
+  ReceiptText,
+} from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
+import { cn } from '@/lib/utils';
 
 const STAGES = ['planning', 'tender', 'award', 'contract', 'implementation'];
+const STAGE_COPY: Record<string, string> = {
+  planning: 'Budget and rationale',
+  tender: 'Opportunity published',
+  award: 'Supplier selected',
+  contract: 'Agreement signed',
+  implementation: 'Payments and delivery',
+};
 
 function pick<T = any>(value: any, snake: string, camel?: string): T | undefined {
   return value?.[snake] ?? value?.[camel || snake];
@@ -25,6 +37,20 @@ function pick<T = any>(value: any, snake: string, camel?: string): T | undefined
 
 function primaryTag(release: any) {
   return release?.tag?.[0] || 'unclassified';
+}
+
+function stageFromRelease(release: any) {
+  const tag = primaryTag(release);
+  if (STAGES.includes(tag)) return tag;
+  if (tag === 'implementationUpdate') return 'implementation';
+  if (tag === 'contractUpdate') return 'contract';
+  if (tag === 'awardUpdate') return 'award';
+  if ((release.contracts || []).some((contract: any) => contract.implementation)) return 'implementation';
+  if ((release.contracts || []).length > 0) return 'contract';
+  if ((release.awards || []).length > 0) return 'award';
+  if (release.tender) return 'tender';
+  if (release.planning) return 'planning';
+  return tag;
 }
 
 function compiled(process: any) {
@@ -40,7 +66,7 @@ function releaseDate(release: any) {
 }
 
 function exactDate(release: any) {
-  const value = release?.date || release?.chain_timestamp;
+  const value = release?.chain_timestamp || release?.date;
   if (!value) return '';
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return value;
@@ -87,7 +113,7 @@ function shortHash(hash: string) {
 }
 
 function releaseSummary(release: any) {
-  const tag = primaryTag(release);
+  const tag = stageFromRelease(release);
   if (tag === 'planning') {
     return release.planning?.budget?.description || release.planning?.rationale || 'Planning release';
   }
@@ -127,6 +153,39 @@ function stageIcon(stage: string) {
   if (stage === 'contract') return <ReceiptText className="h-4 w-4" />;
   if (stage === 'implementation') return <CheckCircle2 className="h-4 w-4" />;
   return <FileText className="h-4 w-4" />;
+}
+
+function timelineStatus(stage: string, currentStage: string, count: number) {
+  const currentIndex = STAGES.indexOf(currentStage);
+  const stageIndex = STAGES.indexOf(stage);
+
+  if (count === 0) return 'pending';
+  if (stage === currentStage) return 'current';
+  if (currentIndex >= 0 && stageIndex >= 0 && stageIndex < currentIndex) return 'complete';
+  return 'complete';
+}
+
+function statusIcon(status: string) {
+  if (status === 'current') return <Clock className="h-4 w-4" />;
+  if (status === 'complete') return <CheckCircle2 className="h-4 w-4" />;
+  return <Circle className="h-4 w-4" />;
+}
+
+function messageBody(release: any) {
+  return {
+    '@type': '/govchain.procurement.v1.MsgSubmitRelease',
+    creator: release?.publisher_address || '',
+    release,
+  };
+}
+
+function formattedMessageBody(release: any) {
+  return JSON.stringify(messageBody(release), null, 2);
+}
+
+function blockLabel(release: any) {
+  const height = blockHeight(release);
+  return height ? `Block ${height}` : 'Block —';
 }
 
 export default function ProcurementDetailPage() {
@@ -169,8 +228,7 @@ export default function ProcurementDetailPage() {
   const grouped = useMemo(() => {
     const groups = new Map<string, any[]>();
     for (const release of releases) {
-      const tag = primaryTag(release);
-      const stage = STAGES.includes(tag) ? tag : tag;
+      const stage = stageFromRelease(release);
       groups.set(stage, [...(groups.get(stage) || []), release]);
     }
     return groups;
@@ -207,6 +265,9 @@ export default function ProcurementDetailPage() {
 
   const release = compiled(process);
   const currentStage = pick<string>(process, 'current_stage', 'currentStage') || primaryTag(release);
+  const orderedStages = [...STAGES, ...Array.from(grouped.keys()).filter((stage) => !STAGES.includes(stage))];
+  const completedStageCount = STAGES.filter((stage) => (grouped.get(stage)?.length || 0) > 0).length;
+  const latestRelease = releases[releases.length - 1];
 
   return (
     <div className="space-y-6">
@@ -244,50 +305,80 @@ export default function ProcurementDetailPage() {
       </div>
 
       <div className="grid gap-3 md:grid-cols-4">
-        <Card className="rounded-md">
+        <Card className="rounded-md border-l-4 border-l-emerald-500">
           <CardHeader className="pb-2">
             <CardDescription>Lifecycle Releases</CardDescription>
-            <CardTitle className="text-2xl">{releases.length}</CardTitle>
+            <CardTitle className="flex items-center gap-2 text-2xl">
+              <GitCommitHorizontal className="h-5 w-5 text-emerald-600" />
+              {releases.length}
+            </CardTitle>
           </CardHeader>
         </Card>
-        <Card className="rounded-md">
+        <Card className="rounded-md border-l-4 border-l-blue-500">
           <CardHeader className="pb-2">
-            <CardDescription>Current Value</CardDescription>
-            <CardTitle className="text-2xl">{valueLabel(processValue(process))}</CardTitle>
+            <CardDescription>Lifecycle Progress</CardDescription>
+            <CardTitle className="text-2xl">{completedStageCount} / {STAGES.length}</CardTitle>
           </CardHeader>
         </Card>
-        <Card className="rounded-md">
+        <Card className="rounded-md border-l-4 border-l-amber-500">
           <CardHeader className="pb-2">
             <CardDescription>Awards</CardDescription>
             <CardTitle className="text-2xl">{(release.awards || []).length}</CardTitle>
           </CardHeader>
         </Card>
-        <Card className="rounded-md">
+        <Card className="rounded-md border-l-4 border-l-slate-500">
           <CardHeader className="pb-2">
-            <CardDescription>Contracts</CardDescription>
-            <CardTitle className="text-2xl">{(release.contracts || []).length}</CardTitle>
+            <CardDescription>Current Value</CardDescription>
+            <CardTitle className="text-2xl">{valueLabel(processValue(process))}</CardTitle>
           </CardHeader>
         </Card>
       </div>
 
-      <div className="grid gap-4 xl:grid-cols-[280px_1fr]">
+      <div className="grid gap-4 xl:grid-cols-[320px_1fr]">
         <Card className="rounded-md">
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-base">
               <Box className="h-4 w-4" />
-              Stages
+              Lifecycle Timeline
             </CardTitle>
+            <CardDescription>{latestRelease ? `${blockLabel(latestRelease)} latest` : 'Waiting for releases'}</CardDescription>
           </CardHeader>
-          <CardContent className="space-y-3">
+          <CardContent>
             {STAGES.map((stage) => {
               const count = grouped.get(stage)?.length || 0;
+              const status = timelineStatus(stage, currentStage, count);
               return (
-                <div key={stage} className="flex items-center justify-between rounded-md border px-3 py-2">
-                  <div className="flex items-center gap-2">
-                    {stageIcon(stage)}
-                    <span className="text-sm font-medium capitalize">{stage}</span>
+                <div key={stage} className="relative flex gap-3 pb-5 last:pb-0">
+                  <div className="flex w-7 flex-col items-center">
+                    <div
+                      className={cn(
+                        'flex h-7 w-7 items-center justify-center rounded-full border bg-background',
+                        status === 'complete' && 'border-emerald-500 bg-emerald-50 text-emerald-700',
+                        status === 'current' && 'border-blue-500 bg-blue-50 text-blue-700',
+                        status === 'pending' && 'border-muted-foreground/30 text-muted-foreground'
+                      )}
+                    >
+                      {statusIcon(status)}
+                    </div>
+                    {stage !== STAGES[STAGES.length - 1] && (
+                      <div
+                        className={cn(
+                          'mt-2 h-full min-h-8 w-px bg-border',
+                          (status === 'complete' || status === 'current') && 'bg-emerald-400'
+                        )}
+                      />
+                    )}
                   </div>
-                  <Badge variant={count > 0 ? 'default' : 'outline'}>{count}</Badge>
+                  <div className="min-w-0 flex-1 rounded-md border px-3 py-2">
+                    <div className="flex items-center justify-between gap-2">
+                      <div className="flex min-w-0 items-center gap-2">
+                        {stageIcon(stage)}
+                        <span className="truncate text-sm font-medium capitalize">{stage}</span>
+                      </div>
+                      <Badge variant={count > 0 ? 'default' : 'outline'}>{count}</Badge>
+                    </div>
+                    <p className="mt-1 text-xs text-muted-foreground">{STAGE_COPY[stage]}</p>
+                  </div>
                 </div>
               );
             })}
@@ -295,61 +386,94 @@ export default function ProcurementDetailPage() {
         </Card>
 
         <div className="space-y-4">
-          {[...STAGES, ...Array.from(grouped.keys()).filter((stage) => !STAGES.includes(stage))].map((stage) => {
+          {orderedStages.map((stage) => {
             const stageReleases = grouped.get(stage) || [];
+            const status = timelineStatus(stage, currentStage, stageReleases.length);
             return (
-              <Card key={stage} className="rounded-md">
+              <Card
+                key={stage}
+                className={cn(
+                  'rounded-md',
+                  status === 'complete' && 'border-l-4 border-l-emerald-500',
+                  status === 'current' && 'border-l-4 border-l-blue-500',
+                  status === 'pending' && 'border-l-4 border-l-muted'
+                )}
+              >
                 <CardHeader className="gap-1">
-                  <CardTitle className="flex items-center gap-2 text-base capitalize">
-                    {stageIcon(stage)}
-                    {stage}
-                  </CardTitle>
-                  <CardDescription>{stageReleases.length} release{stageReleases.length === 1 ? '' : 's'}</CardDescription>
+                  <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                    <div>
+                      <CardTitle className="flex items-center gap-2 text-base capitalize">
+                        {stageIcon(stage)}
+                        {stage}
+                      </CardTitle>
+                      <CardDescription>
+                        {STAGE_COPY[stage] || 'Additional release stage'} · {stageReleases.length} release{stageReleases.length === 1 ? '' : 's'}
+                      </CardDescription>
+                    </div>
+                    <Badge
+                      variant={status === 'pending' ? 'outline' : 'default'}
+                      className="capitalize"
+                    >
+                      {status}
+                    </Badge>
+                  </div>
                 </CardHeader>
-                <CardContent>
+                <CardContent className="space-y-3">
                   {stageReleases.length === 0 ? (
                     <div className="rounded-md border border-dashed p-4 text-sm text-muted-foreground">
                       No release recorded
                     </div>
                   ) : (
-                    <Table>
-                      <TableHeader>
-                        <TableRow>
-                          <TableHead>Release</TableHead>
-                          <TableHead>Date</TableHead>
-                          <TableHead>Summary</TableHead>
-                          <TableHead>Block</TableHead>
-                          <TableHead>Transaction</TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {stageReleases.map((item) => {
-                          const hash = txHash(item);
-                          return (
-                            <TableRow key={item.id}>
-                              <TableCell>
-                                <div className="font-mono text-xs">{item.id}</div>
-                              </TableCell>
-                              <TableCell title={exactDate(item)}>{releaseDate(item)}</TableCell>
-                              <TableCell className="max-w-[360px] truncate">{releaseSummary(item)}</TableCell>
-                              <TableCell>{blockHeight(item) || '—'}</TableCell>
-                              <TableCell>
-                                {hash ? (
-                                  <Button asChild variant="ghost" size="sm" className="font-mono">
-                                    <Link href={`/explorer/tx/${hash}`}>
-                                      {shortHash(hash)}
-                                      <ExternalLink className="h-3 w-3" />
-                                    </Link>
-                                  </Button>
-                                ) : (
-                                  <span className="text-muted-foreground">—</span>
-                                )}
-                              </TableCell>
-                            </TableRow>
-                          );
-                        })}
-                      </TableBody>
-                    </Table>
+                    stageReleases.map((item, index) => {
+                      const hash = txHash(item);
+                      return (
+                        <div key={item.id} className="rounded-md border bg-muted/20 p-4">
+                          <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
+                            <div className="min-w-0 space-y-2">
+                              <div className="flex flex-wrap items-center gap-2">
+                                <Badge variant="outline" className="font-mono">
+                                  {item.id}
+                                </Badge>
+                                <Badge variant="secondary" className="capitalize">
+                                  {primaryTag(item)}
+                                </Badge>
+                                <span className="text-xs text-muted-foreground" title={exactDate(item)}>
+                                  {releaseDate(item)}
+                                </span>
+                              </div>
+                              <p className="text-sm font-medium">{releaseSummary(item)}</p>
+                            </div>
+                            <div className="flex flex-wrap gap-2">
+                              <Badge variant="outline" className="gap-1">
+                                <GitCommitHorizontal className="h-3 w-3" />
+                                {blockLabel(item)}
+                              </Badge>
+                              {hash ? (
+                                <Button asChild variant="outline" size="sm" className="font-mono">
+                                  <Link href={`/explorer/tx/${hash}`}>
+                                    {shortHash(hash)}
+                                    <ExternalLink className="h-3 w-3" />
+                                  </Link>
+                                </Button>
+                              ) : null}
+                            </div>
+                          </div>
+
+                          <div className="mt-4 overflow-hidden rounded-md border bg-background">
+                            <div className="flex items-center justify-between border-b px-3 py-2">
+                              <div className="flex items-center gap-2 text-sm font-medium">
+                                <Code2 className="h-4 w-4" />
+                                JSON Body
+                              </div>
+                              <span className="text-xs text-muted-foreground">release {index + 1}</span>
+                            </div>
+                            <pre className="max-h-[420px] overflow-auto p-3 text-xs leading-5">
+                              <code>{formattedMessageBody(item)}</code>
+                            </pre>
+                          </div>
+                        </div>
+                      );
+                    })
                   )}
                 </CardContent>
               </Card>
