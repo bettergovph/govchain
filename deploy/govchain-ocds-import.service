@@ -1,0 +1,14 @@
+[Unit]
+Description=OpenGovChain OCDS procurement lifecycle import
+After=govchaind.service
+Requires=govchaind.service
+
+[Service]
+Type=simple
+WorkingDirectory=/root/spaceship/govchain-app
+ExecStart=/usr/bin/node /root/spaceship/govchain-app/importer/import-ocds-procurement.js /root/spaceship/govchain-data/by_year --strict-lifecycle --batch-size 100 --home /root/spaceship/govchain/home --from alice
+Restart=no
+Nice=5
+
+[Install]
+WantedBy=multi-user.target

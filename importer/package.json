@@ -1,0 +1,9 @@
+{
+  "name": "govchain-importer",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Bulk import tools for OpenGovChain data",
+  "dependencies": {
+    "stream-json": "^1.9.1"
+  }
+}
