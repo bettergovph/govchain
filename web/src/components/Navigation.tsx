@@ -10,7 +10,7 @@ import { useState } from 'react';
 const navItems = [
   { href: '/', label: 'Home', icon: Home },
   { href: '/whitepaper', label: 'Whitepaper', icon: BookOpen },
-  { href: '/standards/ocds', label: 'Procurement', icon: FileText },
+  { href: '/procurement', label: 'Procurement', icon: FileText },
   { href: '/standards/oc4ids', label: 'Infrastructure', icon: HardHat },
   { href: '/developer-guide', label: 'Developers', icon: Code },
   { href: '/about', label: 'About', icon: Info },

@@ -164,7 +164,7 @@ export default function Home() {
                 </ul>
               </div>
 
-              <Link href="/standards/ocds">
+              <Link href="/procurement">
                 <Button className="w-full gap-2 mt-2">
                   Explore Procurement Module
                   <ArrowRight className="h-4 w-4" />
@@ -479,7 +479,7 @@ export default function Home() {
                   Read the Whitepaper
                 </Button>
               </Link>
-              <Link href="/standards/ocds">
+              <Link href="/procurement">
                 <Button size="lg" variant="outline" className="gap-2">
                   <Landmark className="h-5 w-5" />
                   Explore OCDS Module

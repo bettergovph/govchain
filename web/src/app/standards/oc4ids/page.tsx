@@ -859,7 +859,7 @@ export default function OC4IDSPage() {
 
       {/* CTA */}
       <div className="flex flex-wrap gap-3">
-        <Link href="/standards/ocds">
+        <Link href="/procurement">
           <Button size="lg" className="gap-2">
             Explore OCDS Module
             <ArrowRight className="h-4 w-4" />

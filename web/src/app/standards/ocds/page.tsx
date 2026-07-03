@@ -80,6 +80,21 @@ export default function OCDSPage() {
           query and verify. No data can be retroactively altered, ensuring the
           highest level of accountability for public spending.
         </p>
+
+        <div className="flex flex-wrap gap-2">
+          <Link href="/procurement/browse">
+            <Button className="gap-2">
+              Browse Procurement Data
+              <ArrowRight className="h-4 w-4" />
+            </Button>
+          </Link>
+          <Link href="/explorer">
+            <Button variant="outline" className="gap-2">
+              View Chain Transactions
+              <ExternalLink className="h-4 w-4" />
+            </Button>
+          </Link>
+        </div>
       </div>
 
       {/* What is OCDS */}

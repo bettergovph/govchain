@@ -4,14 +4,14 @@ import { Github, HelpCircleIcon, MessageCircle, User2Icon } from 'lucide-react';
 const navItems = [
   { href: '/', label: 'Home' },
   { href: '/whitepaper', label: 'Whitepaper' },
-  { href: '/standards/ocds', label: 'Procurement (OCDS)' },
+  { href: '/procurement', label: 'Procurement (OCDS)' },
   { href: '/standards/oc4ids', label: 'Infrastructure (OC4IDS)' },
   { href: '/about', label: 'About OpenGovChain' },
 ];
 
 const developerItems = [
   { href: '/developer-guide', label: 'Developer Guide' },
-  { href: '/standards/ocds', label: 'Procurement (OCDS)' },
+  { href: '/procurement', label: 'Procurement (OCDS)' },
   { href: '/standards/oc4ids', label: 'Infrastructure (OC4IDS)' },
   { href: '/api-docs', label: 'Data Schema' },
   { href: 'https://github.com/bettergovph/govchain/issues', label: 'Report Issues'}
