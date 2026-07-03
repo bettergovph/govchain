@@ -1,5 +1,3 @@
-import { createHelia } from 'helia';
-import { unixfs } from '@helia/unixfs';
 import { CID } from 'multiformats/cid';
 import type { Helia } from 'helia';
 import type { UnixFS } from '@helia/unixfs';
@@ -33,6 +31,11 @@ async function createHeliaInstance(): Promise<{ helia: Helia; fs: UnixFS }> {
   }
 
   try {
+    const [{ createHelia }, { unixfs }] = await Promise.all([
+      import('helia'),
+      import('@helia/unixfs'),
+    ]);
+
     // Create Helia instance with default configuration
     heliaInstance = await createHelia();
     heliaFS = unixfs(heliaInstance);
@@ -91,16 +94,26 @@ export function getIPFSUrl(cid: string): string {
 
 export async function checkIPFSStatus(): Promise<boolean> {
   try {
-    if (heliaInstance) {
-      // Check if Helia instance is running
-      const peers = heliaInstance.libp2p.getPeers();
-      console.log(`Helia status: Connected to ${peers.length} peers`);
-      return true;
+    const apiUrl = process.env.IPFS_API_URL;
+
+    if (apiUrl) {
+      const response = await fetch(`${apiUrl.replace(/\/$/, '')}/api/v0/id`, {
+        method: 'POST',
+        signal: AbortSignal.timeout(5000),
+      });
+
+      return response.ok;
     }
 
-    // Try to create a new instance
-    await createHeliaInstance();
-    return true;
+    // Health checks should not instantiate Helia; in standalone builds that pulls
+    // in the full libp2p stack just to answer a status request.
+    const gatewayUrl = getIPFSConfig().publicGateway;
+    const response = await fetch(gatewayUrl, {
+      method: 'HEAD',
+      signal: AbortSignal.timeout(5000),
+    });
+
+    return response.ok;
   } catch (error) {
     console.error('IPFS status check failed:', error);
     return false;

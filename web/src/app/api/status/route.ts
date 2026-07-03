@@ -114,7 +114,7 @@ export async function GET() {
       {
         name: 'IPFS',
         status: ipfsHealthy ? 'healthy' : 'unhealthy',
-        message: ipfsHealthy ? 'IPFS daemon is running' : 'IPFS daemon not accessible',
+        message: ipfsHealthy ? 'IPFS gateway/API reachable' : 'IPFS gateway/API not accessible',
       },
       blockchainStatus,
       apiStatus,
