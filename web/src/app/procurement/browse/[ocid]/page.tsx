@@ -1,11 +1,12 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState, type ReactNode } from 'react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import { formatDistanceToNow } from 'date-fns';
 import {
   ArrowLeft,
+  Banknote,
   Box,
   CheckCircle2,
   Circle,
@@ -15,7 +16,10 @@ import {
   FileText,
   GitCommitHorizontal,
   Landmark,
+  ListChecks,
   ReceiptText,
+  Tag,
+  Users,
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -70,6 +74,13 @@ function exactDate(release: any) {
   if (!value) return '';
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return value;
+  return date.toLocaleString();
+}
+
+function dateValue(value: any) {
+  if (!value) return '—';
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return String(value);
   return date.toLocaleString();
 }
 
@@ -186,6 +197,275 @@ function formattedMessageBody(release: any) {
 function blockLabel(release: any) {
   const height = blockHeight(release);
   return height ? `Block ${height}` : 'Block —';
+}
+
+function displayValue(value: any) {
+  if (value === null || value === undefined || value === '') return '—';
+  if (Array.isArray(value)) return value.length > 0 ? value.join(', ') : '—';
+  return String(value);
+}
+
+function participantName(participant: any) {
+  return participant?.name || participant?.id || 'Unnamed participant';
+}
+
+function supplierNames(award: any) {
+  const suppliers = (award?.suppliers || []).map(participantName).filter(Boolean);
+  return suppliers.length > 0 ? suppliers.join(', ') : '—';
+}
+
+function Field({
+  label,
+  value,
+  mono = false,
+  className,
+}: {
+  label: string;
+  value: any;
+  mono?: boolean;
+  className?: string;
+}) {
+  return (
+    <div className={cn('rounded-md border bg-background px-3 py-2', className)}>
+      <div className="text-[11px] font-medium uppercase text-muted-foreground">{label}</div>
+      <div className={cn('mt-1 break-words text-sm font-medium', mono && 'font-mono text-xs')}>
+        {displayValue(value)}
+      </div>
+    </div>
+  );
+}
+
+function PublicSection({
+  title,
+  icon,
+  children,
+}: {
+  title: string;
+  icon: ReactNode;
+  children: ReactNode;
+}) {
+  return (
+    <section className="rounded-md border bg-muted/20 p-3">
+      <div className="mb-3 flex items-center gap-2 text-sm font-semibold">
+        {icon}
+        {title}
+      </div>
+      {children}
+    </section>
+  );
+}
+
+function PlanningContent({ release }: { release: any }) {
+  const planning = release.planning;
+  if (!planning) return null;
+  const budget = planning.budget || {};
+
+  return (
+    <PublicSection title="Planning" icon={<ListChecks className="h-4 w-4" />}>
+      <div className="grid gap-2 md:grid-cols-2">
+        <Field label="Rationale" value={planning.rationale} className="md:col-span-2" />
+        <Field label="Budget description" value={budget.description} />
+        <Field label="Budget amount" value={valueLabel(budget.amount)} />
+      </div>
+    </PublicSection>
+  );
+}
+
+function TenderContent({ release }: { release: any }) {
+  const tender = release.tender;
+  if (!tender) return null;
+
+  return (
+    <PublicSection title="Tender" icon={<FileText className="h-4 w-4" />}>
+      <div className="grid gap-2 md:grid-cols-2 xl:grid-cols-3">
+        <Field label="Title" value={tender.title} className="md:col-span-2 xl:col-span-3" />
+        <Field label="Status" value={tender.status} />
+        <Field label="Procurement method" value={tender.procurement_method_details || tender.procurement_method} />
+        <Field label="Category" value={tender.main_procurement_category} />
+        <Field label="Estimated value" value={valueLabel(tender.value)} />
+        <Field label="Procuring entity" value={tender.procuring_entity?.name} />
+        <Field label="Tenderers" value={tender.number_of_tenderers || (tender.tenderers || []).length} />
+        <Field label="Tender starts" value={dateValue(tender.tender_period?.start_date)} />
+        <Field label="Tender closes" value={dateValue(tender.tender_period?.end_date)} />
+        <Field label="Documents" value={(tender.documents || []).length} />
+      </div>
+    </PublicSection>
+  );
+}
+
+function AwardsContent({ release }: { release: any }) {
+  const awards = release.awards || [];
+  if (awards.length === 0) return null;
+
+  return (
+    <PublicSection title="Awards" icon={<Landmark className="h-4 w-4" />}>
+      <div className="space-y-2">
+        {awards.map((award: any, awardIndex: number) => (
+          <div key={award.id || awardIndex} className="rounded-md border bg-background p-3">
+            <div className="mb-2 flex flex-wrap items-center gap-2">
+              <Badge variant="outline" className="font-mono">{award.id || `award-${awardIndex + 1}`}</Badge>
+              <Badge variant="secondary" className="capitalize">{award.status || 'award'}</Badge>
+            </div>
+            <div className="grid gap-2 md:grid-cols-2 xl:grid-cols-3">
+              <Field label="Award title" value={award.title} className="md:col-span-2 xl:col-span-3" />
+              <Field label="Supplier" value={supplierNames(award)} />
+              <Field label="Award value" value={valueLabel(award.value)} />
+              <Field label="Award date" value={dateValue(award.date)} />
+            </div>
+          </div>
+        ))}
+      </div>
+    </PublicSection>
+  );
+}
+
+function ContractsContent({ release }: { release: any }) {
+  const contracts = release.contracts || [];
+  if (contracts.length === 0) return null;
+
+  return (
+    <PublicSection title="Contracts" icon={<ReceiptText className="h-4 w-4" />}>
+      <div className="space-y-2">
+        {contracts.map((contract: any, contractIndex: number) => (
+          <div key={contract.id || contractIndex} className="rounded-md border bg-background p-3">
+            <div className="mb-2 flex flex-wrap items-center gap-2">
+              <Badge variant="outline" className="font-mono">{contract.id || `contract-${contractIndex + 1}`}</Badge>
+              <Badge variant="secondary" className="capitalize">{contract.status || 'contract'}</Badge>
+            </div>
+            <div className="grid gap-2 md:grid-cols-2 xl:grid-cols-3">
+              <Field label="Contract title" value={contract.title} className="md:col-span-2 xl:col-span-3" />
+              <Field label="Contract value" value={valueLabel(contract.value)} />
+              <Field label="Date signed" value={dateValue(contract.date_signed)} />
+              <Field label="Linked award" value={contract.award_id} mono />
+              <Field label="Items" value={(contract.items || []).length} />
+              <Field label="Documents" value={(contract.documents || []).length} />
+              <Field label="Milestones" value={(contract.milestones || []).length} />
+            </div>
+          </div>
+        ))}
+      </div>
+    </PublicSection>
+  );
+}
+
+function ImplementationContent({ release }: { release: any }) {
+  const implementationContracts = (release.contracts || []).filter((contract: any) => contract.implementation);
+  if (implementationContracts.length === 0) return null;
+
+  return (
+    <PublicSection title="Implementation" icon={<CheckCircle2 className="h-4 w-4" />}>
+      <div className="space-y-2">
+        {implementationContracts.map((contract: any, contractIndex: number) => {
+          const implementation = contract.implementation || {};
+          const transactions = implementation.transactions || [];
+          const milestones = implementation.milestones || [];
+          return (
+            <div key={contract.id || contractIndex} className="rounded-md border bg-background p-3">
+              <div className="mb-2 flex flex-wrap items-center gap-2">
+                <Badge variant="outline" className="font-mono">{contract.id || `contract-${contractIndex + 1}`}</Badge>
+                <Badge variant="secondary">implementation</Badge>
+              </div>
+              <div className="grid gap-2 md:grid-cols-3">
+                <Field label="Payments" value={transactions.length} />
+                <Field label="Milestones" value={milestones.length} />
+                <Field label="Documents" value={(implementation.documents || []).length} />
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </PublicSection>
+  );
+}
+
+function PartiesContent({ release }: { release: any }) {
+  const parties = release.parties || [];
+  if (parties.length === 0) return null;
+
+  return (
+    <PublicSection title="Organizations" icon={<Users className="h-4 w-4" />}>
+      <div className="grid gap-2 md:grid-cols-2">
+        {parties.slice(0, 8).map((party: any, partyIndex: number) => (
+          <div key={party.id || partyIndex} className="rounded-md border bg-background px-3 py-2">
+            <div className="text-sm font-medium">{participantName(party)}</div>
+            <div className="mt-1 text-xs text-muted-foreground">
+              {(party.roles || []).length > 0 ? party.roles.join(', ') : 'Participant'}
+            </div>
+          </div>
+        ))}
+      </div>
+      {parties.length > 8 ? (
+        <p className="mt-2 text-xs text-muted-foreground">+{parties.length - 8} more organization{parties.length - 8 === 1 ? '' : 's'}</p>
+      ) : null}
+    </PublicSection>
+  );
+}
+
+function PublicMessageBody({ release, releaseNumber }: { release: any; releaseNumber: number }) {
+  const hash = txHash(release);
+  const stage = stageFromRelease(release);
+
+  return (
+    <div className="mt-4 overflow-hidden rounded-md border bg-background">
+      <div className="flex flex-col gap-2 border-b px-3 py-3 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex items-center gap-2 text-sm font-semibold">
+          <Code2 className="h-4 w-4" />
+          Public Message Body
+        </div>
+        <span className="text-xs text-muted-foreground">release {releaseNumber}</span>
+      </div>
+
+      <div className="space-y-3 p-3">
+        <PublicSection title="Chain Message" icon={<GitCommitHorizontal className="h-4 w-4" />}>
+          <div className="grid gap-2 md:grid-cols-2 xl:grid-cols-4">
+            <Field label="Message type" value="Submit procurement release" />
+            <Field label="Lifecycle stage" value={stage} />
+            <Field label="OCID" value={release.ocid} mono />
+            <Field label="Release ID" value={release.id} mono />
+            <Field label="Publisher" value={release.publisher_address} mono className="md:col-span-2" />
+            <Field label="Block" value={blockHeight(release)} />
+            <Field label="Transaction" value={hash ? shortHash(hash) : '—'} mono />
+          </div>
+        </PublicSection>
+
+        <PublicSection title="Release Summary" icon={<Tag className="h-4 w-4" />}>
+          <div className="grid gap-2 md:grid-cols-2 xl:grid-cols-4">
+            <Field label="Public summary" value={releaseSummary(release)} className="md:col-span-2 xl:col-span-4" />
+            <Field label="Buyer" value={release.buyer?.name || release.tender?.procuring_entity?.name} />
+            <Field label="Source date" value={dateValue(release.date)} />
+            <Field label="On-chain timestamp" value={dateValue(release.chain_timestamp)} />
+            <Field label="Language" value={release.language || 'en'} />
+          </div>
+        </PublicSection>
+
+        <TenderContent release={release} />
+        <AwardsContent release={release} />
+        <ContractsContent release={release} />
+        <ImplementationContent release={release} />
+        <PlanningContent release={release} />
+        <PartiesContent release={release} />
+
+        <PublicSection title="Quick Counts" icon={<Banknote className="h-4 w-4" />}>
+          <div className="grid gap-2 md:grid-cols-2 xl:grid-cols-4">
+            <Field label="Organizations" value={(release.parties || []).length} />
+            <Field label="Awards" value={(release.awards || []).length} />
+            <Field label="Contracts" value={(release.contracts || []).length} />
+            <Field label="Related processes" value={(release.related_processes || []).length} />
+          </div>
+        </PublicSection>
+
+        <details className="rounded-md border bg-muted/20">
+          <summary className="flex cursor-pointer items-center gap-2 px-3 py-2 text-sm font-medium">
+            <Code2 className="h-4 w-4" />
+            Raw JSON message body
+          </summary>
+          <pre className="max-h-[420px] overflow-auto border-t bg-background p-3 text-xs leading-5">
+            <code>{formattedMessageBody(release)}</code>
+          </pre>
+        </details>
+      </div>
+    </div>
+  );
 }
 
 export default function ProcurementDetailPage() {
@@ -459,18 +739,7 @@ export default function ProcurementDetailPage() {
                             </div>
                           </div>
 
-                          <div className="mt-4 overflow-hidden rounded-md border bg-background">
-                            <div className="flex items-center justify-between border-b px-3 py-2">
-                              <div className="flex items-center gap-2 text-sm font-medium">
-                                <Code2 className="h-4 w-4" />
-                                JSON Body
-                              </div>
-                              <span className="text-xs text-muted-foreground">release {index + 1}</span>
-                            </div>
-                            <pre className="max-h-[420px] overflow-auto p-3 text-xs leading-5">
-                              <code>{formattedMessageBody(item)}</code>
-                            </pre>
-                          </div>
+                          <PublicMessageBody release={item} releaseNumber={index + 1} />
                         </div>
                       );
                     })
