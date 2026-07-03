@@ -1,12 +1,11 @@
 'use client';
 
-import { useEffect, useMemo, useState, type ReactNode } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import { formatDistanceToNow } from 'date-fns';
 import {
   ArrowLeft,
-  Banknote,
   Box,
   CheckCircle2,
   Circle,
@@ -16,10 +15,7 @@ import {
   FileText,
   GitCommitHorizontal,
   Landmark,
-  ListChecks,
   ReceiptText,
-  Tag,
-  Users,
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -214,7 +210,7 @@ function supplierNames(award: any) {
   return suppliers.length > 0 ? suppliers.join(', ') : '—';
 }
 
-function Field({
+function CompactField({
   label,
   value,
   mono = false,
@@ -226,244 +222,165 @@ function Field({
   className?: string;
 }) {
   return (
-    <div className={cn('rounded-md border bg-background px-3 py-2', className)}>
-      <div className="text-[11px] font-medium uppercase text-muted-foreground">{label}</div>
-      <div className={cn('mt-1 break-words text-sm font-medium', mono && 'font-mono text-xs')}>
+    <div className={cn('min-w-0 border-t py-2 first:border-t-0 sm:first:border-t', className)}>
+      <div className="text-[10px] font-medium uppercase text-muted-foreground">{label}</div>
+      <div className={cn('mt-0.5 break-words text-sm', mono && 'font-mono text-xs')}>
         {displayValue(value)}
       </div>
     </div>
   );
 }
 
-function PublicSection({
+function CompactList({
   title,
-  icon,
-  children,
+  items,
 }: {
   title: string;
-  icon: ReactNode;
-  children: ReactNode;
+  items: string[];
 }) {
+  if (items.length === 0) return null;
+
   return (
-    <section className="rounded-md border bg-muted/20 p-3">
-      <div className="mb-3 flex items-center gap-2 text-sm font-semibold">
-        {icon}
-        {title}
+    <div className="border-t pt-2">
+      <div className="text-[10px] font-medium uppercase text-muted-foreground">{title}</div>
+      <div className="mt-1 flex flex-wrap gap-1.5">
+        {items.slice(0, 8).map((item) => (
+          <Badge key={item} variant="outline" className="max-w-full truncate">
+            {item}
+          </Badge>
+        ))}
+        {items.length > 8 ? <Badge variant="secondary">+{items.length - 8}</Badge> : null}
       </div>
-      {children}
-    </section>
+    </div>
   );
 }
 
-function PlanningContent({ release }: { release: any }) {
-  const planning = release.planning;
-  if (!planning) return null;
-  const budget = planning.budget || {};
-
-  return (
-    <PublicSection title="Planning" icon={<ListChecks className="h-4 w-4" />}>
-      <div className="grid gap-2 md:grid-cols-2">
-        <Field label="Rationale" value={planning.rationale} className="md:col-span-2" />
-        <Field label="Budget description" value={budget.description} />
-        <Field label="Budget amount" value={valueLabel(budget.amount)} />
-      </div>
-    </PublicSection>
-  );
-}
-
-function TenderContent({ release }: { release: any }) {
+function compactFields(release: any) {
+  const stage = stageFromRelease(release);
+  const hash = txHash(release);
   const tender = release.tender;
-  if (!tender) return null;
+  const firstAward = release.awards?.[0];
+  const firstContract = release.contracts?.[0];
+  const implementation = firstContract?.implementation;
+  const planning = release.planning;
 
-  return (
-    <PublicSection title="Tender" icon={<FileText className="h-4 w-4" />}>
-      <div className="grid gap-2 md:grid-cols-2 xl:grid-cols-3">
-        <Field label="Title" value={tender.title} className="md:col-span-2 xl:col-span-3" />
-        <Field label="Status" value={tender.status} />
-        <Field label="Procurement method" value={tender.procurement_method_details || tender.procurement_method} />
-        <Field label="Category" value={tender.main_procurement_category} />
-        <Field label="Estimated value" value={valueLabel(tender.value)} />
-        <Field label="Procuring entity" value={tender.procuring_entity?.name} />
-        <Field label="Tenderers" value={tender.number_of_tenderers || (tender.tenderers || []).length} />
-        <Field label="Tender starts" value={dateValue(tender.tender_period?.start_date)} />
-        <Field label="Tender closes" value={dateValue(tender.tender_period?.end_date)} />
-        <Field label="Documents" value={(tender.documents || []).length} />
-      </div>
-    </PublicSection>
+  const fields = [
+    { label: 'Stage', value: stage },
+    { label: 'Message', value: 'Submit procurement release' },
+    { label: 'OCID', value: release.ocid, mono: true },
+    { label: 'Release ID', value: release.id, mono: true },
+    { label: 'Buyer', value: release.buyer?.name || tender?.procuring_entity?.name },
+    { label: 'Summary', value: releaseSummary(release), className: 'sm:col-span-2 xl:col-span-3' },
+    { label: 'Source date', value: dateValue(release.date) },
+    { label: 'On-chain time', value: dateValue(release.chain_timestamp) },
+    { label: 'Block', value: blockHeight(release) },
+    { label: 'Tx', value: hash ? shortHash(hash) : '—', mono: true },
+    { label: 'Publisher', value: release.publisher_address, mono: true, className: 'sm:col-span-2' },
+  ];
+
+  if (planning) {
+    fields.push(
+      { label: 'Planning rationale', value: planning.rationale, className: 'sm:col-span-2 xl:col-span-3' },
+      { label: 'Budget', value: valueLabel(planning.budget?.amount) }
+    );
+  }
+
+  if (tender) {
+    fields.push(
+      { label: 'Tender status', value: tender.status },
+      { label: 'Method', value: tender.procurement_method_details || tender.procurement_method },
+      { label: 'Category', value: tender.main_procurement_category },
+      { label: 'Estimated value', value: valueLabel(tender.value) },
+      { label: 'Tender opens', value: dateValue(tender.tender_period?.start_date) },
+      { label: 'Tender closes', value: dateValue(tender.tender_period?.end_date) },
+      { label: 'Tenderers', value: tender.number_of_tenderers || (tender.tenderers || []).length },
+      { label: 'Documents', value: (tender.documents || []).length }
+    );
+  }
+
+  if (firstAward) {
+    fields.push(
+      { label: 'Award', value: firstAward.title, className: 'sm:col-span-2 xl:col-span-3' },
+      { label: 'Supplier', value: supplierNames(firstAward) },
+      { label: 'Award value', value: valueLabel(firstAward.value) },
+      { label: 'Award date', value: dateValue(firstAward.date) }
+    );
+  }
+
+  if (firstContract) {
+    fields.push(
+      { label: 'Contract', value: firstContract.title, className: 'sm:col-span-2 xl:col-span-3' },
+      { label: 'Contract value', value: valueLabel(firstContract.value) },
+      { label: 'Date signed', value: dateValue(firstContract.date_signed) },
+      { label: 'Linked award', value: firstContract.award_id, mono: true },
+      { label: 'Items', value: (firstContract.items || []).length },
+      { label: 'Contract docs', value: (firstContract.documents || []).length },
+      { label: 'Milestones', value: (firstContract.milestones || []).length }
+    );
+  }
+
+  if (implementation) {
+    fields.push(
+      { label: 'Payments', value: (implementation.transactions || []).length },
+      { label: 'Implementation milestones', value: (implementation.milestones || []).length },
+      { label: 'Implementation docs', value: (implementation.documents || []).length }
+    );
+  }
+
+  fields.push(
+    { label: 'Organizations', value: (release.parties || []).length },
+    { label: 'Awards', value: (release.awards || []).length },
+    { label: 'Contracts', value: (release.contracts || []).length },
+    { label: 'Related processes', value: (release.related_processes || []).length }
   );
-}
 
-function AwardsContent({ release }: { release: any }) {
-  const awards = release.awards || [];
-  if (awards.length === 0) return null;
-
-  return (
-    <PublicSection title="Awards" icon={<Landmark className="h-4 w-4" />}>
-      <div className="space-y-2">
-        {awards.map((award: any, awardIndex: number) => (
-          <div key={award.id || awardIndex} className="rounded-md border bg-background p-3">
-            <div className="mb-2 flex flex-wrap items-center gap-2">
-              <Badge variant="outline" className="font-mono">{award.id || `award-${awardIndex + 1}`}</Badge>
-              <Badge variant="secondary" className="capitalize">{award.status || 'award'}</Badge>
-            </div>
-            <div className="grid gap-2 md:grid-cols-2 xl:grid-cols-3">
-              <Field label="Award title" value={award.title} className="md:col-span-2 xl:col-span-3" />
-              <Field label="Supplier" value={supplierNames(award)} />
-              <Field label="Award value" value={valueLabel(award.value)} />
-              <Field label="Award date" value={dateValue(award.date)} />
-            </div>
-          </div>
-        ))}
-      </div>
-    </PublicSection>
-  );
-}
-
-function ContractsContent({ release }: { release: any }) {
-  const contracts = release.contracts || [];
-  if (contracts.length === 0) return null;
-
-  return (
-    <PublicSection title="Contracts" icon={<ReceiptText className="h-4 w-4" />}>
-      <div className="space-y-2">
-        {contracts.map((contract: any, contractIndex: number) => (
-          <div key={contract.id || contractIndex} className="rounded-md border bg-background p-3">
-            <div className="mb-2 flex flex-wrap items-center gap-2">
-              <Badge variant="outline" className="font-mono">{contract.id || `contract-${contractIndex + 1}`}</Badge>
-              <Badge variant="secondary" className="capitalize">{contract.status || 'contract'}</Badge>
-            </div>
-            <div className="grid gap-2 md:grid-cols-2 xl:grid-cols-3">
-              <Field label="Contract title" value={contract.title} className="md:col-span-2 xl:col-span-3" />
-              <Field label="Contract value" value={valueLabel(contract.value)} />
-              <Field label="Date signed" value={dateValue(contract.date_signed)} />
-              <Field label="Linked award" value={contract.award_id} mono />
-              <Field label="Items" value={(contract.items || []).length} />
-              <Field label="Documents" value={(contract.documents || []).length} />
-              <Field label="Milestones" value={(contract.milestones || []).length} />
-            </div>
-          </div>
-        ))}
-      </div>
-    </PublicSection>
-  );
-}
-
-function ImplementationContent({ release }: { release: any }) {
-  const implementationContracts = (release.contracts || []).filter((contract: any) => contract.implementation);
-  if (implementationContracts.length === 0) return null;
-
-  return (
-    <PublicSection title="Implementation" icon={<CheckCircle2 className="h-4 w-4" />}>
-      <div className="space-y-2">
-        {implementationContracts.map((contract: any, contractIndex: number) => {
-          const implementation = contract.implementation || {};
-          const transactions = implementation.transactions || [];
-          const milestones = implementation.milestones || [];
-          return (
-            <div key={contract.id || contractIndex} className="rounded-md border bg-background p-3">
-              <div className="mb-2 flex flex-wrap items-center gap-2">
-                <Badge variant="outline" className="font-mono">{contract.id || `contract-${contractIndex + 1}`}</Badge>
-                <Badge variant="secondary">implementation</Badge>
-              </div>
-              <div className="grid gap-2 md:grid-cols-3">
-                <Field label="Payments" value={transactions.length} />
-                <Field label="Milestones" value={milestones.length} />
-                <Field label="Documents" value={(implementation.documents || []).length} />
-              </div>
-            </div>
-          );
-        })}
-      </div>
-    </PublicSection>
-  );
-}
-
-function PartiesContent({ release }: { release: any }) {
-  const parties = release.parties || [];
-  if (parties.length === 0) return null;
-
-  return (
-    <PublicSection title="Organizations" icon={<Users className="h-4 w-4" />}>
-      <div className="grid gap-2 md:grid-cols-2">
-        {parties.slice(0, 8).map((party: any, partyIndex: number) => (
-          <div key={party.id || partyIndex} className="rounded-md border bg-background px-3 py-2">
-            <div className="text-sm font-medium">{participantName(party)}</div>
-            <div className="mt-1 text-xs text-muted-foreground">
-              {(party.roles || []).length > 0 ? party.roles.join(', ') : 'Participant'}
-            </div>
-          </div>
-        ))}
-      </div>
-      {parties.length > 8 ? (
-        <p className="mt-2 text-xs text-muted-foreground">+{parties.length - 8} more organization{parties.length - 8 === 1 ? '' : 's'}</p>
-      ) : null}
-    </PublicSection>
-  );
+  return fields;
 }
 
 function PublicMessageBody({ release, releaseNumber }: { release: any; releaseNumber: number }) {
-  const hash = txHash(release);
-  const stage = stageFromRelease(release);
+  const parties = (release.parties || []).map((party: any) => {
+    const roles = (party.roles || []).length > 0 ? ` (${party.roles.join(', ')})` : '';
+    return `${participantName(party)}${roles}`;
+  });
+  const awards = (release.awards || []).slice(1).map((award: any) => `${award.title || award.id || 'Award'} · ${supplierNames(award)}`);
+  const contracts = (release.contracts || []).slice(1).map((contract: any) => `${contract.title || contract.id || 'Contract'} · ${valueLabel(contract.value)}`);
 
   return (
-    <div className="mt-4 overflow-hidden rounded-md border bg-background">
-      <div className="flex flex-col gap-2 border-b px-3 py-3 sm:flex-row sm:items-center sm:justify-between">
-        <div className="flex items-center gap-2 text-sm font-semibold">
+    <div className="mt-3 border-t pt-3">
+      <div className="mb-2 flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex items-center gap-2 text-xs font-semibold uppercase text-muted-foreground">
           <Code2 className="h-4 w-4" />
-          Public Message Body
+          Message body
         </div>
         <span className="text-xs text-muted-foreground">release {releaseNumber}</span>
       </div>
 
-      <div className="space-y-3 p-3">
-        <PublicSection title="Chain Message" icon={<GitCommitHorizontal className="h-4 w-4" />}>
-          <div className="grid gap-2 md:grid-cols-2 xl:grid-cols-4">
-            <Field label="Message type" value="Submit procurement release" />
-            <Field label="Lifecycle stage" value={stage} />
-            <Field label="OCID" value={release.ocid} mono />
-            <Field label="Release ID" value={release.id} mono />
-            <Field label="Publisher" value={release.publisher_address} mono className="md:col-span-2" />
-            <Field label="Block" value={blockHeight(release)} />
-            <Field label="Transaction" value={hash ? shortHash(hash) : '—'} mono />
-          </div>
-        </PublicSection>
-
-        <PublicSection title="Release Summary" icon={<Tag className="h-4 w-4" />}>
-          <div className="grid gap-2 md:grid-cols-2 xl:grid-cols-4">
-            <Field label="Public summary" value={releaseSummary(release)} className="md:col-span-2 xl:col-span-4" />
-            <Field label="Buyer" value={release.buyer?.name || release.tender?.procuring_entity?.name} />
-            <Field label="Source date" value={dateValue(release.date)} />
-            <Field label="On-chain timestamp" value={dateValue(release.chain_timestamp)} />
-            <Field label="Language" value={release.language || 'en'} />
-          </div>
-        </PublicSection>
-
-        <TenderContent release={release} />
-        <AwardsContent release={release} />
-        <ContractsContent release={release} />
-        <ImplementationContent release={release} />
-        <PlanningContent release={release} />
-        <PartiesContent release={release} />
-
-        <PublicSection title="Quick Counts" icon={<Banknote className="h-4 w-4" />}>
-          <div className="grid gap-2 md:grid-cols-2 xl:grid-cols-4">
-            <Field label="Organizations" value={(release.parties || []).length} />
-            <Field label="Awards" value={(release.awards || []).length} />
-            <Field label="Contracts" value={(release.contracts || []).length} />
-            <Field label="Related processes" value={(release.related_processes || []).length} />
-          </div>
-        </PublicSection>
-
-        <details className="rounded-md border bg-muted/20">
-          <summary className="flex cursor-pointer items-center gap-2 px-3 py-2 text-sm font-medium">
-            <Code2 className="h-4 w-4" />
-            Raw JSON message body
-          </summary>
-          <pre className="max-h-[420px] overflow-auto border-t bg-background p-3 text-xs leading-5">
-            <code>{formattedMessageBody(release)}</code>
-          </pre>
-        </details>
+      <div className="grid gap-x-6 sm:grid-cols-2 xl:grid-cols-3">
+        {compactFields(release).map((field) => (
+          <CompactField
+            key={`${field.label}-${field.value}`}
+            label={field.label}
+            value={field.value}
+            mono={field.mono}
+            className={field.className}
+          />
+        ))}
       </div>
+
+      <div className="mt-2 grid gap-3 md:grid-cols-3">
+        <CompactList title="Organizations" items={parties} />
+        <CompactList title="More awards" items={awards} />
+        <CompactList title="More contracts" items={contracts} />
+      </div>
+
+      <details className="mt-3 border-t pt-2">
+        <summary className="cursor-pointer text-xs font-medium text-muted-foreground">
+          Raw JSON message body
+        </summary>
+        <pre className="mt-2 max-h-[320px] overflow-auto rounded-md bg-muted/40 p-3 text-xs leading-5">
+          <code>{formattedMessageBody(release)}</code>
+        </pre>
+      </details>
     </div>
   );
 }
@@ -665,49 +582,47 @@ export default function ProcurementDetailPage() {
           </CardContent>
         </Card>
 
-        <div className="space-y-4">
+        <div className="space-y-5">
           {orderedStages.map((stage) => {
             const stageReleases = grouped.get(stage) || [];
             const status = timelineStatus(stage, currentStage, stageReleases.length);
             return (
-              <Card
+              <section
                 key={stage}
                 className={cn(
-                  'rounded-md',
-                  status === 'complete' && 'border-l-4 border-l-emerald-500',
-                  status === 'current' && 'border-l-4 border-l-blue-500',
-                  status === 'pending' && 'border-l-4 border-l-muted'
+                  'border-l-4 pl-4',
+                  status === 'complete' && 'border-l-emerald-500',
+                  status === 'current' && 'border-l-blue-500',
+                  status === 'pending' && 'border-l-muted'
                 )}
               >
-                <CardHeader className="gap-1">
-                  <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-                    <div>
-                      <CardTitle className="flex items-center gap-2 text-base capitalize">
-                        {stageIcon(stage)}
-                        {stage}
-                      </CardTitle>
-                      <CardDescription>
-                        {STAGE_COPY[stage] || 'Additional release stage'} · {stageReleases.length} release{stageReleases.length === 1 ? '' : 's'}
-                      </CardDescription>
-                    </div>
-                    <Badge
-                      variant={status === 'pending' ? 'outline' : 'default'}
-                      className="capitalize"
-                    >
-                      {status}
-                    </Badge>
+                <div className="mb-2 flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+                  <div>
+                    <h2 className="flex items-center gap-2 text-base font-semibold capitalize">
+                      {stageIcon(stage)}
+                      {stage}
+                    </h2>
+                    <p className="text-sm text-muted-foreground">
+                      {STAGE_COPY[stage] || 'Additional release stage'} · {stageReleases.length} release{stageReleases.length === 1 ? '' : 's'}
+                    </p>
                   </div>
-                </CardHeader>
-                <CardContent className="space-y-3">
+                  <Badge
+                    variant={status === 'pending' ? 'outline' : 'default'}
+                    className="w-fit capitalize"
+                  >
+                    {status}
+                  </Badge>
+                </div>
+                <div>
                   {stageReleases.length === 0 ? (
-                    <div className="rounded-md border border-dashed p-4 text-sm text-muted-foreground">
+                    <div className="border-t py-3 text-sm text-muted-foreground">
                       No release recorded
                     </div>
                   ) : (
                     stageReleases.map((item, index) => {
                       const hash = txHash(item);
                       return (
-                        <div key={item.id} className="rounded-md border bg-muted/20 p-4">
+                        <div key={item.id} className="border-t py-3 first:border-t-0">
                           <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
                             <div className="min-w-0 space-y-2">
                               <div className="flex flex-wrap items-center gap-2">
@@ -744,8 +659,8 @@ export default function ProcurementDetailPage() {
                       );
                     })
                   )}
-                </CardContent>
-              </Card>
+                </div>
+              </section>
             );
           })}
         </div>
